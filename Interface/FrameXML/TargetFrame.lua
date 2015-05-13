@@ -1,5 +1,7 @@
 MAX_COMBO_POINTS = 5;
-MAX_TARGET_DEBUFFS = 5;
+MAX_TARGET_DEBUFFS = 16;
+MAX_TARGET_BUFFS = 5;
+CURRENT_TARGETTARGET = nil;
 
 UnitReactionColor = {
 	{ r = 1.0, g = 0.0, b = 0.0 },
@@ -16,36 +18,38 @@ function TargetFrame_OnLoad()
 	this.statusSign = -1;
 	this.unitHPPercent = 1;
 	TargetFrame_Update();
+	this:RegisterEvent("PLAYER_ENTERING_WORLD");
+	this:RegisterEvent("PLAYER_TARGET_CHANGED");
 	this:RegisterEvent("UNIT_HEALTH");
 	this:RegisterEvent("UNIT_LEVEL");
 	this:RegisterEvent("UNIT_FACTION");
-	this:RegisterEvent("UNIT_DYNAMIC_FLAGS");
 	this:RegisterEvent("UNIT_CLASSIFICATION_CHANGED");
-	this:RegisterEvent("PLAYER_PVPLEVEL_CHANGED");
-	this:RegisterEvent("PLAYER_TARGET_CHANGED");
-	this:RegisterEvent("PARTY_MEMBERS_CHANGED");
-	this:RegisterEvent("PARTY_LEADER_CHANGED");
-	this:RegisterEvent("PARTY_MEMBER_ENABLE");
-	this:RegisterEvent("PARTY_MEMBER_DISABLE");
 	this:RegisterEvent("UNIT_AURA");
 	this:RegisterEvent("PLAYER_FLAGS_CHANGED");
+	this:RegisterEvent("PARTY_MEMBERS_CHANGED");
+	this:RegisterEvent("RAID_TARGET_UPDATE");
+
+	local frameLevel = TargetFrameTextureFrame:GetFrameLevel();
+	TargetFrameHealthBar:SetFrameLevel(frameLevel-1);
+	TargetFrameManaBar:SetFrameLevel(frameLevel-1);
 end
 
 function TargetFrame_Update()
 	if ( UnitExists("target") ) then
 		this:Show();
 		UnitFrame_Update();
-		UnitFrame_UpdateManaType();
 		TargetFrame_CheckLevel();
 		TargetFrame_CheckFaction();
 		TargetFrame_CheckClassification();
 		TargetFrame_CheckDead();
+		TargetFrame_CheckDishonorableKill();
 		if ( UnitIsPartyLeader("target") ) then
 			TargetLeaderIcon:Show();
 		else
 			TargetLeaderIcon:Hide();
 		end
 		TargetDebuffButton_Update();
+		TargetPortrait:SetAlpha(1.0);
 	else
 		this:Hide();
 	end
@@ -54,49 +58,34 @@ end
 function TargetFrame_OnEvent(event)
 	UnitFrame_OnEvent(event);
 
-	if ( event == "UNIT_HEALTH" ) then
+	if ( event == "PLAYER_ENTERING_WORLD"  and ( not TargetFrame:IsVisible() ) ) then
+		TargetFrame_Update();
+	elseif ( event == "PLAYER_TARGET_CHANGED" ) then
+		TargetFrame_Update();
+		TargetFrame_UpdateRaidTargetIcon();
+		TargetofTarget_Update();
+	elseif ( event == "UNIT_HEALTH" ) then
 		if ( arg1 == "target" ) then
 			TargetFrame_CheckDead();
 		end
-		return;
-	end
-	if ( event == "UNIT_LEVEL" ) then
+	elseif ( event == "UNIT_LEVEL" ) then
 		if ( arg1 == "target" ) then
 			TargetFrame_CheckLevel();
 		end
-		return;
-	end
-	if ( event == "UNIT_FACTION" ) then
+	elseif ( event == "UNIT_FACTION" ) then
 		if ( arg1 == "target" or arg1 == "player" ) then
 			TargetFrame_CheckFaction();
 			TargetFrame_CheckLevel();
 		end
-		return;
-	end
-	if ( event == "UNIT_DYNAMIC_FLAGS" ) then
-		if ( arg1 == "target" ) then
-			TargetFrame_CheckFaction();
-		end
-		return;
-	end
-	if ( event == "UNIT_CLASSIFICATION_CHANGED" ) then
+	elseif ( event == "UNIT_CLASSIFICATION_CHANGED" ) then
 		if ( arg1 == "target" ) then
 			TargetFrame_CheckClassification();
 		end
-		return;
-	end
-	if ( event == "PLAYER_TARGET_CHANGED" or event == "PARTY_MEMBERS_CHANGED" or event == "PARTY_LEADER_CHANGED" or event == "PARTY_MEMBER_ENABLE" or event == "PARTY_MEMBER_DISABLE") then
-		TargetFrame_Update();
-		if ( event == "PARTY_MEMBERS_CHANGED" ) then
-			TargetFrame_CheckFaction();
+	elseif ( event == "UNIT_AURA" ) then
+		if ( arg1 == "target" ) then
+			TargetDebuffButton_Update();
 		end
-		return;
-	end
-	if ( event == "UNIT_AURA" and arg1 == "target" ) then
-		TargetDebuffButton_Update();
-		return;
-	end
-	if ( event == "PLAYER_FLAGS_CHANGED" ) then
+	elseif ( event == "PLAYER_FLAGS_CHANGED" ) then
 		if ( arg1 == "target" ) then
 			if ( UnitIsPartyLeader("target") ) then
 				TargetLeaderIcon:Show();
@@ -104,7 +93,11 @@ function TargetFrame_OnEvent(event)
 				TargetLeaderIcon:Hide();
 			end
 		end
-		return;
+	elseif ( event == "PARTY_MEMBERS_CHANGED" ) then
+		TargetFrame_CheckFaction();
+		TargetofTarget_Update();
+	elseif ( event == "RAID_TARGET_UPDATE" ) then
+		TargetFrame_UpdateRaidTargetIcon();
 	end
 end
 
@@ -120,47 +113,31 @@ end
 
 function TargetFrame_OnHide()
 	PlaySound("INTERFACESOUND_LOSTTARGETUNIT");
-	if ( UnitPopup.unit == "target" ) then
-		UnitPopup:Hide();
-	end
+	CloseDropDownMenus();
 end
 
 function TargetFrame_CheckLevel()
-	local playerLevel = UnitLevel("player");
 	local targetLevel = UnitLevel("target");
-	if ( UnitIsPlusMob("target") ) then
-	--	TargetLevelText:SetText(targetLevel.."+");
-		TargetLevelText:SetText(targetLevel);
-	elseif ( targetLevel == 0 ) then
-		TargetLevelText:SetText("");
-	else
-		TargetLevelText:SetText(targetLevel);
-	end
-	-- Color level number
-	local color = GetDifficultyColor(targetLevel);
-	TargetLevelText:SetVertexColor(color.r, color.g, color.b);
 	
-	if ( UnitClassification("target") == "worldboss" ) then
-		-- If unit is a world boss show skull regardless of level
+	if ( UnitIsCorpse("target") ) then
 		TargetLevelText:Hide();
 		TargetHighLevelTexture:Show();
-	elseif ( UnitIsEnemy("target", "player") ) then
-		if ( playerLevel > (targetLevel - 10) ) then
-			-- Normal level target
-			TargetLevelText:Show();
-			TargetHighLevelTexture:Hide();
-		else
-			-- High level target
-			TargetLevelText:Hide();
-			TargetHighLevelTexture:Show();
-		end
-	elseif ( UnitIsCorpse("target") ) then
-		TargetLevelText:Hide();
-		TargetHighLevelTexture:Show();
-	else
+	elseif ( targetLevel > 0 ) then
 		-- Normal level target
+		TargetLevelText:SetText(targetLevel);
+		-- Color level number
+		if ( UnitCanAttack("player", "target") ) then
+			local color = GetDifficultyColor(targetLevel);
+			TargetLevelText:SetVertexColor(color.r, color.g, color.b);
+		else
+			TargetLevelText:SetVertexColor(1.0, 0.82, 0.0);
+		end
 		TargetLevelText:Show();
 		TargetHighLevelTexture:Hide();
+	else
+		-- Target is too high level to tell
+		TargetLevelText:Hide();
+		TargetHighLevelTexture:Show();
 	end
 end
 
@@ -214,7 +191,10 @@ function TargetFrame_CheckFaction()
 	end
 
 	local factionGroup = UnitFactionGroup("target");
-	if ( factionGroup and UnitIsPVP("target") ) then
+	if ( UnitIsPVPFreeForAll("target") ) then
+		TargetPVPIcon:SetTexture("Interface\\TargetingFrame\\UI-PVP-FFA");
+		TargetPVPIcon:Show();
+	elseif ( factionGroup and UnitIsPVP("target") ) then
 		TargetPVPIcon:SetTexture("Interface\\TargetingFrame\\UI-PVP-"..factionGroup);
 		TargetPVPIcon:Show();
 	else
@@ -240,8 +220,21 @@ end
 function TargetFrame_CheckDead()
 	if ( (UnitHealth("target") <= 0) and UnitIsConnected("target") ) then
 		TargetDeadText:Show();
+		--TargetofTargetDeadText:Show();
 	else
 		TargetDeadText:Hide();
+		--TargetofTargetDeadText:Hide();
+	end
+end
+
+function TargetFrame_CheckDishonorableKill()
+	if ( UnitIsCivilian("target") ) then
+		-- Is a dishonorable kill
+		--[[
+		this.name:SetText(RED_FONT_COLOR_CODE..PVP_RANK_CIVILIAN..FONT_COLOR_CODE_CLOSE);
+		TargetFrameNameBackground:SetVertexColor(0.36, 0.05, 0.05);
+		]]--
+		TargetFrameNameBackground:SetVertexColor(1.0, 1.0, 1.0);
 	end
 end
 
@@ -257,75 +250,144 @@ function TargetFrame_OnClick(button)
 			DropItemOnUnit("target");
 		end
 	else
-		local menu = nil;
-		if ( UnitIsEnemy("target", "player") ) then
-			return;
-		end
-		if ( UnitIsUnit("target", "player") ) then
-			menu = "SELF";
-		elseif ( UnitIsUnit("target", "pet") ) then
-			if(PetCanBeAbandoned()) then
-				if(PetCanBeRenamed()) then
-					menu = "PET_RENAME";
-				else
-					menu = "PET";
-				end
-			else
-				menu = "PET_NOABANDON";
-			end
-		elseif ( UnitIsPlayer("target") ) then
-			if ( UnitInParty("target") ) then
-				menu = "PARTY";
-			else
-				menu = "PLAYER";
-			end
-		end
-		if ( menu ) then
-			UnitPopup_ShowMenu(this, menu, "target");
-			UnitPopup:ClearAllPoints();
-			UnitPopup:SetPoint("TOPLEFT", this:GetName(), "BOTTOMRIGHT", 6, 6);
-		end
+		ToggleDropDownMenu(1, nil, TargetFrameDropDown, "TargetFrame", 120, 10);
+	end
+end
+
+function TargetFrame_OnUpdate()
+	if ( TargetofTargetFrame:IsShown() ~= UnitExists("targettarget") ) then
+		TargetofTarget_Update();
 	end
 end
 
 function TargetDebuffButton_Update()
-	-- Position buffs depending on whether the targeted unit is friendly orno
-	if ( UnitIsFriend("player", "target") ) then
-		TargetFrameBuff1:SetPoint("TOPLEFT", "TargetFrame", "BOTTOMLEFT", 5, 32);
-		TargetFrameDebuff1:SetPoint("TOPLEFT", "TargetFrameBuff1", "BOTTOMLEFT", 0, -2);
-	else
-		TargetFrameDebuff1:SetPoint("TOPLEFT", "TargetFrame", "BOTTOMLEFT", 5, 32);
-		TargetFrameBuff1:SetPoint("TOPLEFT", "TargetFrameDebuff1", "BOTTOMLEFT", 0, -2);
-	end
-	
-	local debuff, debuffButton, buff, buffButton;
+	local buff, buffButton;
 	local button;
-	for i=1, MAX_TARGET_DEBUFFS do
+	local numBuffs = 0;
+
+	for i=1, MAX_TARGET_BUFFS do
 		buff = UnitBuff("target", i);
 		button = getglobal("TargetFrameBuff"..i);
 		if ( buff ) then
 			getglobal("TargetFrameBuff"..i.."Icon"):SetTexture(buff);
 			button:Show();
 			button.id = i;
+			numBuffs = numBuffs + 1; 
 		else
 			button:Hide();
 		end
 	end
+
+	local debuff, debuffButton, debuffStack, debuffType, color;
+	local debuffCount;
+	local numDebuffs = 0;
 	for i=1, MAX_TARGET_DEBUFFS do
-		debuff = UnitDebuff("target", i);
+
+		local debuffBorder = getglobal("TargetFrameDebuff"..i.."Border");
+		debuff, debuffStack, debuffType = UnitDebuff("target", i);
 		button = getglobal("TargetFrameDebuff"..i);
 		if ( debuff ) then
 			getglobal("TargetFrameDebuff"..i.."Icon"):SetTexture(debuff);
+			debuffCount = getglobal("TargetFrameDebuff"..i.."Count");
+			if ( debuffType ) then
+				color = DebuffTypeColor[debuffType];
+			else
+				color = DebuffTypeColor["none"];
+			end
+			if ( debuffStack > 1 ) then
+				debuffCount:SetText(debuffStack);
+				debuffCount:Show();
+			else
+				debuffCount:Hide();
+			end
+			debuffBorder:SetVertexColor(color.r, color.g, color.b);
 			button:Show();
+			numDebuffs = numDebuffs + 1;
 		else
 			button:Hide();
 		end
 		button.id = i;
 	end
+
+	local debuffFrame, debuffWrap, debuffSize, debuffFrameSize;
+	local targetofTarget = TargetofTargetFrame:IsShown();
+
+	if ( UnitIsFriend("player", "target") ) then
+		TargetFrameBuff1:SetPoint("TOPLEFT", "TargetFrame", "BOTTOMLEFT", 5, 32);
+		TargetFrameDebuff1:SetPoint("TOPLEFT", "TargetFrameBuff1", "BOTTOMLEFT", 0, -2);
+	else
+		TargetFrameDebuff1:SetPoint("TOPLEFT", "TargetFrame", "BOTTOMLEFT", 5, 32);
+		if ( targetofTarget ) then
+			if ( numDebuffs < 5 ) then
+				TargetFrameBuff1:SetPoint("TOPLEFT", "TargetFrameDebuff6", "BOTTOMLEFT", 0, -2);
+			elseif ( numDebuffs >= 5 and numDebuffs < 10  ) then
+				TargetFrameBuff1:SetPoint("TOPLEFT", "TargetFrameDebuff6", "BOTTOMLEFT", 0, -2);
+			elseif (  numDebuffs >= 10 ) then
+				TargetFrameBuff1:SetPoint("TOPLEFT", "TargetFrameDebuff11", "BOTTOMLEFT", 0, -2);
+			end
+		else
+			TargetFrameBuff1:SetPoint("TOPLEFT", "TargetFrameDebuff7", "BOTTOMLEFT", 0, -2);
+		end
+	end
+	
+	-- set the wrap point for the rows of de/buffs.
+	if ( targetofTarget ) then
+		debuffWrap = 5;
+	else
+		debuffWrap = 6;
+	end
+
+	-- and shrinks the debuffs if they begin to overlap the TargetFrame
+	if ( ( targetofTarget and ( numBuffs == 5 ) ) or ( numDebuffs >= debuffWrap ) ) then
+		debuffSize = 17;
+		debuffFrameSize = 19;
+	else
+		debuffSize = 21;
+		debuffFrameSize = 23;
+	end
+	
+	-- resize Buffs
+	for i=1, 5 do
+		button = getglobal("TargetFrameBuff"..i);
+		if ( button ) then
+			button:SetWidth(debuffSize);
+			button:SetHeight(debuffSize);
+		end
+	end
+
+	-- resize Debuffs
+	for i=1, 6 do
+		button = getglobal("TargetFrameDebuff"..i);
+		debuffFrame = getglobal("TargetFrameDebuff"..i.."Border");
+		if ( debuffFrame ) then
+			debuffFrame:SetWidth(debuffFrameSize);
+			debuffFrame:SetHeight(debuffFrameSize);
+		end
+		button:SetWidth(debuffSize);
+		button:SetHeight(debuffSize);
+	end
+
+	-- Reset anchors for debuff wrapping
+	getglobal("TargetFrameDebuff"..debuffWrap):ClearAllPoints();
+	getglobal("TargetFrameDebuff"..debuffWrap):SetPoint("LEFT", getglobal("TargetFrameDebuff"..(debuffWrap - 1)), "RIGHT", 3, 0);
+	getglobal("TargetFrameDebuff"..(debuffWrap + 1)):ClearAllPoints();
+	getglobal("TargetFrameDebuff"..(debuffWrap + 1)):SetPoint("TOPLEFT", "TargetFrameDebuff1", "BOTTOMLEFT", 0, -2);
+	getglobal("TargetFrameDebuff"..(debuffWrap + 2)):ClearAllPoints();
+	getglobal("TargetFrameDebuff"..(debuffWrap + 2)):SetPoint("LEFT", getglobal("TargetFrameDebuff"..(debuffWrap + 1)), "RIGHT", 3, 0);
+
+	-- Set anchor for the last row if debuffWrap is 5
+	if ( debuffWrap == 5 ) then
+		TargetFrameDebuff11:ClearAllPoints();
+		TargetFrameDebuff11:SetPoint("TOPLEFT", "TargetFrameDebuff6", "BOTTOMLEFT", 0, -2);
+	else
+		TargetFrameDebuff11:ClearAllPoints();
+		TargetFrameDebuff11:SetPoint("LEFT", "TargetFrameDebuff10", "RIGHT", 3, 0);
+	end
+
 end
 
-function TargetFrame_HealthUpdate(elapsed)
-	if ( UnitIsPlayer("target") ) then
+function TargetFrame_HealthUpdate(elapsed, unit)
+	if ( UnitIsPlayer(unit) ) then
 		if ( (this.unitHPPercent > 0) and (this.unitHPPercent <= 0.2) ) then
 			local alpha = 255;
 			local counter = this.statusCounter + elapsed;
@@ -363,7 +425,163 @@ function TargetHealthCheck()
 		else
 			TargetPortrait:SetVertexColor(1.0, 1.0, 1.0, 1.0);
 		end
-	else
-		TargetFrame_CheckFaction();
 	end
 end
+
+function TargetFrameDropDown_OnLoad()
+	UIDropDownMenu_Initialize(this, TargetFrameDropDown_Initialize, "MENU");
+end
+
+function TargetFrameDropDown_Initialize()
+	local menu;
+	local name;
+	if ( UnitIsUnit("target", "player") ) then
+		menu = "SELF";
+	elseif ( UnitIsUnit("target", "pet") ) then
+		menu = "PET";
+	elseif ( UnitIsPlayer("target") ) then
+		if ( UnitInParty("target") ) then
+			menu = "PARTY";
+		else
+			menu = "PLAYER";
+		end
+	else
+		menu = "RAID_TARGET_ICON";
+		name = RAID_TARGET_ICON;
+	end
+	if ( menu ) then
+		UnitPopup_ShowMenu(TargetFrameDropDown, menu, "target", name);
+	end
+end
+
+
+
+-- Raid target icon function
+RAID_TARGET_ICON_DIMENSION = 64;
+RAID_TARGET_TEXTURE_DIMENSION = 256;
+RAID_TARGET_TEXTURE_COLUMNS = 4;
+RAID_TARGET_TEXTURE_ROWS = 4;
+function TargetFrame_UpdateRaidTargetIcon()
+	local index = GetRaidTargetIndex("target");
+	if ( index ) then
+		SetRaidTargetIconTexture(TargetRaidTargetIcon, index);
+		TargetRaidTargetIcon:Show();
+	else
+		TargetRaidTargetIcon:Hide();
+	end
+end
+
+
+function SetRaidTargetIconTexture(texture, raidTargetIconIndex)
+	raidTargetIconIndex = raidTargetIconIndex - 1;
+	local left, right, top, bottom;
+	local coordIncrement = RAID_TARGET_ICON_DIMENSION / RAID_TARGET_TEXTURE_DIMENSION;
+	left = mod(raidTargetIconIndex , RAID_TARGET_TEXTURE_COLUMNS) * coordIncrement;
+	right = left + coordIncrement;
+	top = floor(raidTargetIconIndex / RAID_TARGET_TEXTURE_ROWS) * coordIncrement;
+	bottom = top + coordIncrement;
+	texture:SetTexCoord(left, right, top, bottom);
+end
+
+function SetRaidTargetIcon(unit, index)
+	if ( GetRaidTargetIndex(unit) and GetRaidTargetIndex(unit) == index ) then
+		SetRaidTarget(unit, 0);
+	else
+		SetRaidTarget(unit, index);
+	end
+end
+
+function TargetofTarget_OnUpdate(elapsed)
+	if ( CURRENT_TARGETTARGET ~= UnitName("targettarget") ) then
+		CURRENT_TARGETTARGET = UnitName("targettarget");
+		SetPortraitTexture(this.portrait, this.unit);
+		this.name:SetText(GetUnitName(this.unit));
+	end
+	TargetofTarget_Update();
+end
+
+function TargetofTarget_Update()
+	if ( UnitExists("target")  and  UnitExists("targettarget")  and ( not UnitIsUnit("player", "target") ) and ( UnitHealth("target") > 0 ) and SHOW_TARGET_OF_TARGET == "1" ) then
+		if ( ( SHOW_TARGET_OF_TARGET_STATE == "1")  and ( GetNumRaidMembers() > 0 ) ) then
+			TargetofTargetFrame:Show();
+		elseif ( SHOW_TARGET_OF_TARGET_STATE == "2")  then
+			if ( GetNumPartyMembers() ~= 0 and GetNumRaidMembers() == 0 ) then
+				TargetofTargetFrame:Show();
+			else
+				TargetofTargetFrame:Hide();
+			end
+		elseif ( SHOW_TARGET_OF_TARGET_STATE == "3") then
+			if ( GetNumRaidMembers() == 0 ) then
+				if ( GetNumPartyMembers() == 0 ) then
+					TargetofTargetFrame:Show();
+				else
+					TargetofTargetFrame:Hide();
+				end
+			end
+		elseif ( ( SHOW_TARGET_OF_TARGET_STATE == "4")  and ( ( GetNumRaidMembers() > 0 ) or  ( GetNumPartyMembers() > 0 ) ) ) then
+			TargetofTargetFrame:Show();
+		elseif ( ( SHOW_TARGET_OF_TARGET_STATE == "5") ) then
+			TargetofTargetFrame:Show();
+		else
+			TargetofTargetFrame:Hide();
+		end
+	else
+		TargetofTargetFrame:Hide();
+	end
+
+	if ( TargetofTargetFrame:IsShown() ) then
+		UnitFrameHealthBar_Update(this.healthbar, this.unit);
+		UnitFrameManaBar_Update(this.manabar, this.unit);
+		TargetofTarget_CheckDead();
+		TargetofTargetPortrait:SetAlpha(1.0);
+		TargetDebuffButton_Update();
+		RefreshBuffs(this, 0, "targettarget");
+	end
+end
+
+
+function TargetofTarget_OnClick(button)
+	if ( SpellIsTargeting() and button == "RightButton" ) then
+		SpellStopTargeting();
+		return;
+	end
+	if ( button == "LeftButton" ) then
+		if ( SpellIsTargeting() ) then
+			SpellTargetUnit("targettarget");
+		elseif ( CursorHasItem() ) then
+			DropItemOnUnit("targettarget");
+		else
+			TargetUnit("targettarget");
+		end
+	end
+end
+
+function TargetofTarget_CheckDead()
+	if ( (UnitHealth("targettarget") <= 0) and UnitIsConnected("targettarget") ) then
+		TargetofTargetBackground:SetAlpha(0.9);
+		TargetofTargetDeadText:Show();
+	else
+		TargetofTargetBackground:SetAlpha(1);
+		TargetofTargetDeadText:Hide();
+	end
+end
+
+function TargetofTargetHealthCheck()
+	if ( UnitIsPlayer("targettarget") ) then
+		local unitMinHP, unitMaxHP, unitCurrHP;
+		unitHPMin, unitHPMax = this:GetMinMaxValues();
+		unitCurrHP = this:GetValue();
+		this:GetParent().unitHPPercent = unitCurrHP / unitHPMax;
+		if ( UnitIsDead("targettarget") ) then
+			TargetofTargetPortrait:SetVertexColor(0.35, 0.35, 0.35, 1.0);
+		elseif ( UnitIsGhost("targettarget") ) then
+			TargetofTargetPortrait:SetVertexColor(0.2, 0.2, 0.75, 1.0);
+		elseif ( (this:GetParent().unitHPPercent > 0) and (this:GetParent().unitHPPercent <= 0.2) ) then
+			TargetofTargetPortrait:SetVertexColor(1.0, 0.0, 0.0);
+		else
+			TargetofTargetPortrait:SetVertexColor(1.0, 1.0, 1.0, 1.0);
+		end
+	end
+end
+
+

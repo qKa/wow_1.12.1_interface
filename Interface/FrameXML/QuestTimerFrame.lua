@@ -43,3 +43,23 @@ function QuestTimerButton_OnClick()
 	QuestLog_SetSelection(GetQuestIndexForTimer(this:GetID()));
 	QuestLog_Update();
 end
+
+function QuestTimerFrame_OnShow()
+	UIParent_ManageFramePositions();
+end
+
+function QuestTimerFrame_OnHide()
+	UIParent_ManageFramePositions();
+end
+
+--[[
+function QuestTimerFrame_UpdatePosition()
+	if ( MultiBarLeft:IsVisible() ) then
+		QuestTimerFrame:SetPoint("TOP", "MinimapCluster", "BOTTOM", -75, 0);
+	elseif ( MultiBarRight:IsVisible() ) then
+		QuestTimerFrame:SetPoint("TOP", "MinimapCluster", "BOTTOM", -30, 0);
+	else
+		QuestTimerFrame:SetPoint("TOP", "MinimapCluster", "BOTTOM", 10, 0);
+	end
+end
+]]

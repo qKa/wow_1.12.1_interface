@@ -1,6 +1,6 @@
 MAX_SPELLS = 1024;
 MAX_SKILLLINE_TABS = 8;
-SPELLS_PER_PAGE = 14;
+SPELLS_PER_PAGE = 12;
 MAX_SPELL_PAGES = ceil(MAX_SPELLS / SPELLS_PER_PAGE);
 BOOKTYPE_SPELL = "spell";
 BOOKTYPE_PET = "pet";
@@ -20,6 +20,21 @@ function ToggleSpellBook(bookType)
 			ShowUIPanel(SpellBookFrame);
 		end
 		local currentPage, maxPages = SpellBook_GetCurrentPage();
+		if ( currentPage > maxPages ) then
+			SPELLBOOK_PAGENUMBERS[SpellBookFrame.selectedSkillLine] = maxPages;
+			currentPage = maxPages;
+			UpdateSpells();
+			if ( currentPage == 1 ) then
+				SpellBookPrevPageButton:Disable();
+			else
+				SpellBookPrevPageButton:Enable();
+			end
+			if ( currentPage == maxPages ) then
+				SpellBookNextPageButton:Disable();
+			else
+				SpellBookNextPageButton:Enable();
+			end
+		end
 		if ( currentPage == 1 ) then
 			SpellBookPrevPageButton:Disable();
 		else
@@ -36,7 +51,8 @@ end
 
 function SpellBookFrame_OnLoad()
 	this:RegisterEvent("SPELLS_CHANGED");
-	
+	this:RegisterEvent("LEARNED_SPELL_IN_TAB");
+
 	SpellBookFrame.bookType = BOOKTYPE_SPELL;
 	-- Init page nums
 	SPELLBOOK_PAGENUMBERS[1] = 1;
@@ -51,17 +67,41 @@ function SpellBookFrame_OnLoad()
 	
 	-- Set to the first tab by default
 	SpellBookSkillLineTab_OnClick(1);
+
+	-- Initialize tab flashing
+	SpellBookFrame.flashTabs = nil;
 end
 
 function SpellBookFrame_OnEvent()
-	if ( event == "SPELLS_CHANGED" and SpellBookFrame:IsVisible() ) then
-		SpellBookFrame_Update();
+	if ( event == "SPELLS_CHANGED" ) then
+		if ( SpellBookFrame:IsVisible() ) then
+			SpellBookFrame_Update();
+			SpellBook_UpdatePageArrows();
+		end
+	elseif ( event == "LEARNED_SPELL_IN_TAB" ) then
+		local flashFrame = getglobal("SpellBookSkillLineTab"..arg1.."Flash");
+		if ( SpellBookFrame.bookType == BOOKTYPE_PET ) then
+			return;
+		else
+			if ( flashFrame ) then
+				flashFrame:Show();
+				SpellBookFrame.flashTabs = 1;
+			end
+		end
 	end
 end
 
 function SpellBookFrame_OnShow()
 	UpdateMicroButtons();
 	SpellBookFrame_Update(1);
+	
+	-- If there are tabs waiting to flash, then flash them... yeah..
+	if ( SpellBookFrame.flashTabs ) then
+		UIFrameFlash(SpellBookTabFlashFrame, 0.5, 0.5, 30, nil);
+	end
+
+	-- Show multibar slots
+	MultiActionBar_ShowAllGrids();
 end
 
 function SpellBookFrame_Update(showing)
@@ -71,6 +111,11 @@ function SpellBookFrame_Update(showing)
 	SpellBookFrameTabButton3:Hide();
 	
 	-- Setup skillline tabs
+	if ( showing ) then
+		SpellBookSkillLineTab_OnClick(SpellBookFrame.selectedSkillLine);
+		UpdateSpells();
+	end
+
 	local numSkillLineTabs = GetNumSpellTabs();
 	local name, texture, offset, numSpells;
 	local skillLineTab;
@@ -146,6 +191,16 @@ function SpellBookFrame_OnHide()
 		PlaySound("igAbilityClose");
 	end
 	UpdateMicroButtons();
+
+	-- Stop the flash frame from flashing if its still flashing.. flash flash flash
+	UIFrameFlashRemoveFrame(SpellBookTabFlashFrame);
+	-- Hide all the flashing textures
+	for i=1, MAX_SKILLLINE_TABS do
+		getglobal("SpellBookSkillLineTab"..i.."Flash"):Hide();
+	end
+
+	-- Hide multibar slots
+	MultiActionBar_HideAllGrids();
 end
 
 function SpellButton_OnLoad() 
@@ -156,6 +211,7 @@ function SpellButton_OnLoad()
 	this:RegisterEvent("CRAFT_CLOSE");
 	this:RegisterEvent("TRADE_SKILL_SHOW");
 	this:RegisterEvent("TRADE_SKILL_CLOSE");
+	this:RegisterEvent("PET_BAR_UPDATE");
 	this:RegisterForDrag("LeftButton");
 	this:RegisterForClicks("LeftButtonUp", "RightButtonUp");
 	SpellButton_UpdateButton();
@@ -168,7 +224,10 @@ function SpellButton_OnEvent(event)
 		SpellButton_UpdateSelection();
 	elseif ( event == "CRAFT_SHOW" or event == "CRAFT_CLOSE" or event == "TRADE_SKILL_SHOW" or event == "TRADE_SKILL_CLOSE" ) then
 		SpellButton_UpdateSelection();
-		return;
+	elseif ( event == "PET_BAR_UPDATE" ) then
+		if ( SpellBookFrame.bookType == BOOKTYPE_PET ) then
+			SpellButton_UpdateButton();
+		end
 	end
 
 end
@@ -208,9 +267,9 @@ function SpellButton_OnClick(drag)
 	end
 	this:SetChecked("false");
 	if ( drag ) then
-		PickupSpell(id, SpellBookFrame.bookType );
+		PickupSpell(id, SpellBookFrame.bookType);
 	elseif ( IsShiftKeyDown() ) then
-		if ( MacroFrame:IsVisible() ) then
+		if ( MacroFrame and MacroFrame:IsVisible() ) then
 			local spellName, subSpellName = GetSpellName(id, SpellBookFrame.bookType);
 			if ( spellName and not IsSpellPassive(id, SpellBookFrame.bookType) ) then
 				if ( subSpellName and (strlen(subSpellName) > 0) ) then
@@ -222,6 +281,8 @@ function SpellButton_OnClick(drag)
 		else
 			PickupSpell(id, SpellBookFrame.bookType );
 		end
+	elseif ( arg1 ~= "LeftButton" and SpellBookFrame.bookType == BOOKTYPE_PET ) then
+		ToggleSpellAutocast(id, SpellBookFrame.bookType);
 	else
 		CastSpell(id, SpellBookFrame.bookType);
 		SpellButton_UpdateSelection();
@@ -229,7 +290,13 @@ function SpellButton_OnClick(drag)
 end
 
 function SpellButton_UpdateSelection()
+	local temp, texture, offset, numSpells = GetSpellTabInfo(SpellBookFrame.selectedSkillLine);
 	local id = SpellBook_GetSpellID(this:GetID());
+	if ( (SpellBookFrame.bookType ~= BOOKTYPE_PET) and (id > (offset + numSpells)) ) then
+		this:SetChecked("false");
+		return;
+	end
+
 	if ( IsCurrentCast(id,  SpellBookFrame.bookType) ) then
 		this:SetChecked("true");
 	else
@@ -249,24 +316,30 @@ function SpellButton_UpdateButton()
 		SpellBookFrame.selectedSkillLine = 1;
 	end
 	local temp, texture, offset, numSpells = GetSpellTabInfo(SpellBookFrame.selectedSkillLine);
+	SpellBookFrame.selectedSkillLineOffset = offset;
 	local id = SpellBook_GetSpellID(this:GetID());
 	local name = this:GetName();
-	local texture;
 	local iconTexture = getglobal(name.."IconTexture");
 	local spellString = getglobal(name.."SpellName");
 	local subSpellString = getglobal(name.."SubSpellName");
 	local cooldown = getglobal(name.."Cooldown");
+	local autoCastableTexture = getglobal(name.."AutoCastable");
+	local autoCastModel = getglobal(name.."AutoCast");
 	if ( (SpellBookFrame.bookType ~= BOOKTYPE_PET) and (id > (offset + numSpells)) ) then
 		this:Disable();
 		iconTexture:Hide();
 		spellString:Hide();
 		subSpellString:Hide();
 		cooldown:Hide();
+		autoCastableTexture:Hide();
+		autoCastModel:Hide();
+		this:SetChecked(0);
+		getglobal(name.."NormalTexture"):SetVertexColor(1.0, 1.0, 1.0);
 		return;
 	else
 		this:Enable();
 	end
-	texture = GetSpellTexture(id, SpellBookFrame.bookType);
+	local texture = GetSpellTexture(id, SpellBookFrame.bookType);
 	local highlightTexture = getglobal(name.."Highlight");
 	local normalTexture = getglobal(name.."NormalTexture");
 	-- If no spell, hide everything and return
@@ -275,6 +348,8 @@ function SpellButton_UpdateButton()
 		spellString:Hide();
 		subSpellString:Hide();
 		cooldown:Hide();
+		autoCastableTexture:Hide();
+		autoCastModel:Hide();
 		highlightTexture:SetTexture("Interface\\Buttons\\ButtonHilight-Square");
 		this:SetChecked(0);
 		normalTexture:SetVertexColor(1.0, 1.0, 1.0);
@@ -288,14 +363,26 @@ function SpellButton_UpdateButton()
 	else
 		iconTexture:SetVertexColor(0.4, 0.4, 0.4);
 	end
-	
+
+	local autoCastAllowed, autoCastEnabled = GetSpellAutocast(id, SpellBookFrame.bookType);
+	if ( autoCastAllowed ) then
+		autoCastableTexture:Show();
+	else
+		autoCastableTexture:Hide();
+	end
+	if ( autoCastEnabled ) then
+		autoCastModel:Show();
+	else
+		autoCastModel:Hide();
+	end
+
 	local spellName, subSpellName = GetSpellName(id, SpellBookFrame.bookType);
 	local isPassive = IsSpellPassive(id, SpellBookFrame.bookType);
 	if ( isPassive ) then
 		normalTexture:SetVertexColor(0, 0, 0);
 		highlightTexture:SetTexture("Interface\\Buttons\\UI-PassiveHighlight");
 		--subSpellName = TEXT(PASSIVE_PARENS);
-		spellString:SetTextColor(0.77, 0.64, 0);
+		spellString:SetTextColor(PASSIVE_SPELL_FONT_COLOR.r, PASSIVE_SPELL_FONT_COLOR.g, PASSIVE_SPELL_FONT_COLOR.b);
 	else
 		normalTexture:SetVertexColor(1.0, 1.0, 1.0);
 		highlightTexture:SetTexture("Interface\\Buttons\\ButtonHilight-Square");
@@ -305,9 +392,9 @@ function SpellButton_UpdateButton()
 	spellString:SetText(spellName);
 	subSpellString:SetText(subSpellName);
 	if ( subSpellName ~= "" ) then
-		spellString:SetPoint("LEFT", this:GetName(), "RIGHT", 4, 7);
+		spellString:SetPoint("LEFT", this, "RIGHT", 4, 4);
 	else
-		spellString:SetPoint("LEFT", this:GetName(), "RIGHT", 4, 2);
+		spellString:SetPoint("LEFT", this, "RIGHT", 4, 2);
 	end
 
 	iconTexture:Show();
@@ -361,6 +448,11 @@ function SpellBookSkillLineTab_OnClick(id)
 	SpellBookPageText:SetText(format(TEXT(PAGE_NUMBER), SpellBook_GetCurrentPage()));
 	if ( update ) then
 		UpdateSpells();
+	end
+	-- Stop tab flashing
+	local tabFlash = getglobal(this:GetName().."Flash");
+	if ( tabFlash ) then
+		tabFlash:Hide();
 	end
 end
 

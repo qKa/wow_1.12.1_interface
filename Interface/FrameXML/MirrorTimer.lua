@@ -81,7 +81,7 @@ function MirrorTimerFrame_OnEvent()
 		this:Hide();
 		this.timer = nil;
 	end
-	if ( not this:IsVisible() or (arg1 ~= this.timer) ) then
+	if ( not this:IsShown() or (arg1 ~= this.timer) ) then
 		return;
 	end
 	if ( event == "MIRROR_TIMER_PAUSE" ) then
@@ -98,11 +98,11 @@ function MirrorTimerFrame_OnEvent()
 	end
 end
 
-function MirrorTimerFrame_OnUpdate(elapsed)
-	if ( this.paused ) then
+function MirrorTimerFrame_OnUpdate(frame, elapsed)
+	if ( frame.paused ) then
 		return;
 	end
-	local statusbar = getglobal(this:GetName().."StatusBar");
-	this.value = (this.value + this.scale * elapsed);
-	statusbar:SetValue(this.value);
+	local statusbar = getglobal(frame:GetName().."StatusBar");
+	frame.value = (frame.value + frame.scale * elapsed);
+	statusbar:SetValue(frame.value);
 end

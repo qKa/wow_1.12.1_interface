@@ -91,7 +91,7 @@ end
 function CharacterCreateFrame_OnMouseDown(button)
 	if ( button == "LeftButton" ) then
 		CHARACTER_CREATE_ROTATION_START_X = GetCursorPosition();
-		CHARACTER_CREATE_ROTATION_START_X = GetCharacterCreateFacing();
+		CHARACTER_CREATE_INITIAL_FACING = GetCharacterCreateFacing();
 	end
 end
 
@@ -178,14 +178,14 @@ function SetCharacterRace(id)
 
 	--twain SetSelectedRace(id);
 	-- Set Faction
-	local temp, faction = GetFactionForRace();
+	local name, faction = GetFactionForRace();
 	if ( faction == "Alliance" ) then
 		CharacterCreateFactionIcon:SetTexCoord(0, 0.5, 0, 1.0);
 	else
 		CharacterCreateFactionIcon:SetTexCoord(0.5, 1.0, 0, 1.0);
 	end
 	CharacterCreateFactionScrollFrameScrollBar:SetValue(0);
-	CharacterCreateFactionLabel:SetText(faction);
+	CharacterCreateFactionLabel:SetText(name);
 	CharacterCreateFactionText:SetText(getglobal("FACTION_INFO_"..strupper(faction)));
 	CharacterCreateFactionScrollFrame:UpdateScrollChildRect();
 	--CharacterCreateCharacterFaction:SetHeight(CharacterCreateFactionText:GetHeight() + 40);
@@ -202,12 +202,24 @@ function SetCharacterRace(id)
 	local coords = RACE_ICON_TCOORDS[fileString.."_"..gender];
 	CharacterCreateRaceIcon:SetTexCoord(coords[1], coords[2], coords[3], coords[4]);
 	local raceText = getglobal("RACE_INFO_"..fileString);
-	local abilityText = getglobal("ABILITY_INFO_"..fileString);
+	local abilityIndex = 1;
+	local tempText = getglobal("ABILITY_INFO_"..fileString..abilityIndex);
+	abilityText = "";
+	while ( tempText ) do
+		abilityText = abilityText..tempText..
+		"\n\n";
+		abilityIndex = abilityIndex + 1;
+		tempText = getglobal("ABILITY_INFO_"..fileString..abilityIndex);
+	end
+
+
 	CharacterCreateRaceScrollFrameScrollBar:SetValue(0);
 	if ( abilityText and abilityText ~= "" ) then
-		CharacterCreateRaceText:SetText(getglobal("RACE_INFO_"..fileString).."\n\n"..getglobal("ABILITY_INFO_"..fileString).."\n\n");
+		CharacterCreateRaceText:SetText(getglobal("RACE_INFO_"..fileString));
+		CharacterCreateRaceAbilityText:SetText(abilityText);
 	else
 		CharacterCreateRaceText:SetText(getglobal("RACE_INFO_"..fileString));
+		CharacterCreateRaceAbilityText:SetText("");
 	end
 	CharacterCreateRaceScrollFrame:UpdateScrollChildRect();
 	--CharacterCreateCharacterRace:SetHeight(CharacterCreateRaceText:GetHeight() + 40);

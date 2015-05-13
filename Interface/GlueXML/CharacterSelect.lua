@@ -15,21 +15,16 @@ function CharacterSelect_OnLoad()
 	this.selectedIndex = 0;
 	this.selectLast = 0;
 	this.currentModel = "";
+	this:RegisterEvent("ADDON_LIST_UPDATE");
 	this:RegisterEvent("CHARACTER_LIST_UPDATE");
 	this:RegisterEvent("UPDATE_SELECTED_CHARACTER");
 	this:RegisterEvent("SELECT_LAST_CHARACTER");
 	this:RegisterEvent("SELECT_FIRST_CHARACTER");
 	this:RegisterEvent("SUGGEST_REALM");
+	this:RegisterEvent("FORCE_RENAME_CHARACTER");
 
-	-- Hack to preload models...
-	CharacterSelect:SetModel("Interface\\Glues\\Models\\UI_Scourge\\UI_Scourge.mdx");
-	CharacterSelect:SetModel("Interface\\Glues\\Models\\UI_Dwarf\\UI_Dwarf.mdx");
-	CharacterSelect:SetModel("Interface\\Glues\\Models\\UI_NightElf\\UI_NightElf.mdx");
-	CharacterSelect:SetModel("Interface\\Glues\\Models\\UI_Tauren\\UI_Tauren.mdx");
-	CharacterSelect:SetModel("Interface\\Glues\\Models\\UI_Human\\UI_Human.mdx");
 	CharacterSelect:SetModel("Interface\\Glues\\Models\\UI_Orc\\UI_Orc.mdx");
 
---	CharacterSelect:ClearModel();
 	local fogInfo = CharModelFogInfo["ORC"];
 	CharacterSelect:SetFogColor(fogInfo.r, fogInfo.g, fogInfo.b);
 	CharacterSelect:SetFogNear(0);
@@ -48,27 +43,108 @@ end
 function CharacterSelect_OnShow()
 	CurrentGlueMusic = "Sound\\Music\\GlueScreenMusic\\wow_main_theme.mp3";
 
-	local serverName = GetServerName();
+	UpdateAddonButton();
+
+	local serverName, isPVP, isRP = GetServerName();
 	local connected = IsConnectedToServer();
+	local serverType = "";
 	if ( serverName ) then
 		if( not connected ) then
 			serverName = serverName.."\n("..TEXT(SERVER_DOWN)..")";
 		end
-		CharSelectRealmName:SetText(serverName);
+		if ( isPVP ) then
+			if ( isRP ) then
+				serverType = RPPVP_PARENTHESES;
+			else
+				serverType = PVP_PARENTHESES;
+			end
+		elseif ( isRP ) then
+			serverType = RP_PARENTHESES;
+		end
+		CharSelectRealmName:SetText(serverName.." "..serverType);
 		CharSelectRealmName:Show();
 	else
 		CharSelectRealmName:Hide();
 	end
 
-	
 	if ( connected ) then
 		GetCharacterListUpdate();
 	else
 		UpdateCharacterList();
 	end
 
+	-- Gameroom billing stuff (For Korea and China only)
+	if ( SHOW_GAMEROOM_BILLING_FRAME ) then
+		local paymentPlan, hasFallBackBillingMethod, isGameRoom = GetBillingPlan();
+		if ( paymentPlan == 0 ) then
+			-- No payment plan
+			GameRoomBillingFrame:Hide();
+		else
+			local billingTimeLeft = GetBillingTimeRemaining();
+			-- Set default text for the payment plan
+			local billingText = getglobal("BILLING_TEXT"..paymentPlan);
+			if ( paymentPlan == 1 ) then
+				-- Recurring account
+				billingTimeLeft = ceil(billingTimeLeft/(60 * 24));
+				if ( billingTimeLeft == 1 ) then
+					billingText = BILLING_TIME_LEFT_LAST_DAY;
+				end
+			elseif ( paymentPlan == 2 ) then
+				-- Free account
+				if ( billingTimeLeft < (24 * 60) ) then
+					billingText = format(BILLING_FREE_TIME_EXPIRE, billingTimeLeft.." "..GetText("MINUTES_ABBR", nil, billingTimeLeft));
+				end				
+			elseif ( paymentPlan == 3 ) then
+				-- Fixed but not recurring
+				if ( isGameRoom == 1 ) then
+					if ( billingTimeLeft <= 30 ) then
+						billingText = BILLING_GAMEROOM_EXPIRE;
+					else
+						billingText = format(BILLING_FIXED_IGR, MinutesToTime(billingTimeLeft, 1));
+					end
+				else
+					-- personal fixed plan
+					if ( billingTimeLeft < (24 * 60) ) then
+						billingText = BILLING_FIXED_LASTDAY;
+					else
+						billingText = format(billingText, MinutesToTime(billingTimeLeft));
+					end	
+				end
+			elseif ( paymentPlan == 4 ) then
+				-- Usage plan
+				if ( isGameRoom == 1 ) then
+					-- game room usage plan
+					if ( billingTimeLeft <= 600 ) then
+						billingText = BILLING_GAMEROOM_EXPIRE;
+					else
+						billingText = BILLING_IGR_USAGE;
+					end
+				else
+					-- personal usage plan
+					if ( billingTimeLeft <= 30 ) then
+						billingText = BILLING_TIME_LEFT_30_MINS;
+					else
+						billingText = format(billingText, billingTimeLeft);
+					end
+				end
+			end
+			-- If fallback payment method add a note that says so
+			if ( hasFallBackBillingMethod == 1 ) then
+				billingText = billingText.."\n\n"..BILLING_HAS_FALLBACK_PAYMENT;
+			end
+			GameRoomBillingFrameText:SetText(billingText);
+			GameRoomBillingFrame:SetHeight(GameRoomBillingFrameText:GetHeight() + 26);
+			GameRoomBillingFrame:Show();
+		end
+	end
+
 	-- fadein the character select ui
 	GlueFrameFadeIn(CharacterSelectUI, CHARACTER_SELECT_FADE_IN)
+end
+
+function CharacterSelect_OnHide()
+	CharacterDeleteDialog:Hide();
+	CharacterRenameDialog:Hide();
 end
 
 function CharacterSelect_OnKeyDown()
@@ -100,7 +176,9 @@ function CharacterSelect_OnKeyDown()
 end
 
 function CharacterSelect_OnEvent()
-	if ( event == "CHARACTER_LIST_UPDATE" ) then
+	if ( event == "ADDON_LIST_UPDATE" ) then
+		UpdateAddonButton();
+	elseif ( event == "CHARACTER_LIST_UPDATE" ) then
 		UpdateCharacterList();
 		CharSelectCharacterName:SetText(GetCharacterInfo(this.selectedIndex));
 	elseif ( event == "UPDATE_SELECTED_CHARACTER" ) then
@@ -121,6 +199,9 @@ function CharacterSelect_OnEvent()
 		RealmWizard.suggestedCategory = arg1;
 		RealmWizard.suggestedID = arg2;
 		GlueDialog_Show("SUGGEST_REALM");
+	elseif ( event == "FORCE_RENAME_CHARACTER" ) then
+		CharacterRenameDialog:Show();
+		CharacterRenameText1:SetText(getglobal(arg1));
 	end
 end
 
@@ -145,7 +226,7 @@ function UpdateCharacterList()
 	local index = 1;
 	local coords;
 	for i=1, numChars, 1 do
-		local name, race, class, level, zone, fileString, gender = GetCharacterInfo(i);
+		local name, race, class, level, zone, fileString, gender, ghost = GetCharacterInfo(i);
 		if ( gender == 0 ) then
 			gender = "MALE";
 		else
@@ -159,7 +240,11 @@ function UpdateCharacterList()
 				zone = "";
 			end
 			getglobal("CharSelectCharacterButton"..index.."ButtonTextName"):SetText(name);
-			getglobal("CharSelectCharacterButton"..index.."ButtonTextInfo"):SetText(format(TEXT(CHARACTER_SELECT_INFO), level, class));
+			if( ghost ) then
+				getglobal("CharSelectCharacterButton"..index.."ButtonTextInfo"):SetText(format(TEXT(CHARACTER_SELECT_INFO_GHOST), level, class));
+			else
+				getglobal("CharSelectCharacterButton"..index.."ButtonTextInfo"):SetText(format(TEXT(CHARACTER_SELECT_INFO), level, class));
+			end
 			getglobal("CharSelectCharacterButton"..index.."ButtonTextLocation"):SetText(zone);
 		end
 		button:Show();
@@ -189,7 +274,7 @@ function UpdateCharacterList()
 			if ( connected ) then
 				--If can create characters position and show the create button
 				CharSelectCreateCharacterButton:SetID(index);
-				--CharSelectCreateCharacterButton:SetPoint("TOP", button:GetName(), "TOP", 0, -5);
+				--CharSelectCreateCharacterButton:SetPoint("TOP", button, "TOP", 0, -5);
 				CharSelectCreateCharacterButton:Show();	
 			end
 		end
@@ -288,11 +373,6 @@ function CharacterSelect_TechSupport()
 	LaunchURL(TEXT(TECH_SUPPORT_URL));
 end
 
-function CharacterSelect_WebSite()
-	PlaySound("gsCharacterSelectionAcctOptions");
-	LaunchURL(TEXT(WOW_WEBSITE_URL));
-end
-
 function CharacterSelect_Delete()
 	PlaySound("gsCharacterSelectionDelCharacter");
 	if ( CharacterSelect.selectedIndex > 0 ) then
@@ -337,4 +417,9 @@ function CharacterSelectRotateLeft_OnUpdate()
 	if ( this:GetButtonState() == "PUSHED" ) then
 		SetCharacterSelectFacing(GetCharacterSelectFacing() - CHARACTER_FACING_INCREMENT);
 	end
+end
+
+function CharacterSelect_ManageAccount()
+	PlaySound("gsCharacterSelectionAcctOptions");
+	LaunchURL(TEXT(AUTH_NO_TIME_URL));
 end

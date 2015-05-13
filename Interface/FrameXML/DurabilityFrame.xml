@@ -1,12 +1,12 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="DurabilityFrame.lua"/>
-	<Frame name="DurabilityFrame" parent="UIParent" frameStrata="LOW" enableMouse="true" hidden="false">
+	<Frame name="DurabilityFrame" parent="UIParent" frameStrata="LOW" hidden="false">
 		<Size>
-			<AbsDimension x="10" y="10"/>
+			<AbsDimension x="60" y="65"/>
 		</Size>
 		<Anchors>
-			<Anchor point="TOP" relativeTo="MinimapCluster" relativePoint="BOTTOM">
+			<Anchor point="TOPRIGHT" relativeTo="MinimapCluster" relativePoint="BOTTOMRIGHT">
 				<Offset>
 					<AbsDimension x="40" y="15"/>
 				</Offset>
@@ -140,6 +140,19 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Anchors>
 					<TexCoords left="0.1875" right="0.375" top="0.3203125" bottom="0.5546875"/>
 				</Texture>
+				<Texture name="DurabilityOffWeapon" file="Interface\Durability\UI-Durability-Icons" hidden="true">
+					<Size>
+						<AbsDimension x="20" y="45"/>
+					</Size>
+					<Anchors>
+						<Anchor point="LEFT" relativeTo="DurabilityWrists" relativePoint="RIGHT">
+							<Offset>
+								<AbsDimension x="0" y="-6"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0" right="0.140625" top="0.3203125" bottom="0.6640625"/>
+				</Texture>
 				<Texture name="DurabilityRanged" file="Interface\Durability\UI-Durability-Icons">
 					<Size>
 						<AbsDimension x="28" y="38"/>
@@ -159,12 +172,20 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<OnLoad>
 				this:SetFrameLevel(this:GetFrameLevel() - 1);
 				this:RegisterEvent("UPDATE_INVENTORY_ALERTS");
+				this:RegisterEvent("PLAYER_ENTERING_WORLD");
 			</OnLoad>
 			<OnEvent>
-				if ( event == "UPDATE_INVENTORY_ALERTS" ) then
-					DurabilityFrame_SetAlerts();
-				end
+				DurabilityFrame_SetAlerts();
 			</OnEvent>
+			<OnUpdate>
+				DurabilityFrame_OnUpdate(arg1);
+			</OnUpdate>
+			<OnShow>
+				UIParent_ManageFramePositions();
+			</OnShow>
+			<OnHide>
+				UIParent_ManageFramePositions();
+			</OnHide>
 		</Scripts>
 	</Frame>
 </Ui>

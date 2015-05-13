@@ -1,6 +1,5 @@
-<!-- edited with XMLSPY v5 rel. 4 U (http://www.xmlspy.com) by Sam Lantinga (Blizzard Entertainment) -->
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="ComboFrame.lua"/>
 	<Frame name="ComboPointTemplate" virtual="true">
 		<Size>
@@ -50,14 +49,14 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</Layer>
 		</Layers>
 	</Frame>
-	<Frame name="ComboFrame" frameStrata="MEDIUM" toplevel="true" movable="true" parent="UIParent" hidden="true" alpha="0">
+	<Frame name="ComboFrame" frameStrata="MEDIUM" toplevel="true" parent="UIParent" hidden="true" alpha="0">
 		<Size>
 			<AbsDimension x="256" y="32"/>
 		</Size>
 		<Anchors>
 			<Anchor point="TOPRIGHT" relativeTo="TargetFrame">
 				<Offset>
-					<AbsDimension x="-41" y="-6"/>
+					<AbsDimension x="-44" y="-9"/>
 				</Offset>
 			</Anchor>
 		</Anchors>

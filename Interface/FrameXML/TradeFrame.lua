@@ -8,7 +8,6 @@ function TradeFrame_OnLoad()
 	this:RegisterEvent("TRADE_TARGET_ITEM_CHANGED");
 	this:RegisterEvent("TRADE_PLAYER_ITEM_CHANGED");
 	this:RegisterEvent("TRADE_ACCEPT_UPDATE");
-	this:RegisterEvent("TRADE_MONEY_CHANGED");
 end
 
 function TradeFrame_OnShow()
@@ -19,6 +18,11 @@ end
 function TradeFrame_OnEvent()
 	if ( event == "TRADE_SHOW" or event == "TRADE_UPDATE" ) then
 		ShowUIPanel(this, 1);
+		if ( not this:IsVisible() ) then
+			CloseTrade();
+			return;
+		end
+
 		TradeFrameTradeButton:Enable();
 		TradeFrame_Update();
 	elseif ( event == "TRADE_CLOSED" ) then
@@ -150,17 +154,20 @@ function TradeFrame_OnMouseUp()
 		if ( slot ) then
 			ClickTradeButton(slot);
 		end
+	else
+		MoneyInputFrame_ClearFocus(TradePlayerInputMoneyFrame);
 	end
 end
 
 function TradeFrame_UpdateMoney()
 	local copper = MoneyInputFrame_GetCopper(TradePlayerInputMoneyFrame);
-	
-	if ( copper > GetMoney() ) then
-		MoneyInputFrame_SetTextColor(TradePlayerInputMoneyFrame, RED_FONT_COLOR.r, RED_FONT_COLOR.g, RED_FONT_COLOR.b);
+	if ( copper > GetMoney() - GetCursorMoney() ) then
+		copper = GetPlayerTradeMoney();
+		MoneyInputFrame_SetCopper(TradePlayerInputMoneyFrame, copper);
+		--MoneyInputFrame_SetTextColor(TradePlayerInputMoneyFrame, RED_FONT_COLOR.r, RED_FONT_COLOR.g, RED_FONT_COLOR.b);
 		TradeFrameTradeButton:Disable();
 	else
-		MoneyInputFrame_SetTextColor(TradePlayerInputMoneyFrame, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
+		--MoneyInputFrame_SetTextColor(TradePlayerInputMoneyFrame, HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
 		TradeFrameTradeButton:Enable();
 	end
 	SetTradeMoney(copper);

@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="TradeFrame.lua"/>
 	<Frame name="TradeHighlightTemplate" hidden="false" virtual="true">
 		<Layers>
@@ -18,7 +18,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						<AbsDimension x="161" y="16"/>
 					</Size>
 					<Anchors>
-						<Anchor point="BottomLeft"/>
+						<Anchor point="BOTTOMLEFT"/>
 					</Anchors>
 					<TexCoords left="0" right="0.62890625" top="0.9375" bottom="1.0"/>
 				</Texture>
@@ -35,7 +35,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</Layer>
 		</Layers>
 	</Frame>
-	<Frame name="TradeItemTemplate" virtual="true">	
+	<Frame name="TradeItemTemplate" virtual="true">
 		<Size>
 			<AbsDimension x="153" y="37"/>
 		</Size>
@@ -80,7 +80,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</Layer>
 		</Layers>
 	</Frame>
-	<Frame name="RecipientTradeItemTemplate" inherits="TradeItemTemplate" virtual="true">	
+	<Frame name="RecipientTradeItemTemplate" inherits="TradeItemTemplate" virtual="true">
 		<Frames>
 			<Button name="$parentItemButton" inherits="ItemButtonTemplate">
 				<Anchors>
@@ -91,8 +91,12 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						this:SetFrameLevel(this:GetFrameLevel() + 2);
 					</OnLoad>
 					<OnClick>
-						if ( IsShiftKeyDown() and ChatFrameEditBox:IsVisible() ) then
-							ChatFrameEditBox:Insert(GetTradeTargetItemLink(this:GetParent():GetID()));
+						if ( IsControlKeyDown() ) then
+							DressUpItemLink(GetTradeTargetItemLink(this:GetParent():GetID()));
+						elseif ( IsShiftKeyDown() ) then
+							if ( ChatFrameEditBox:IsVisible() ) then
+								ChatFrameEditBox:Insert(GetTradeTargetItemLink(this:GetParent():GetID()));
+							end
 						else
 							ClickTargetTradeButton(this:GetParent():GetID());
 						end
@@ -100,16 +104,20 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					<OnEnter>
 						GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
 						GameTooltip:SetTradeTargetItem(this:GetParent():GetID());
+						CursorUpdate();
 					</OnEnter>
 					<OnLeave>
 						GameTooltip:Hide();
+						ResetCursor();
 					</OnLeave>
+					<OnUpdate>
+						CursorOnUpdate();
+					</OnUpdate>
 				</Scripts>
-				<NormalTexture file=""/>
 			</Button>
 		</Frames>
 	</Frame>
-	<Frame name="PlayerTradeItemTemplate" inherits="TradeItemTemplate" virtual="true">	
+	<Frame name="PlayerTradeItemTemplate" inherits="TradeItemTemplate" virtual="true">
 		<Frames>
 			<Button name="$parentItemButton" inherits="ItemButtonTemplate">
 				<Anchors>
@@ -117,8 +125,12 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						if ( IsShiftKeyDown() and ChatFrameEditBox:IsVisible() ) then
-							ChatFrameEditBox:Insert(GetTradePlayerItemLink(this:GetParent():GetID()));
+						if ( IsControlKeyDown() ) then
+							DressUpItemLink(GetTradePlayerItemLink(this:GetParent():GetID()));
+						elseif ( IsShiftKeyDown() ) then
+							if ( ChatFrameEditBox:IsVisible() ) then
+								ChatFrameEditBox:Insert(GetTradePlayerItemLink(this:GetParent():GetID()));
+							end
 						else
 							ClickTradeButton(this:GetParent():GetID());
 						end
@@ -136,12 +148,16 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					<OnEnter>
 						GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
 						GameTooltip:SetTradePlayerItem(this:GetParent():GetID());
+						CursorUpdate();
 					</OnEnter>
 					<OnLeave>
 						GameTooltip:Hide();
+						ResetCursor();
 					</OnLeave>
+					<OnUpdate>
+						CursorOnUpdate();
+					</OnUpdate>
 				</Scripts>
-				<NormalTexture file=""/>
 			</Button>
 		</Frames>
 	</Frame>
@@ -162,30 +178,30 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<Layers>
 			<Layer level="BACKGROUND">
 				<Texture name="TradeFrameRecipientPortrait">
-                    <Size>
-                        <AbsDimension x="60" y="60"/>
-                    </Size>
-                    <Anchors>
-                        <Anchor point="TOPLEFT">
-                            <Offset>
-                                <AbsDimension x="183" y="-6"/>
-                            </Offset>
-                        </Anchor>
-                    </Anchors>
-                </Texture>
+					<Size>
+						<AbsDimension x="60" y="60"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset>
+								<AbsDimension x="183" y="-6"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</Texture>
 				<Texture name="TradeFramePlayerPortrait">
-                    <Size>
-                        <AbsDimension x="60" y="60"/>
-                    </Size>
-                    <Anchors>
-                        <Anchor point="TOPLEFT">
-                            <Offset>
-                                <AbsDimension x="7" y="-6"/>
-                            </Offset>
-                        </Anchor>
-                    </Anchors>
-                </Texture>
-            </Layer>
+					<Size>
+						<AbsDimension x="60" y="60"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset>
+								<AbsDimension x="7" y="-6"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</Texture>
+			</Layer>
 			<Layer level="ARTWORK">
 				<Texture file="Interface\TradeFrame\UI-TradeFrame-TopLeft">
 					<Size>
@@ -194,7 +210,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					<Anchors>
 						<Anchor point="TOPLEFT"/>
 					</Anchors>
-				</Texture>		
+				</Texture>
 				<Texture file="Interface\TradeFrame\UI-TradeFrame-TopRight">
 					<Size>
 						<AbsDimension x="128" y="256"/>
@@ -220,15 +236,21 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Anchors>
 				</Texture>
 				<FontString name="TradeFrameRecipientNameText" inherits="GameFontNormal" text="Player Name">
+					<Size>
+						<AbsDimension x="80" y="12"/>
+					</Size>
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="TradeFrame">
 							<Offset>
-								<AbsDimension x="250" y="-17"/>
+								<AbsDimension x="245" y="-17"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
 				</FontString>
 				<FontString name="TradeFramePlayerNameText" inherits="GameFontNormal" text="Recipient Name">
+					<Size>
+						<AbsDimension x="100" y="12"/>
+					</Size>
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="TradeFrame">
 							<Offset>
@@ -463,6 +485,19 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Texture>
 					</Layer>
 				</Layers>
+				<Scripts>
+					<OnEnter>
+						if ( this.hasItem ) then
+							GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
+							GameTooltip:SetTradePlayerItem(this:GetParent():GetID());
+						else
+							GameTooltip_AddNewbieTip(ENCHANT_SLOT, 1.0, 1.0, 1.0, NEWBIE_TOOLTIP_ENCHANTSLOT, 1);
+						end
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
+				</Scripts>
 			</Frame>
 			<Button name="TradeFrameTradeButton" inherits="UIPanelButtonTemplate" text="TRADE">
 				<Size>
@@ -480,9 +515,10 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						AcceptTrade();
 					</OnClick>
 				</Scripts>
-				<NormalText inherits="GameFontNormal" text="TRADE"/>
-				<DisabledText inherits="GameFontDisable" text="TRADE"/>
-				<HighlightText inherits="GameFontHighlight" text="TRADE"/>
+				<ButtonText text="TRADE"/>
+				<NormalFont inherits="GameFontNormal"/>
+				<HighlightFont inherits="GameFontHighlight"/>
+				<DisabledFont inherits="GameFontDisable"/>
 			</Button>
 			<Button name="TradeFrameCancelButton" inherits="UIPanelButtonTemplate" text="CANCEL">
 				<Size>
@@ -500,9 +536,10 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						TradeFrameCancelButton_OnClick();
 					</OnClick>
 				</Scripts>
-				<NormalText inherits="GameFontNormal" text="CANCEL"/>
-				<DisabledText inherits="GameFontDisable" text="CANCEL"/>
-				<HighlightText inherits="GameFontHighlight" text="CANCEL"/>
+				<ButtonText text="CANCEL"/>
+				<NormalFont inherits="GameFontNormal"/>
+				<HighlightFont inherits="GameFontHighlight"/>
+				<DisabledFont inherits="GameFontDisable"/>
 			</Button>
 			<Button name="TradeFrameCloseButton" inherits="UIPanelCloseButton">
 				<Anchors>

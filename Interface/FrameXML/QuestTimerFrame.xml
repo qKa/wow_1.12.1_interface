@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="QuestTimerFrame.lua"/>
 	<Button name="QuestTimerTemplate" virtual="true">
 		<Size>
@@ -33,7 +33,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<AbsDimension x="160" y="72"/>
 		</Size>
 		<Anchors>
-			<Anchor point="TOP" relativeTo="MinimapCluster" relativePoint="BOTTOM">
+			<Anchor point="TOPRIGHT" relativeTo="MinimapCluster" relativePoint="BOTTOMRIGHT">
 				<Offset>
 					<AbsDimension x="10" y="0"/>
 				</Offset>
@@ -267,6 +267,12 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<OnEvent>
 				QuestTimerFrame_OnEvent();
 			</OnEvent>
+			<OnShow>
+				QuestTimerFrame_OnShow();
+			</OnShow>
+			<OnHide>
+				QuestTimerFrame_OnHide();
+			</OnHide>
 		</Scripts>
 	</Frame>
 </Ui>

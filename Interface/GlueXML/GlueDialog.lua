@@ -1,32 +1,34 @@
 
 GlueDialogTypes = { };
 
+GlueDialogTypes["REALM_IS_FULL"] = {
+	text = TEXT(REALM_IS_FULL_WARNING),
+	button1 = TEXT(YES),
+	button2 = TEXT(NO),
+	showAlert = 1,
+	OnAccept = function()
+		SetGlueScreen("charselect");
+		ChangeRealm(RealmList.selectedCategory , RealmList.currentRealm);
+	end,
+	OnCancel = function()
+		CharacterSelect_ChangeRealm();
+	end,
+}
+
 GlueDialogTypes["SUGGEST_REALM"] = {
 	text = TEXT(format(SUGGESTED_REALM_TEXT,"UNKNOWN REALM")),
-	button1 = TEXT(VIEW_ALL_REALMS),
-	button2 = TEXT(ACCEPT),
+	button1 = TEXT(ACCEPT),
+	button2 = TEXT(VIEW_ALL_REALMS),
 	OnShow = function()
 		GlueDialogText:SetText(format(SUGGESTED_REALM_TEXT, RealmWizard.suggestedRealmName));
 	end,
 	OnAccept = function()
 		SetGlueScreen("charselect");
-		CharacterSelect_ChangeRealm();
+		ChangeRealm(RealmWizard.suggestedCategory, RealmWizard.suggestedID);
 	end,
 	OnCancel = function()
 		SetGlueScreen("charselect");
-		ChangeRealm(RealmWizard.suggestedCategory, RealmWizard.suggestedID);
-	end,
-}
-
-GlueDialogTypes["DELETE_INTERFACE"] = {
-	text = TEXT(DELETE_INTERFACE),
-	button1 = TEXT(DELETE),
-	button2 = TEXT(EXIT),
-	OnAccept = function()
-		DeleteInterface();
-	end,
-	OnCancel = function()
-		QuitGame();
+		CharacterSelect_ChangeRealm();
 	end,
 }
 
@@ -36,6 +38,8 @@ GlueDialogTypes["DISCONNECTED"] = {
 	button2 = nil,
 	OnShow = function()
 		RealmList:Hide();
+		VirtualKeypadFrame:Hide();
+		StatusDialogClick();
 	end,
 	OnAccept = function()
 	end,
@@ -68,6 +72,10 @@ GlueDialogTypes["OKAY"] = {
 	text = "",
 	button1 = TEXT(OKAY),
 	button2 = nil,
+	OnShow = function()
+		VirtualKeypadFrame:Hide();
+		StatusDialogClick();
+	end,
 	OnAccept = function()
 		StatusDialogClick();
 	end,
@@ -85,13 +93,16 @@ GlueDialogTypes["OKAY_WITH_URL"] = {
 	OnCancel = function()
 		StatusDialogClick();
 	end,
---	useDataForButton1 = 1,
 }
 
 GlueDialogTypes["CONNECTION_HELP"] = {
 	text = "",
 	button1 = TEXT(HELP),
 	button2 = TEXT(OKAY),
+	OnShow = function()
+		VirtualKeypadFrame:Hide();
+		StatusDialogClick();
+	end,
 	OnAccept = function()
 		AccountLoginUI:Hide();
 		ConnectionHelpFrame:Show();
@@ -130,11 +141,7 @@ function GlueDialog_Show(which, text, data)
 		GlueDialogButton2:Hide();
 	end
 
-	if ( GlueDialogTypes[which].useDataForButton1 ) then
-		GlueDialogButton1:SetText(getglobal(data..GlueDialogTypes[which].button1));
-	else
-		GlueDialogButton1:SetText(GlueDialogTypes[which].button1);
-	end
+	GlueDialogButton1:SetText(GlueDialogTypes[which].button1);
 
 	-- Set the miscellaneous variables for the dialog
 	GlueDialog.which = which;
@@ -142,11 +149,10 @@ function GlueDialog_Show(which, text, data)
 
 	-- Show or hide the alert icon
 	if ( GlueDialogTypes[which].showAlert ) then
-		-- If is the delete item dialog display the error image
-		GlueDialog:SetWidth(420);
+		GlueDialogBackground:SetWidth(600);
 		GlueDialogAlertIcon:Show();
 	else
-		GlueDialog:SetWidth(320);
+		GlueDialogBackground:SetWidth(512);
 		GlueDialogAlertIcon:Hide();
 	end
 
@@ -193,6 +199,15 @@ function GlueDialog_OnEvent()
 		GlueDialog_Show(arg1, arg2, arg3);
 	elseif ( event == "UPDATE_STATUS_DIALOG" and arg1 and (strlen(arg1) > 0) ) then
 		GlueDialogText:SetText(arg1);
+		local buttonText = nil;
+		if ( arg2 ) then
+			buttonText = arg2;
+		elseif ( GlueDialogTypes[GlueDialog.which] ) then
+			buttonText = GlueDialogTypes[GlueDialog.which].button1;
+		end
+		if ( buttonText ) then
+			GlueDialogButton1:SetText(buttonText);
+		end
 		GlueDialogBackground:SetHeight(32 + GlueDialogText:GetHeight() + 8 + GlueDialogButton1:GetHeight() + 16);
 	elseif ( event == "CLOSE_STATUS_DIALOG" ) then
 		GlueDialog:Hide();
@@ -204,6 +219,7 @@ function GlueDialog_OnHide()
 end
 
 function GlueDialog_OnClick(index)
+	GlueDialog:Hide();
 	if ( index == 1 ) then
 		local OnAccept = GlueDialogTypes[GlueDialog.which].OnAccept;
 		if ( OnAccept ) then
@@ -215,7 +231,7 @@ function GlueDialog_OnClick(index)
 			OnCancel();
 		end
 	end
-	GlueDialog:Hide();
+	PlaySound("gsTitleOptionOK");
 end
 
 function GlueDialog_OnKeyDown()

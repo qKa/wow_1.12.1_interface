@@ -1,14 +1,11 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="ActionButton.lua"/>
 	<CheckButton name="ActionBarButtonTemplate" inherits="ActionButtonTemplate" virtual="true">
 		<Scripts>
 			<OnLoad>
 				ActionButton_OnLoad();
 			</OnLoad>
-			<OnShow>
-				ActionButton_Update();
-			</OnShow>
 			<OnEvent>
 				ActionButton_OnEvent(event);
 			</OnEvent>
@@ -16,18 +13,28 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				if ( IsShiftKeyDown() ) then
 					PickupAction(ActionButton_GetPagedID(this));
 				else
-					MacroFrame_EditMacro();
+					if ( MacroFrame_SaveMacro ) then
+						MacroFrame_SaveMacro();
+					end
 					UseAction(ActionButton_GetPagedID(this), 1);
 				end
 				ActionButton_UpdateState();
 			</OnClick>
 			<OnDragStart>
-				PickupAction(ActionButton_GetPagedID(this));
-				ActionButton_UpdateState();
+				if ( LOCK_ACTIONBAR ~= "1" ) then
+					PickupAction(ActionButton_GetPagedID(this));
+					ActionButton_UpdateHotkeys(this.buttonType);
+					ActionButton_UpdateState();
+					ActionButton_UpdateFlash();
+				end
 			</OnDragStart>
 			<OnReceiveDrag>
-				PlaceAction(ActionButton_GetPagedID(this));
-				ActionButton_UpdateState();
+				if ( LOCK_ACTIONBAR ~= "1" ) then
+					PlaceAction(ActionButton_GetPagedID(this));
+					ActionButton_UpdateHotkeys(this.buttonType);
+					ActionButton_UpdateState();
+					ActionButton_UpdateFlash();
+				end
 			</OnReceiveDrag>
 			<OnEnter>
 				ActionButton_SetTooltip();
@@ -165,16 +172,17 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		</HitRectInsets>
 		<Scripts>
 			<OnLoad>
+				MainMenuBarPageNumber:SetText(CURRENT_ACTIONBAR_PAGE);
 				this:RegisterEvent("ACTIONBAR_PAGE_CHANGED");
 			</OnLoad>
-			<OnClick>
-				if ( CURRENT_ACTIONBAR_PAGE == 1 ) then
-					CURRENT_ACTIONBAR_PAGE = NUM_ACTIONBAR_PAGES;
-				else
-					CURRENT_ACTIONBAR_PAGE = CURRENT_ACTIONBAR_PAGE - 1;
+			<OnEvent>
+				if ( event == "ACTIONBAR_PAGE_CHANGED" ) then
+					MainMenuBarPageNumber:SetText(CURRENT_ACTIONBAR_PAGE);
 				end
+			</OnEvent>
+			<OnClick>
+				ActionBar_PageUp();
 				PlaySound("UChatScrollButton");
-				ChangeActionBarPage();
 			</OnClick>
 		</Scripts>
 		<NormalTexture file="Interface\MainMenuBar\UI-MainMenu-ScrollUpButton-Up"/>
@@ -197,17 +205,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<AbsInset left="6" right="6" top="7" bottom="7"/>
 		</HitRectInsets>
 		<Scripts>
-			<OnLoad>
-				this:RegisterEvent("ACTIONBAR_PAGE_CHANGED");
-			</OnLoad>
 			<OnClick>
-				if ( CURRENT_ACTIONBAR_PAGE == NUM_ACTIONBAR_PAGES ) then
-					CURRENT_ACTIONBAR_PAGE = 1;
-				else
-					CURRENT_ACTIONBAR_PAGE = CURRENT_ACTIONBAR_PAGE + 1;
-				end
+				ActionBar_PageDown();
 				PlaySound("UChatScrollButton");
-				ChangeActionBarPage();
 			</OnClick>
 		</Scripts>
 		<NormalTexture file="Interface\MainMenuBar\UI-MainMenu-ScrollDownButton-Up"/>

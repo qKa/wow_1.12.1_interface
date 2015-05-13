@@ -1,5 +1,5 @@
 
-NUMGOSSIPBUTTONS = 16;
+NUMGOSSIPBUTTONS = 32;
 
 function GossipFrame_OnLoad()
 	this:RegisterEvent("GOSSIP_SHOW");
@@ -10,6 +10,10 @@ function GossipFrame_OnEvent()
 	if ( event == "GOSSIP_SHOW" ) then
 		if ( not GossipFrame:IsVisible() ) then
 			ShowUIPanel(GossipFrame);
+			if ( not GossipFrame:IsVisible() ) then
+				CloseGossip();
+				return;
+			end
 		end
 		GossipFrameUpdate();
 	elseif ( event == "GOSSIP_CLOSED" ) then
@@ -32,6 +36,18 @@ function GossipFrameUpdate()
 	else
 		GossipFramePortrait:SetTexture("Interface\\QuestFrame\\UI-QuestLog-BookIcon");
 	end
+
+	-- Set Spacer
+	if ( GossipFrame.buttonIndex > 1 ) then
+		GossipSpacerFrame:SetPoint("TOP", "GossipTitleButton"..GossipFrame.buttonIndex-1, "BOTTOM", 0, 0);
+		GossipSpacerFrame:Show();
+	else
+		GossipSpacerFrame:Hide();
+	end
+
+	-- Update scrollframe
+	GossipGreetingScrollFrame:SetVerticalScroll(0);
+	GossipGreetingScrollFrame:UpdateScrollChildRect();
 end
 
 function GossipTitleButton_OnClick()

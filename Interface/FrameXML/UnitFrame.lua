@@ -22,24 +22,25 @@ function UnitFrame_Initialize(unit, name, portrait, healthbar, healthtext, manab
 end
 
 function UnitFrame_Update()
-	this.name:SetText(UnitName(this.unit));
+	this.name:SetText(GetUnitName(this.unit));
 	SetPortraitTexture(this.portrait, this.unit);
 	UnitFrameHealthBar_Update(this.healthbar, this.unit);
 	UnitFrameManaBar_Update(this.manabar, this.unit);
 end
 
 function UnitFrame_OnEvent(event)
-	if ( (event == "UNIT_NAME_UPDATE") and (arg1 == this.unit) ) then
-		this.name:SetText(UnitName(this.unit));
-		return;
-	end
-	if ( (event == "UNIT_PORTRAIT_UPDATE") and (arg1 == this.unit) ) then
-		SetPortraitTexture(this.portrait, this.unit);
-		return;
-	end
-	if ( (event == "UNIT_DISPLAYPOWER") and (arg1 == this.unit) ) then
-		UnitFrame_UpdateManaType();
-		return;
+	if ( event == "UNIT_NAME_UPDATE" ) then
+		if ( arg1 == this.unit ) then
+			this.name:SetText(GetUnitName(this.unit));
+		end
+	elseif ( event == "UNIT_PORTRAIT_UPDATE" ) then
+		if ( arg1 == this.unit ) then
+			SetPortraitTexture(this.portrait, this.unit);
+		end
+	elseif ( event == "UNIT_DISPLAYPOWER" ) then
+		if ( arg1 == this.unit ) then
+			UnitFrame_UpdateManaType();
+		end
 	end
 end
 
@@ -53,6 +54,17 @@ function UnitFrame_OnEnter()
 	end
 
 	GameTooltip_SetDefaultAnchor(GameTooltip, this);
+	-- If showing newbie tips then only show the explanation
+	if ( SHOW_NEWBIE_TIPS == "1" and this:GetName() ~= "PartyMemberFrame1" and this:GetName() ~= "PartyMemberFrame2" and this:GetName() ~= "PartyMemberFrame3" and this:GetName() ~= "PartyMemberFrame4") then
+		if ( this:GetName() == "PlayerFrame" ) then
+			GameTooltip_AddNewbieTip(PARTY_OPTIONS_LABEL, 1.0, 1.0, 1.0, NEWBIE_TOOLTIP_PARTYOPTIONS);
+			return;
+		elseif ( UnitPlayerControlled("target") and not UnitIsUnit("target", "player") and not UnitIsUnit("target", "pet") ) then
+			GameTooltip_AddNewbieTip(PLAYER_OPTIONS_LABEL, 1.0, 1.0, 1.0, NEWBIE_TOOLTIP_PLAYEROPTIONS);
+			return;
+		end
+	end
+	
 	if ( GameTooltip:SetUnit(this.unit) ) then
 		this.updateTooltip = TOOLTIP_UPDATE_TIME;
 	else
@@ -60,7 +72,8 @@ function UnitFrame_OnEnter()
 	end
 
 	this.r, this.g, this.b = GameTooltip_UnitColor(this.unit);
-	GameTooltip:SetBackdropColor(this.r, this.g, this.b);
+	--GameTooltip:SetBackdropColor(this.r, this.g, this.b);
+	GameTooltipTextLeft1:SetTextColor(this.r, this.g, this.b);
 end
 
 function UnitFrame_OnLeave()
@@ -68,7 +81,11 @@ function UnitFrame_OnLeave()
 		SetCursor("CAST_ERROR_CURSOR");
 	end
 	this.updateTooltip = nil;
-	GameTooltip:FadeOut();
+	if ( SHOW_NEWBIE_TIPS == "1" ) then
+		GameTooltip:Hide();
+	else
+		GameTooltip:FadeOut();	
+	end
 end
 
 function UnitFrame_OnUpdate(elapsed)
@@ -88,32 +105,68 @@ function UnitFrame_OnUpdate(elapsed)
 		else
 			this.updateTooltip = nil;
 		end
-		GameTooltip:SetBackdropColor(this.r, this.g, this.b);
+		--GameTooltip:SetBackdropColor(this.r, this.g, this.b);
+		GameTooltipTextLeft1:SetTextColor(this.r, this.g, this.b);
 	else
 		this.updateTooltip = nil;
 	end
 end
 
-function UnitFrame_UpdateManaType()
-	local info = ManaBarColor[UnitPowerType(this.unit)];
-	this.manabar:SetStatusBarColor(info.r, info.g, info.b);
-	--Hack for pets
-	if ( this.unit == "pet" and info.prefix ~= HAPPINESS_POINTS ) then
+function UnitFrame_UpdateManaType(unitFrame)
+	if ( not unitFrame ) then
+		unitFrame = this;
+	end
+	if ( not unitFrame.manabar ) then
 		return;
 	end
-	SetTextStatusBarTextPrefix(this.manabar, info.prefix);
+	local info = ManaBarColor[UnitPowerType(unitFrame.unit)];
+	unitFrame.manabar:SetStatusBarColor(info.r, info.g, info.b);
+	--Hack for pets
+	if ( unitFrame.unit == "pet" and info.prefix ~= HAPPINESS_POINTS ) then
+		return;
+	end
+	-- Update the manabar text if shown in the ui options
+	SetTextStatusBarTextPrefix(unitFrame.manabar, info.prefix);
+	if ( GetCVar("statusBarText") == "1" ) then
+		TextStatusBar_UpdateTextString(unitFrame.manabar);
+	end
+
+	-- Setup newbie tooltip
+	if ( unitFrame:GetName() == "PlayerFrame" ) then
+		unitFrame.manabar.tooltipTitle = info.prefix;
+		unitFrame.manabar.tooltipText = getglobal("NEWBIE_TOOLTIP_MANABAR"..UnitPowerType(unitFrame.unit));
+	else
+		unitFrame.manabar.tooltipTitle = nil;
+		unitFrame.manabar.tooltipText = nil;
+	end
 end
 
 function UnitFrameHealthBar_Initialize(unit, statusbar, statustext)
+	if ( not statusbar ) then
+		return;
+	end
 	statusbar.unit = unit;
 	SetTextStatusBarText(statusbar, statustext);
 	statusbar:RegisterEvent("UNIT_HEALTH");
 	statusbar:RegisterEvent("UNIT_MAXHEALTH");
+
+	-- Setup newbie tooltip
+	if ( this and (this:GetName() == "PlayerFrame") ) then
+		statusbar.tooltipTitle = HEALTH;
+		statusbar.tooltipText = NEWBIE_TOOLTIP_HEALTHBAR;
+	else
+		statusbar.tooltipTitle = nil;
+		statusbar.tooltipText = nil;
+	end
 end
 
 function UnitFrameHealthBar_Update(statusbar, unit)
+	if ( not statusbar ) then
+		return;
+	end
 	local cvar = arg1;
 	local value = arg2;
+	
 	if ( unit == statusbar.unit ) then
 		local currValue = UnitHealth(unit);
 		local maxValue = UnitHealthMax(unit);
@@ -129,6 +182,9 @@ function UnitFrameHealthBar_OnValueChanged(value)
 end
 
 function UnitFrameManaBar_Initialize(unit, statusbar, statustext)
+	if ( not statusbar ) then
+		return;
+	end
 	statusbar.unit = unit;
 	SetTextStatusBarText(statusbar, statustext);
 	statusbar:RegisterEvent("UNIT_MANA");
@@ -145,13 +201,37 @@ function UnitFrameManaBar_Initialize(unit, statusbar, statustext)
 end
 
 function UnitFrameManaBar_Update(statusbar, unit)
+	if ( not statusbar ) then
+		return;
+	end
 	local cvar = arg1;
 	local value = arg2;
+	
 	if ( unit == statusbar.unit ) then
-		local currValue = UnitMana(unit);
 		local maxValue = UnitManaMax(unit);
 		statusbar:SetMinMaxValues(0, maxValue);
-		statusbar:SetValue(currValue);
+		-- If disconnected
+		if ( not UnitIsConnected(unit) ) then
+			statusbar:SetValue(maxValue);
+			statusbar:SetStatusBarColor(0.5, 0.5, 0.5);
+		else
+			local currValue = UnitMana(unit);
+			statusbar:SetValue(currValue);
+			UnitFrame_UpdateManaType(statusbar:GetParent());
+		end
 	end
 	TextStatusBar_OnEvent(cvar, value);
+end
+
+function GetUnitName(unit, showServerName)
+	local name, server = UnitName(unit);
+	if ( server ) then
+		if ( showServerName ) then
+			return name.." - "..server;
+		else
+			return name..FOREIGN_SERVER_LABEL;
+		end
+	else
+		return name;
+	end
 end

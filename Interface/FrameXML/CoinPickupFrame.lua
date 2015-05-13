@@ -45,18 +45,26 @@ function OpenCoinPickupFrame(multiplier, maxMoney, parent)
 		CoinPickupGoldIcon:Hide();
 	end
 
-	CoinPickupFrame:SetPoint("BOTTOMRIGHT", parent:GetName(), "TOPRIGHT", 0, 0);
+	CoinPickupFrame:SetPoint("BOTTOMRIGHT", parent, "TOPRIGHT", 0, 0);
 	CoinPickupFrame:Show();
 	PlaySound("igBackPackCoinSelect");
 end
 
 function UpdateCoinPickupFrame(maxMoney)
+	if ( not CoinPickupFrame.multiplier ) then
+		return;
+	end
 	CoinPickupFrame.maxMoney = floor(maxMoney / CoinPickupFrame.multiplier);
 	if ( CoinPickupFrame.maxMoney == 0 ) then
 		if ( CoinPickupFrame.owner ) then
 			CoinPickupFrame.owner.hasPickup = 0;
 		end
 		CoinPickupFrame:Hide();
+		return;
+	end
+
+	if ( not CoinPickupFrame.money or not CoinPickupFrame.maxMoney ) then
+		-- Failsafe
 		return;
 	end
 

@@ -1,14 +1,13 @@
-SECONDS_PER_PULSE = 0.75;
+SECONDS_PER_PULSE = 1;
 
 function GlueButtonMaster_OnUpdate(elapsed)
-	if ( getglobal(this:GetName().."Rays"):IsVisible() ) then
-		local SECONDS_PER_PULSE = 0.75;
+	if ( getglobal(this:GetName().."Glow"):IsVisible() ) then
 		local sign = this.pulseSign;
 		local counter;
 		
-		if ( this.startPulse ) then
+		if ( not this.pulsing ) then
 			counter = 0;
-			this.startPulse = nil;
+			this.pulsing = 1;
 			sign = 1;
 		else
 			counter = this.pulseCounter + (sign * elapsed);
@@ -22,7 +21,7 @@ function GlueButtonMaster_OnUpdate(elapsed)
 		end
 		
 		local alpha = counter / SECONDS_PER_PULSE;
-		getglobal(this:GetName().."Rays"):SetVertexColor(1.0, 1.0, 1.0, alpha);
+		getglobal(this:GetName().."Glow"):SetVertexColor(1.0, 1.0, 1.0, alpha);
 
 		this.pulseSign = sign;
 		this.pulseCounter = counter;

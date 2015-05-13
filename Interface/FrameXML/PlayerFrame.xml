@@ -1,7 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="PlayerFrame.lua"/>
-	<Button name="PlayerFrame" frameStrata="LOW" toplevel="true" movable="true" parent="UIParent">
+	<Button name="PlayerFrame" frameStrata="BACKGROUND" toplevel="true" movable="true" parent="UIParent">
 		<Size>
 			<AbsDimension x="232" y="100"/>
 		</Size>
@@ -107,7 +107,19 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 											</Offset>
 										</Anchor>
 									</Anchors>
-									<TexCoords left="0" right="0.74609375" top="0" bottom="0.5234375"/>
+									<TexCoords left="0" right="0.74609375" top="0" bottom="0.53125"/>
+								</Texture>
+								<Texture name="PlayerAttackBackground" file="Interface\TargetingFrame\UI-TargetingFrame-AttackBackground" hidden="true">
+									<Size>
+										<AbsDimension x="32" y="32"/>
+									</Size>
+									<Anchors>
+										<Anchor point="TOPLEFT">
+											<Offset>
+												<AbsDimension x="37" y="-50"/>
+											</Offset>
+										</Anchor>
+									</Anchors>
 								</Texture>
 								<Texture name="PlayerPVPIcon" hidden="true">
 									<Size>
@@ -158,16 +170,16 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 								</Texture>
 								<Texture name="PlayerRestIcon" file="Interface\CharacterFrame\UI-StateIcon" hidden="false">
 									<Size>
-										<AbsDimension x="32" y="32"/>
+										<AbsDimension x="31" y="33"/>
 									</Size>
 									<Anchors>
 										<Anchor point="TOPLEFT">
 											<Offset>
-												<AbsDimension x="37" y="-52"/>
+												<AbsDimension x="37" y="-49"/>
 											</Offset>
 										</Anchor>
 									</Anchors>
-									<TexCoords left="0" right="0.5" top="0" bottom="0.5"/>
+									<TexCoords left="0" right="0.5" top="0" bottom="0.421875"/>
 								</Texture>
 								<Texture name="PlayerAttackIcon" file="Interface\CharacterFrame\UI-StateIcon" hidden="false">
 									<Size>
@@ -185,15 +197,35 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							</Layer>
 						</Layers>
 					</Frame>
+					<Frame name="PlayerPVPIconHitArea" enableMouse="true" hidden="true">
+						<Size>
+							<AbsDimension x="39" y="37"/>
+						</Size>
+						<Anchors>
+							<Anchor point="TOPLEFT" relativeTo="PlayerPVPIcon"/>
+						</Anchors>
+						<Scripts>
+							<OnEnter>
+								GameTooltip_AddNewbieTip(this.tooltipTitle, 1.0, 1.0, 1.0, this.tooltipText, 1);
+							</OnEnter>
+							<OnLeave>
+								GameTooltip:Hide();
+							</OnLeave>							
+						</Scripts>
+					</Frame>
 					<Frame name="PlayerStatusGlow" hidden="true">
 						<Size>
 							<AbsDimension x="32" y="32"/>
 						</Size>
 						<Anchors>
-							<Anchor point="TOPLEFT" relativeTo="PlayerRestIcon"/>
+							<Anchor point="TOPLEFT" relativeTo="PlayerRestIcon">
+								<Offset>
+									<AbsDimension x="0" y="0"/>
+								</Offset>
+							</Anchor>
 						</Anchors>
 						<Layers>
-							<Layer level="BACKGROUND">
+							<Layer level="OVERLAY">
 								<Texture name="PlayerRestGlow" file="Interface\CharacterFrame\UI-StateIcon" hidden="false" alphaMode="ADD">
 									<Size>
 										<AbsDimension x="32" y="32"/>
@@ -214,10 +246,42 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 											</Offset>
 										</Anchor>
 									</Anchors>
+									<Color r="1.0" g="0" b="0"/>
 									<TexCoords left="0.5" right="1.0" top="0.5" bottom="1.0"/>
 								</Texture>
 							</Layer>
 						</Layers>
+						<Scripts>
+							<OnLoad>
+								this:SetFrameLevel(this:GetFrameLevel()+3);
+							</OnLoad>
+						</Scripts>
+					</Frame>
+					<Frame name="PlayerPlayTime" enableMouse="true" hidden="true">
+						<Size>
+							<AbsDimension x="32" y="32"/>
+						</Size>
+						<Anchors>
+							<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
+								<Offset>
+									<AbsDimension x="-4" y="-17"/>
+								</Offset>
+							</Anchor>
+						</Anchors>
+						<Layers>
+							<Layer level="BACKGROUND">
+								<Texture name="PlayerPlayTimeIcon" file="Interface\CharacterFrame\UI-Player-PlayTimeTired" setAllPoints="true"/>
+							</Layer>
+						</Layers>
+						<Scripts>
+							<OnEnter>
+								GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
+								GameTooltip:SetText(this.tooltip, nil, nil, nil, nil, 1);
+							</OnEnter>						
+							<OnLeave>
+								GameTooltip:Hide();
+							</OnLeave>
+						</Scripts>
 					</Frame>
 				</Frames>
 			</Frame>
@@ -275,6 +339,84 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				<BarTexture file="Interface\TargetingFrame\UI-StatusBar"/>
 				<BarColor r="0" g="0" b="1.0"/>
 			</StatusBar>
+			<Frame name="PlayerFrameDropDown" inherits="UIDropDownMenuTemplate" id="1" hidden="true">
+				<Size>
+					<AbsDimension x="10" y="10"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOP">
+						<Offset>
+							<AbsDimension x="-10" y="-50"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						PlayerFrameDropDown_OnLoad();
+					</OnLoad>
+				</Scripts>
+			</Frame>
+			<Frame name="PlayerFrameGroupIndicator" hidden="true">
+				<Size>
+					<AbsDimension x="10" y="16"/>
+				</Size>
+				<Anchors>
+					<Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT">
+						<Offset>
+							<AbsDimension x="97" y="-20"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture name="PlayerFrameGroupIndicatorLeft" file="Interface\CharacterFrame\UI-CharacterFrame-GroupIndicator">
+							<Size>
+								<AbsDimension x="24" y="16"/>
+							</Size>
+							<Anchors>
+								<Anchor point="TOPLEFT"/>
+							</Anchors>
+							<TexCoords left="0" right="0.1875" top="0" bottom="1"/>
+						</Texture>
+						<Texture name="PlayerFrameGroupIndicatorRight" file="Interface\CharacterFrame\UI-CharacterFrame-GroupIndicator">
+							<Size>
+								<AbsDimension x="24" y="16"/>
+							</Size>
+							<Anchors>
+								<Anchor point="TOPRIGHT"/>
+							</Anchors>
+							<TexCoords left="0.53125" right="0.71875" top="0" bottom="1"/>
+						</Texture>
+						<Texture name="PlayerFrameGroupIndicatorMiddle" file="Interface\CharacterFrame\UI-CharacterFrame-GroupIndicator">
+							<Size>
+								<AbsDimension x="0" y="16"/>
+							</Size>
+							<Anchors>
+								<Anchor point="LEFT" relativeTo="PlayerFrameGroupIndicatorLeft" relativePoint="RIGHT"/>
+								<Anchor point="RIGHT" relativeTo="PlayerFrameGroupIndicatorRight" relativePoint="LEFT"/>
+							</Anchors>
+							<TexCoords left="0.1875" right="0.53125" top="0" bottom="1"/>
+						</Texture>
+						<FontString name="PlayerFrameGroupIndicatorText" inherits="GameFontHighlightSmall">
+							<Anchors>
+								<Anchor point="LEFT">
+									<Offset>
+										<AbsDimension x="20" y="-2"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnLoad>
+						PlayerFrameGroupIndicatorLeft:SetAlpha(0.3);
+						PlayerFrameGroupIndicatorRight:SetAlpha(0.3);
+						PlayerFrameGroupIndicatorMiddle:SetAlpha(0.3);
+						PlayerFrameGroupIndicatorText:SetAlpha(0.7);
+					</OnLoad>
+				</Scripts>
+			</Frame>
 		</Frames>
 		<Scripts>
 			<OnLoad>
@@ -303,88 +445,4 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</OnReceiveDrag>
 		</Scripts>
 	</Button>
-	<Button name="LootThresholdButtonTemplate" virtual="true">
-		<Size>
-			<AbsDimension x="64" y="12"/>
-		</Size>
-		<Scripts>
-			<OnClick>
-				LootThreshold_OnClick(this:GetID());
-			</OnClick>
-			<OnLoad>
-					local color = ITEM_QUALITY_COLORS[this:GetID()];
-					this:SetTextColor(color.r, color.g, color.b);
-			</OnLoad>
-		</Scripts>
-		<NormalText inherits="GameFontNormal"/>
-		<HighlightText inherits="GameFontHighlight"/>
-		<DisabledText inherits="GameFontDisable"/>
-	</Button>
-	<Frame name="PlayerFrameLootThresholdPopup" frameStrata="DIALOG" hidden="true" parent="UIParent">
-		<Size>
-			<AbsDimension x="150" y="106"/>
-		</Size>
-		<Anchors>
-			<Anchor point="TOPLEFT">
-				<Offset>
-					<AbsDimension x="0" y="0"/>
-				</Offset>
-			</Anchor>
-		</Anchors>
-		<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
-			<BackgroundInsets>
-				<AbsInset left="11" right="12" top="12" bottom="11"/>
-			</BackgroundInsets>
-			<TileSize>
-				<AbsValue val="32"/>
-			</TileSize>
-			<EdgeSize>
-				<AbsValue val="32"/>
-			</EdgeSize>
-		</Backdrop>
-		<Layers>
-			<Layer level="ARTWORK">
-				<FontString name="LootThresholdTitle" inherits="GameFontHighlight" text="LOOT_THRESHOLD">
-					<Anchors>
-						<Anchor point="TOP">
-							<Offset>
-								<AbsDimension x="0" y="-16"/>
-							</Offset>
-						</Anchor>
-					</Anchors>
-				</FontString>
-			</Layer>
-		</Layers>
-		<Frames>
-			<Button name="LootThresholdButton1" inherits="LootThresholdButtonTemplate" id="2" text="ITEM_QUALITY2_DESC">
-				<Anchors>
-					<Anchor point="TOP" relativeTo="LootThresholdTitle" relativePoint="BOTTOM">
-						<Offset>
-							<AbsDimension x="0" y="-8"/>
-						</Offset>
-					</Anchor>
-				</Anchors>
-			</Button>
-			<Button name="LootThresholdButton2" inherits="LootThresholdButtonTemplate" id="3" text="ITEM_QUALITY3_DESC">
-				<Anchors>
-					<Anchor point="TOP" relativeTo="LootThresholdButton1" relativePoint="BOTTOM"/>
-				</Anchors>
-			</Button>
-			<Button name="LootThresholdButton3" inherits="LootThresholdButtonTemplate" id="4" text="ITEM_QUALITY4_DESC">
-				<Anchors>
-					<Anchor point="TOP" relativeTo="LootThresholdButton2" relativePoint="BOTTOM"/>
-				</Anchors>
-			</Button>
-			<Button name="LootThresholdCloseButton" inherits="LootThresholdButtonTemplate" text="CANCEL">
-				<Anchors>
-					<Anchor point="TOP" relativeTo="LootThresholdButton3" relativePoint="BOTTOM"/>
-				</Anchors>
-				<Scripts>
-					<OnClick>
-						PlayerFrameLootThresholdPopup:Hide();
-					</OnClick>
-				</Scripts>
-			</Button>
-		</Frames>
-	</Frame>
 </Ui>

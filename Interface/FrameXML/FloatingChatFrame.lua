@@ -46,30 +46,31 @@ function FloatingChatFrame_Update(id, onUpdateEvent)
 	-- Set Tab Name
 	FCF_SetWindowName(chatFrame, name, 1)
 
-	-- Set Frame Color and Alpha
-	FCF_SetWindowColor(chatFrame, r, g, b, 1);
-	FCF_SetWindowAlpha(chatFrame, a, 1);
-	
 	-- Locked display stuff
 	local init = nil;
+	-- Only do this if the frame is not initialized
 	if ( onUpdateEvent and not chatFrame.isInitialized) then
-		init = 1;
+		-- Set Frame Color and Alpha
+		FCF_SetWindowColor(chatFrame, r, g, b, 1);
+		FCF_SetWindowAlpha(chatFrame, a, 1);
+		FCF_SetLocked(chatFrame, locked);
 	end
-	FCF_SetLocked(chatFrame, locked, init);
 
 	if ( shown ) then
 		chatFrame:Show();
 		FCF_SetTabPosition(chatFrame, 0);
 	else
-		chatFrame:Hide();
-		chatTab:Hide();
+		if ( not chatFrame.isDocked ) then
+			chatFrame:Hide();
+			chatTab:Hide();
+		end
 	end
 	
 	if ( docked ) then
 		FCF_DockFrame(chatFrame, docked);
 	else
 		if ( shown ) then
-			FCF_UnDockFrame(chatFrame);		
+			FCF_UnDockFrame(chatFrame);
 		else
 			FCF_Close(chatFrame);
 		end
@@ -104,7 +105,8 @@ function FCFOptionsDropDown_Initialize()
 				info.value = value;
 				info.func = FCF_SetChatWindowFontSize;
 
-				if ( value == floor(FCF_GetCurrentChatFrame():GetFontHeight()+0.5) ) then
+				local fontFile, fontHeight, fontFlags = FCF_GetCurrentChatFrame():GetFont();
+				if ( value == floor(fontHeight+0.5) ) then
 					info.checked = 1;
 				end
 
@@ -255,6 +257,9 @@ function FCFOptionsDropDown_Initialize()
 	info.text = NEW_CHAT_WINDOW;
 	info.func = FCF_NewChatWindow;
 	info.notCheckable = 1;
+	if (FCF_GetNumActiveChatFrames() == NUM_CHAT_WINDOWS ) then
+		info.disabled = 1;
+	end
 	UIDropDownMenu_AddButton(info);
 
 	-- Close current chat window
@@ -277,7 +282,7 @@ function FCFOptionsDropDown_Initialize()
 	-- Font size
 	info = {};
 	info.text = FONT_SIZE;
-	info.notClickable = 1;
+	--info.notClickable = 1;
 	info.hasArrow = 1;
 	info.func = nil;
 	info.notCheckable = 1;
@@ -297,7 +302,7 @@ function FCFOptionsDropDown_Initialize()
 	info.opacity = a;
 	info.swatchFunc = FCF_SetChatWindowBackGroundColor;
 	info.func = UIDropDownMenuButton_OpenColorPicker;
-	info.notCheckable = 1;
+	--info.notCheckable = 1;
 	info.hasOpacity = 1;
 	info.opacityFunc = FCF_SetChatWindowOpacity;
 	info.cancelFunc = FCF_CancelWindowColorSettings;
@@ -306,7 +311,7 @@ function FCFOptionsDropDown_Initialize()
 	-- Filter header
 	info = {};
 	info.text = FILTERS;
-	info.notClickable = 1;
+	--info.notClickable = 1;
 	info.isTitle = 1;
 	info.notCheckable = 1;
 	UIDropDownMenu_AddButton(info);
@@ -314,7 +319,7 @@ function FCFOptionsDropDown_Initialize()
 	-- Channel list
 	info = {};
 	info.text = CHANNELS;
-	info.notClickable = 1;
+	--info.notClickable = 1;
 	info.hasArrow = 1;
 	info.func = nil;
 	info.notCheckable = 1;
@@ -323,7 +328,7 @@ function FCFOptionsDropDown_Initialize()
 	-- Combat message list
 	info = {};
 	info.text = COMBAT_MESSAGES;
-	info.notClickable = 1;
+	--info.notClickable = 1;
 	info.hasArrow = 1;
 	info.func = nil;
 	info.notCheckable = 1;
@@ -332,7 +337,7 @@ function FCFOptionsDropDown_Initialize()
 	-- Spell message list
 	info = {};
 	info.text = SPELL_MESSAGES;
-	info.notClickable = 1;
+	--info.notClickable = 1;
 	info.hasArrow = 1;
 	info.func = nil;
 	info.notCheckable = 1;
@@ -341,7 +346,7 @@ function FCFOptionsDropDown_Initialize()
 	-- Other Spell message list
 	info = {};
 	info.text = SPELL_OTHER_MESSAGES;
-	info.notClickable = 1;
+	--info.notClickable = 1;
 	info.hasArrow = 1;
 	info.func = nil;
 	info.notCheckable = 1;
@@ -350,7 +355,7 @@ function FCFOptionsDropDown_Initialize()
 	-- Periodic message list
 	info = {};
 	info.text = PERIODIC_MESSAGES;
-	info.notClickable = 1;
+	--info.notClickable = 1;
 	info.hasArrow = 1;
 	info.func = nil;
 	info.notCheckable = 1;
@@ -359,7 +364,7 @@ function FCFOptionsDropDown_Initialize()
 	-- System message list
 	info = {};
 	info.text = SYSTEM_MESSAGES;
-	info.notClickable = 1;
+	--info.notClickable = 1;
 	info.hasArrow = 1;
 	info.func = nil;
 	info.notCheckable = 1;
@@ -368,7 +373,7 @@ function FCFOptionsDropDown_Initialize()
 	-- Other messages list
 	info = {};
 	info.text = OTHER_MESSAGES;
-	info.notClickable = 1;
+	--info.notClickable = 1;
 	info.hasArrow = 1;
 	info.func = nil;
 	info.notCheckable = 1;
@@ -382,7 +387,7 @@ function FCFOptionsDropDown_Initialize()
 	-- Join channel
 	info = {};
 	info.text = JOIN_NEW_CHANNEL;
-	info.notClickable = 1;
+	--info.notClickable = 1;
 	info.hasArrow = 1;
 	info.func = nil;
 	info.notCheckable = 1;
@@ -442,7 +447,7 @@ function FCFDropDown_LoadChannels(...)
 	local channelList = FCF_GetCurrentChatFrame().channelList;
 	local zoneChannelList = FCF_GetCurrentChatFrame().zoneChannelList;
 	local info;
-	local channelIndex = 1;
+	--local channelIndex = 1;
 	for i=1, arg.n, 2 do
 		checked = nil;
 		if ( channelList ) then
@@ -461,12 +466,12 @@ function FCFDropDown_LoadChannels(...)
 		end
 		info = {};
 		info.text = arg[i+1];
-		info.value = "CHANNEL"..channelIndex;
+		info.value = "CHANNEL"..arg[i];
 		info.func = FCFChannelDropDown_OnClick;
 		info.checked = checked;
 		info.keepShownOnClick = 1;
 		-- Color the chat channel
-		local color = ChatTypeInfo["CHANNEL"..channelIndex];
+		local color = ChatTypeInfo["CHANNEL"..arg[i]];
 		info.hasColorSwatch = 1;
 		info.r = color.r;
 		info.g = color.g;
@@ -475,8 +480,6 @@ function FCFDropDown_LoadChannels(...)
 		info.swatchFunc = FCF_SetChatTypeColor;
 		info.cancelFunc = FCF_CancelFontColorSettings;
 		UIDropDownMenu_AddButton(info, UIDROPDOWNMENU_MENU_LEVEL);
-
-		channelIndex = channelIndex + 1;
 	end
 end
 
@@ -632,6 +635,7 @@ function FCF_OpenNewWindow(name)
 			ChatFrame_AddMessageGroup(chatFrame, "GUILD");
 			ChatFrame_AddMessageGroup(chatFrame, "WHISPER");
 			ChatFrame_AddMessageGroup(chatFrame, "PARTY");
+			ChatFrame_AddMessageGroup(chatFrame, "CHANNEL");
 
 			-- Show the frame and tab
 			chatFrame:Show();
@@ -644,6 +648,20 @@ function FCF_OpenNewWindow(name)
 		end
 		count = count + 1;
 	end
+end
+
+function FCF_GetNumActiveChatFrames()
+	local count = 0;
+	for i=1, NUM_CHAT_WINDOWS do
+		temp, temp, temp, temp, temp, temp, shown, temp = GetChatWindowInfo(i);
+		chatFrame = getglobal("ChatFrame"..i);
+		if ( chatFrame ) then
+			if ( shown or chatFrame.isDocked ) then
+				count = count + 1;
+			end
+		end
+	end
+	return count;
 end
 
 function FCF_RenameChatWindow_Popup()
@@ -735,7 +753,8 @@ function FCF_SetChatWindowFontSize(chatFrame, fontSize)
 	if ( not fontSize ) then
 		fontSize = this.value;
 	end
-	chatFrame:SetFontHeight(fontSize);
+	local fontFile, unused, fontFlags = chatFrame:GetFont();
+	chatFrame:SetFont(fontFile, fontSize, fontFlags);
 	SetChatWindowSize(chatFrame:GetID(), fontSize);
 end
 
@@ -780,11 +799,7 @@ function FCF_ToggleLock()
 	end
 end
 
-function FCF_SetLocked(chatFrame, isLocked, init)
-	if ( not chatFrame.isInitialized and not init) then
-		return;
-	end
-
+function FCF_SetLocked(chatFrame, isLocked)
 	chatFrame.isLocked = isLocked;
 	SetChatWindowLocked(chatFrame:GetID(), isLocked);
 end
@@ -824,7 +839,7 @@ function FCF_OnUpdate(elapsed)
 			end
 			
 			dockRegion = getglobal(value:GetName().."TabDockRegion");
-			if ( MouseIsOver(dockRegion) and MOVING_CHATFRAME ~= DEFAULT_CHAT_FRAME ) then
+			if ( MouseIsOver(dockRegion) and MOVING_CHATFRAME ~= DEFAULT_CHAT_FRAME and not UIOptionsFrame:IsShown() ) then
 				dockRegion:Show();
 			else
 				dockRegion:Hide();
@@ -834,6 +849,7 @@ function FCF_OnUpdate(elapsed)
 	
 	-- Handle hiding and showing chat tabs
 	local showAllDockTabs = nil;
+	local hideAnyDockTabs = nil;
 	local xPos, yPos = GetCursorPosition();
 	for j=1, NUM_CHAT_WINDOWS do
 		chatFrame = getglobal("ChatFrame"..j);
@@ -841,7 +857,7 @@ function FCF_OnUpdate(elapsed)
 		
 		-- New version of the crazy function
 		if ( FCF_IsValidChatFrame(chatFrame) ) then
-			if ( MouseIsOver(chatFrame, 45, -10, -5, 5) or chatFrame.resizing ) then
+			if ( (MouseIsOver(chatFrame, 45, -10, -5, 5) or chatFrame.resizing) and not UIOptionsFrame:IsShown()) then
 				-- If mouse is hovering don't show the tab until the elapsed time reaches the tab show delay
 				if ( chatFrame.hover ) then
 					if ( (chatFrame.oldX == xPos and chatFrame.oldy == yPos) or REMOVE_CHAT_DELAY == "1" ) then
@@ -901,18 +917,23 @@ function FCF_OnUpdate(elapsed)
 					chatFrame.hover = nil;
 					chatFrame.hasBeenFaded = nil;
 				end
-				if ( chatTab.hasBeenFaded ) then					
-					local fadeInfo = {};
-					fadeInfo.mode = "OUT";
-					fadeInfo.startAlpha = chatTab.oldAlpha;
-					fadeInfo.timeToFade = CHAT_FRAME_FADE_TIME;
-					fadeInfo.finishedArg1 = chatTab;
-					fadeInfo.finishedArg2 = getglobal("ChatFrame"..chatTab:GetID());
-					fadeInfo.finishedFunc = FCF_ChatTabFadeFinished;
-					UIFrameFade(chatTab, fadeInfo);
+				if ( chatTab.hasBeenFaded ) then
+					if (chatFrame.isDocked) then
+						hideAnyDockTabs = true;
+						chatTab.needsHide = true;
+					else
+						local fadeInfo = {};
+						fadeInfo.mode = "OUT";
+						fadeInfo.startAlpha = chatTab.oldAlpha;
+						fadeInfo.timeToFade = CHAT_FRAME_FADE_TIME;
+						fadeInfo.finishedArg1 = chatTab;
+						fadeInfo.finishedArg2 = getglobal("ChatFrame"..chatTab:GetID());
+						fadeInfo.finishedFunc = FCF_ChatTabFadeFinished;
+						UIFrameFade(chatTab, fadeInfo);
 
-					chatFrame.hover = nil;
-					chatTab.hasBeenFaded = nil;
+						chatFrame.hover = nil;
+						chatTab.hasBeenFaded = nil;
+					end
 				end
 				chatFrame.hoverTime = 0;
 			end	
@@ -927,6 +948,7 @@ function FCF_OnUpdate(elapsed)
 	if ( showAllDockTabs ) then
 		for index, value in DOCKED_CHAT_FRAMES do
 			chatTab = getglobal(value:GetName().."Tab");
+			chatTab.needsHide = nil;
 			if ( not chatTab.hasBeenFaded ) then
 				if ( SELECTED_DOCK_FRAME:GetID() == chatTab:GetID() ) then
 					UIFrameFadeIn(chatTab, CHAT_FRAME_FADE_TIME);
@@ -937,6 +959,24 @@ function FCF_OnUpdate(elapsed)
 				end
 				chatTab.hasBeenFaded = 1;
 			end
+		end
+	elseif ( hideAnyDockTabs) then
+		for index, value in DOCKED_CHAT_FRAMES do
+			chatTab = getglobal(value:GetName().."Tab");
+			if ( chatTab.needsHide ) then
+				local fadeInfo = {};
+				fadeInfo.mode = "OUT";
+				fadeInfo.startAlpha = chatTab.oldAlpha;
+				fadeInfo.timeToFade = CHAT_FRAME_FADE_TIME;
+				fadeInfo.finishedArg1 = chatTab;
+				fadeInfo.finishedArg2 = getglobal("ChatFrame"..chatTab:GetID());
+				fadeInfo.finishedFunc = FCF_ChatTabFadeFinished;
+				UIFrameFade(chatTab, fadeInfo);
+
+				chatFrame.hover = nil;
+				chatTab.hasBeenFaded = nil;
+				chatTab.needsHide = nil;
+			end 
 		end
 	end
 		
@@ -957,7 +997,7 @@ function FCF_IsValidChatFrame(chatFrame)
 		return nil;
 	end
 
-	if ( not chatFrame:IsVisible() and not chatFrame.isDocked ) then
+	if ( not chatFrame:IsShown() and not chatFrame.isDocked ) then
 		return nil;
 	end
 	
@@ -995,9 +1035,9 @@ function FCF_SetButtonSide(chatFrame, buttonSide)
 		return;
 	end
 	if ( buttonSide == "left" ) then
-		getglobal(chatFrame:GetName().."BottomButton"):SetPoint("BOTTOMLEFT", chatFrame:GetName(), "BOTTOMLEFT", -32, -4);
+		getglobal(chatFrame:GetName().."BottomButton"):SetPoint("BOTTOMLEFT", chatFrame, "BOTTOMLEFT", -32, -4);
 	elseif ( buttonSide == "right" ) then
-		getglobal(chatFrame:GetName().."BottomButton"):SetPoint("BOTTOMLEFT", chatFrame:GetName(), "BOTTOMRIGHT", 0, -4);
+		getglobal(chatFrame:GetName().."BottomButton"):SetPoint("BOTTOMLEFT", chatFrame, "BOTTOMRIGHT", 0, -4);
 	end
 	chatFrame.buttonSide = buttonSide;
 end
@@ -1017,9 +1057,9 @@ function FCF_DockUpdate()
 		name = value:GetName();
 		if ( index ~= 1 ) then
 			value:ClearAllPoints();
-			value:SetPoint("TOPLEFT", DEFAULT_CHAT_FRAME:GetName(), "TOPLEFT", 0, 0);
-			value:SetPoint("BOTTOMLEFT", DEFAULT_CHAT_FRAME:GetName(), "BOTTOMLEFT", 0, 0);
-			value:SetPoint("BOTTOMRIGHT", DEFAULT_CHAT_FRAME:GetName(), "BOTTOMRIGHT", 0, 0);
+			value:SetPoint("TOPLEFT", DEFAULT_CHAT_FRAME, "TOPLEFT", 0, 0);
+			value:SetPoint("BOTTOMLEFT", DEFAULT_CHAT_FRAME, "BOTTOMLEFT", 0, 0);
+			value:SetPoint("BOTTOMRIGHT", DEFAULT_CHAT_FRAME, "BOTTOMRIGHT", 0, 0);
 		end
 		
 		-- Select or deselect the frame
@@ -1027,13 +1067,13 @@ function FCF_DockUpdate()
 		PanelTemplates_TabResize(5, chatTab);
 		if ( value == SELECTED_DOCK_FRAME ) then
 			value:Show();
-			if ( chatTab:IsVisible() ) then
+			if ( chatTab:IsShown() ) then
 				chatTab:SetAlpha(1.0);
 			end
 			
 		else
 			value:Hide();
-			if ( chatTab:IsVisible() ) then
+			if ( chatTab:IsShown() ) then
 				chatTab:SetAlpha(0.5);
 			end
 		end
@@ -1048,7 +1088,7 @@ function FCF_DockUpdate()
 
 		-- If this is the last frame in the dock then extend the dockRegion, otherwise shrink it to the default width
 		dockRegion = getglobal(chatTab:GetName().."DockRegion");
-		dockRegion:SetPoint("LEFT", chatTab:GetName(), "CENTER", 0 , 0);
+		dockRegion:SetPoint("LEFT", chatTab, "CENTER", 0 , 0);
 		if ( numDockedFrames == index ) then
 			dockRegion:SetPoint("RIGHT", "ChatFrame"..chatTab:GetID(), "RIGHT", 0, 0);
 		end
@@ -1121,7 +1161,6 @@ function FCF_DockFrame(frame, index)
 	
 	-- Save docked state
 	FCF_SaveDock();
-	--SetChatWindowDocked(frame:GetID(), index);
 	FCF_SelectDockFrame(frame);
 
 	-- Set scroll button side
@@ -1136,7 +1175,7 @@ function FCF_DockFrame(frame, index)
 end
 
 function FCF_UnDockFrame(frame)
-	if ( frame == DEFAULT_CHAT_FRAME ) then
+	if ( frame == DEFAULT_CHAT_FRAME or not frame.isDocked ) then
 		return;
 	end
 	-- Undock frame regardless of whether its docked or not
@@ -1155,7 +1194,7 @@ function FCF_UnDockFrame(frame)
 	
 	-- Reset dockregion anchors
 	dockRegion = getglobal(frame:GetName().."TabDockRegion");
-	dockRegion:SetPoint("RIGHT", frame:GetName(), "RIGHT", 0, 0);
+	dockRegion:SetPoint("RIGHT", frame, "RIGHT", 0, 0);
 	dockRegion:Hide();
 	
 	-- Select first docked frame
@@ -1178,8 +1217,10 @@ function FCF_SelectDockFrame(frame)
 end
 
 function FCF_Tab_OnClick(button)
+	local chatFrame = getglobal("ChatFrame"..this:GetID());
 	-- If Rightclick bring up the options menu
 	if ( button == "RightButton" ) then
+		chatFrame:StopMovingOrSizing();
 		ToggleDropDownMenu(1, nil, getglobal(this:GetName().."DropDown"), this:GetName(), 0, 0);
 		return;
 	end
@@ -1188,7 +1229,6 @@ function FCF_Tab_OnClick(button)
 	CloseDropDownMenus();
 
 	-- If frame is docked assume that a click is to select a chat window, not drag it
-	local chatFrame = getglobal("ChatFrame"..this:GetID());
 	SELECTED_CHAT_FRAME = chatFrame;
 	if ( chatFrame.isDocked ) then
 		FCF_SelectDockFrame(chatFrame);
@@ -1226,7 +1266,7 @@ end
 function FCF_GetActiveDockRegion()
 	for index, value in DOCKED_CHAT_FRAMES do
 		dockRegion = getglobal(value:GetName().."TabDockRegion");
-		if ( dockRegion:IsVisible() ) then
+		if ( dockRegion:IsShown() ) then
 			return index + 1;
 		end
 	end
@@ -1247,6 +1287,10 @@ end
 function FCF_Close(frame)
 	if ( not frame ) then
 		frame = FCF_GetCurrentChatFrame();
+	end
+	if ( not frame:IsShown() ) then
+		FCF_DockUpdate();
+		return;
 	end
 	if ( frame == DEFAULT_CHAT_FRAME ) then
 		return;
@@ -1301,16 +1345,40 @@ function FCF_FlashTab()
 end
 
 -- Function for repositioning the chat dock depending on if there's a shapeshift bar/stance bar, etc...
-function FCF_UpdateDockPosition(case)
+function FCF_UpdateDockPosition()
 	if ( DEFAULT_CHAT_FRAME:IsUserPlaced() ) then
 		if ( SIMPLE_CHAT ~= "1" ) then
 			return;
 		end
 	end
-	if ( case == "showshapeshift" or case == "showpetbar" ) then
-		DEFAULT_CHAT_FRAME:SetPoint("BOTTOMLEFT", "UIParent", "BOTTOMLEFT", 32, 100);
-	elseif ( case == "hidepetbar" or case == "hideshapeshift" ) then
-		DEFAULT_CHAT_FRAME:SetPoint("BOTTOMLEFT", "UIParent", "BOTTOMLEFT", 32, 85);
+	
+	local chatOffset = 85;
+	if ( GetNumShapeshiftForms() > 0 or HasPetUI() or PetHasActionBar() ) then
+		if ( MultiBarBottomLeft:IsShown() ) then
+			chatOffset = chatOffset + 55;
+		else
+			chatOffset = chatOffset + 15;
+		end
+	elseif ( MultiBarBottomLeft:IsShown() ) then
+		chatOffset = chatOffset + 15;
+	end
+	DEFAULT_CHAT_FRAME:SetPoint("BOTTOMLEFT", "UIParent", "BOTTOMLEFT", 32, chatOffset);
+	FCF_DockUpdate();
+end
+
+function FCF_UpdateCombatLogPosition()
+	if ( SIMPLE_CHAT == "1" ) then
+		local xOffset = -32;
+		local yOffset = 75;
+		if ( MultiBarBottomRight:IsShown() ) then
+			yOffset = yOffset + 40;
+		end
+		if ( MultiBarLeft:IsShown() ) then
+			xOffset = xOffset - 88;
+		elseif ( MultiBarRight:IsShown() ) then
+			xOffset = xOffset - 43;
+		end
+		ChatFrame2:SetPoint("BOTTOMRIGHT", "UIParent", "BOTTOMRIGHT", xOffset, yOffset);
 	end
 end
 
@@ -1321,6 +1389,7 @@ function FCF_Set_SimpleChat()
 	ChatFrame1:SetWidth(608);
 	ChatFrame1:SetHeight(120);
 	ChatFrame1Tab:Hide();
+	FCF_SetButtonSide(ChatFrame1, "left")
 	FCF_SetLocked(ChatFrame1, 1);
 	FCF_SetChatWindowFontSize(ChatFrame1, 14);
 	FCF_SetWindowName(ChatFrame1, GENERAL);
@@ -1328,9 +1397,9 @@ function FCF_Set_SimpleChat()
 
 	FCF_UnDockFrame(ChatFrame2);
 	ChatFrame2:ClearAllPoints();
-	ChatFrame2:SetPoint("BOTTOMRIGHT", "UIParent", "BOTTOMRIGHT", -32, 75);
 	ChatFrame2:SetWidth(320);
 	ChatFrame2:SetHeight(120);
+	FCF_SetTabPosition(ChatFrame2, 0);
 	ChatFrame2Tab:Hide();
 	FCF_SetLocked(ChatFrame2, 1);
 	FCF_SetChatWindowFontSize(ChatFrame2, 14);
@@ -1344,6 +1413,15 @@ function FCF_Set_SimpleChat()
 	for i=3, NUM_CHAT_WINDOWS do
 		FCF_Close(getglobal("ChatFrame"..i));
 	end
+
+	-- Update all the anchors
+	UIParent_ManageFramePositions();
+end
+
+function FCF_Set_NormalChat()
+	ChatFrame2:StartMoving();
+	ChatFrame2:StopMovingOrSizing();
+	FCF_SetLocked(ChatFrame2, nil);
 end
 
 -- Lockout all chatframes from being movable/editable
@@ -1366,7 +1444,7 @@ end
 -- Function to toggle the combat log if in simple chat mode
 function ToggleCombatLog()
 	if ( SIMPLE_CHAT == "1" ) then
-		if ( ChatFrame2:IsVisible() ) then
+		if ( ChatFrame2:IsShown() ) then
 			ChatFrame2:Hide();
 		else
 			ChatFrame2:Show();

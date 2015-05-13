@@ -1,8 +1,8 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="FloatingChatFrame.lua"/>
 	<!-- DockRegion Template -->
-	<Frame name="DockRegionTemplate" virtual="true"	hidden="false">
+	<Frame name="DockRegionTemplate" virtual="true" parent="UIParent" hidden="true">
 		<Size>
 			<AbsDimension x="0" y="65"/>
 		</Size>
@@ -33,7 +33,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 	</Frame>
 
 	<!-- Tab Template-->
-	<Button name="ChatTabTemplate" hidden="true" virtual="true">
+	<Button name="ChatTabTemplate" hidden="true" frameStrata="LOW" parent="UIParent" virtual="true">
 		<Size>
 			<AbsDimension x="64" y="32"/>
 		</Size>
@@ -124,7 +124,14 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</OnLoad>
 			<OnClick>
 				FCF_Tab_OnClick(arg1);
+				PlaySound("UChatScrollButton");
 			</OnClick>
+			<OnEnter>
+				GameTooltip_AddNewbieTip(CHAT_OPTIONS_LABEL, 1.0, 1.0, 1.0, NEWBIE_TOOLTIP_CHATOPTIONS, 1);
+			</OnEnter>
+			<OnLeave>
+				GameTooltip:Hide();
+			</OnLeave>
 			<OnDragStart>
 				local chatFrame = getglobal("ChatFrame"..this:GetID());
 				if ( chatFrame == DEFAULT_CHAT_FRAME ) then
@@ -170,7 +177,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				MOVING_CHATFRAME = nil;
 			</OnDragStop>
 		</Scripts>
-		<NormalText name="$parentText" inherits="GameFontNormalSmall">
+		<ButtonText name="$parentText">
 			<Size>
 				<AbsDimension x="50" y="8"/>
 			</Size>
@@ -181,12 +188,27 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Offset>
 				</Anchor>
 			</Anchors>
-		</NormalText>
+		</ButtonText>
+		<NormalFont inherits="GameFontNormalSmall"/>
+		<HighlightTexture file="Interface\PaperDollInfoFrame\UI-Character-Tab-Highlight" alphaMode="ADD">
+			<Anchors>
+				<Anchor point="LEFT" relativeTo="$parentLeft">
+					<Offset>
+						<AbsDimension x="0" y="-7"/>
+					</Offset>
+				</Anchor>
+				<Anchor point="RIGHT" relativeTo="$parentRight">
+					<Offset>
+						<AbsDimension x="0" y="-7"/>
+					</Offset>
+				</Anchor>
+			</Anchors>
+		</HighlightTexture>
 	</Button>
 
 	<!-- ===============================================================================-->
 	<!-- Floating frame template-->
-	<ScrollingMessageFrame name="FloatingChatFrameTemplate" movable="true" enableMouse="false" resizable="true" inherits="ChatFrameTemplate" parent="UIParent" hidden="false" virtual="true">
+	<ScrollingMessageFrame name="FloatingChatFrameTemplate" movable="true" enableMouse="false" resizable="true" inherits="ChatFrameTemplate" parent="UIParent" hidden="true" virtual="true">
 		<Size>
 			<AbsDimension x="430" y="128"/>
 		</Size>
@@ -660,7 +682,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 	</ScrollingMessageFrame>
 
 	<!-- Main chat window -->
-	<ScrollingMessageFrame name="ChatFrame1" inherits="FloatingChatFrameTemplate" parent="UIParent" id="1">
+	<ScrollingMessageFrame name="ChatFrame1" hidden="false" inherits="FloatingChatFrameTemplate" id="1">
 		<Size>
 			<AbsDimension x="430" y="120"/>
 		</Size>
@@ -678,8 +700,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				this:RegisterEvent("EXECUTE_CHAT_LINE");
 				this:RegisterEvent("CVAR_UPDATE");
 				this:RegisterEvent("UPDATE_CHAT_WINDOWS");
-				ChatFrame_DisplayStartupText(this);
-				
+				--ChatFrame_DisplayStartupText(this);
 			</OnLoad>
 			<OnEvent>
 				ChatFrame_OnEvent(event);
@@ -688,7 +709,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		</Scripts>
 	</ScrollingMessageFrame>
 	<Frame name="ChatFrame1TabDockRegion" inherits="DockRegionTemplate"/>
-	<Button name="ChatFrame1Tab" inherits="ChatTabTemplate" id="1" parent="UIParent">
+	<Button name="ChatFrame1Tab" inherits="ChatTabTemplate" id="1">
 		<Anchors>
 			<Anchor point="BOTTOMLEFT" relativeTo="ChatFrame1Background" relativePoint="TOPLEFT">
 				<Offset>
@@ -724,7 +745,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		</Scripts>
 	</EditBox>
 	<!-- ChatFrame1 Specific buttons -->
-	<Button name="ChatFrameMenuButton" parent="UIParent">
+	<Button name="ChatFrameMenuButton" frameStrata="LOW" parent="UIParent">
 		<Size>
 			<AbsDimension x="32" y="32"/>
 		</Size>
@@ -736,6 +757,12 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				PlaySound("igChatEmoteButton");
 				ChatFrame_OpenMenu();
 			</OnClick>
+			<OnEnter>
+				GameTooltip_AddNewbieTip(CHAT_LABEL, 1.0, 1.0, 1.0, NEWBIE_TOOLTIP_CHATMENU, 1);
+			</OnEnter>
+			<OnLeave>
+				GameTooltip:Hide();
+			</OnLeave>
 		</Scripts>
 		<NormalTexture file="Interface\ChatFrame\UI-ChatIcon-Chat-Up"/>
 		<PushedTexture file="Interface\ChatFrame\UI-ChatIcon-Chat-Down"/>
@@ -782,37 +809,30 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</OnLoad>
 		</Scripts>
 	</Frame>	
-	<Frame name="ChatFrame2TabDockRegion" inherits="DockRegionTemplate" parent="UIParent"/>
-	<Frame name="ChatFrame3TabDockRegion" inherits="DockRegionTemplate" parent="UIParent"/>
-	<Frame name="ChatFrame4TabDockRegion" inherits="DockRegionTemplate" parent="UIParent"/>
-	<Frame name="ChatFrame5TabDockRegion" inherits="DockRegionTemplate" parent="UIParent"/>
-	<Frame name="ChatFrame6TabDockRegion" inherits="DockRegionTemplate" parent="UIParent"/>
-	<Frame name="ChatFrame7TabDockRegion" inherits="DockRegionTemplate" parent="UIParent"/>
-	<Frame name="ChatFrame8TabDockRegion" inherits="DockRegionTemplate" parent="UIParent"/>
-	<Frame name="ChatFrame9TabDockRegion" inherits="DockRegionTemplate" parent="UIParent"/>
-	<Frame name="ChatFrame10TabDockRegion" inherits="DockRegionTemplate" parent="UIParent"/>
-	<Button name="ChatFrame2Tab" inherits="ChatTabTemplate" id="2" parent="UIParent"/>
-	<ScrollingMessageFrame name="ChatFrame2" inherits="FloatingChatFrameTemplate" parent="UIParent" id="2"/>
-	<Button name="ChatFrame3Tab" inherits="ChatTabTemplate" id="3" parent="UIParent"/>
-	<ScrollingMessageFrame name="ChatFrame3" inherits="FloatingChatFrameTemplate" parent="UIParent" id="3"/>
-	<Button name="ChatFrame4Tab" inherits="ChatTabTemplate" id="4" parent="UIParent"/>
-	<ScrollingMessageFrame name="ChatFrame4" inherits="FloatingChatFrameTemplate" parent="UIParent" id="4"/>
-	<Button name="ChatFrame5Tab" inherits="ChatTabTemplate" id="5" parent="UIParent"/>
-	<ScrollingMessageFrame name="ChatFrame5" inherits="FloatingChatFrameTemplate" parent="UIParent" id="5"/>
-	<Button name="ChatFrame6Tab" inherits="ChatTabTemplate" id="6" parent="UIParent"/>
-	<ScrollingMessageFrame name="ChatFrame6" inherits="FloatingChatFrameTemplate" parent="UIParent" id="6"/>
-	<Button name="ChatFrame7Tab" inherits="ChatTabTemplate" id="7" parent="UIParent"/>
-	<ScrollingMessageFrame name="ChatFrame7" inherits="FloatingChatFrameTemplate" parent="UIParent" id="7"/>
+	<Frame name="ChatFrame2TabDockRegion" inherits="DockRegionTemplate"/>
+	<Frame name="ChatFrame3TabDockRegion" inherits="DockRegionTemplate"/>
+	<Frame name="ChatFrame4TabDockRegion" inherits="DockRegionTemplate"/>
+	<Frame name="ChatFrame5TabDockRegion" inherits="DockRegionTemplate"/>
+	<Frame name="ChatFrame6TabDockRegion" inherits="DockRegionTemplate"/>
+	<Frame name="ChatFrame7TabDockRegion" inherits="DockRegionTemplate"/>
+	<Frame name="ChatFrame8TabDockRegion" inherits="DockRegionTemplate"/>
+	<Frame name="ChatFrame9TabDockRegion" inherits="DockRegionTemplate"/>
+	<Frame name="ChatFrame10TabDockRegion" inherits="DockRegionTemplate"/>
+	<Button name="ChatFrame2Tab" inherits="ChatTabTemplate" id="2"/>
+	<ScrollingMessageFrame name="ChatFrame2" inherits="FloatingChatFrameTemplate" id="2"/>
+	<Button name="ChatFrame3Tab" inherits="ChatTabTemplate" id="3"/>
+	<ScrollingMessageFrame name="ChatFrame3" inherits="FloatingChatFrameTemplate" id="3"/>
+	<Button name="ChatFrame4Tab" inherits="ChatTabTemplate" id="4"/>
+	<ScrollingMessageFrame name="ChatFrame4" inherits="FloatingChatFrameTemplate" id="4"/>
+	<Button name="ChatFrame5Tab" inherits="ChatTabTemplate" id="5"/>
+	<ScrollingMessageFrame name="ChatFrame5" inherits="FloatingChatFrameTemplate" id="5"/>
+	<Button name="ChatFrame6Tab" inherits="ChatTabTemplate" id="6"/>
+	<ScrollingMessageFrame name="ChatFrame6" inherits="FloatingChatFrameTemplate" id="6"/>
+	<Button name="ChatFrame7Tab" inherits="ChatTabTemplate" id="7"/>
+	<ScrollingMessageFrame name="ChatFrame7" inherits="FloatingChatFrameTemplate" id="7"/>
 	<!-- Hack to get around load order issue -->
-	<Frame name="HiddenFrame" hidden="true">
-		<Scripts>
-			<OnLoad>
-				FCF_DockFrame(ChatFrame1, 1);
-				if ( SIMPLE_CHAT == "1" ) then
-					FCF_Set_SimpleChat();
-				end
-			</OnLoad>
-		</Scripts>
-	</Frame>
+	<Script>
+		FCF_DockFrame(ChatFrame1, 1);
+	</Script>
 </Ui>
 	

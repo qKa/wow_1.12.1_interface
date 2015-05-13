@@ -1,8 +1,15 @@
 function Localize()
-	GOVERNMENT_RATING_IMAGE = "Interface\\Glues\\Login\\Glues-ESRBRating";
+	-- Put all locale specific string adjustments here
+	--SHOW_CONTEST_AGREEMENT = 1;
+end
 
-	WorldOfWarcraftRating:SetTexture(GOVERNMENT_RATING_IMAGE);
+function LocalizeFrames()
+	-- Put all locale specific UI adjustments here
+	WorldOfWarcraftRating:SetTexture("Interface\\Glues\\Login\\Glues-ESRBRating");
 	WorldOfWarcraftRating:ClearAllPoints();
-	WorldOfWarcraftRating:SetPoint("BOTTOMLEFT", "GlueParent", "BOTTOMLEFT", 10, 45);
+	WorldOfWarcraftRating:SetPoint("BOTTOMLEFT", "AccountLoginUI", "BOTTOMLEFT", 20, 45);
 	WorldOfWarcraftRating:Show();
+
+	-- Random name button is for English only
+	CharacterCreateRandomName:Show();
 end

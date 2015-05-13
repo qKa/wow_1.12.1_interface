@@ -1,20 +1,44 @@
 NUM_WORLDMAP_DETAIL_TILES = 12;
-NUM_WORLDMAP_POIS = 32;
-NUM_WORLDMAP_POI_COLUMNS = 4;
-WORLDMAP_POI_TEXTURE_WIDTH = 64;
-NUM_WORLDMAP_OVERLAYS = 40;
+NUM_WORLDMAP_POIS = 0;
+NUM_WORLDMAP_POI_COLUMNS = 8;
+WORLDMAP_POI_TEXTURE_WIDTH = 128;
+NUM_WORLDMAP_OVERLAYS = 0;
+NUM_WORLDMAP_FLAGS = 2;
 
 function WorldMapFrame_OnLoad()
+	this:RegisterEvent("PLAYER_ENTERING_WORLD");
 	this:RegisterEvent("WORLD_MAP_UPDATE");
 	this:RegisterEvent("CLOSE_WORLD_MAP");
+	this:RegisterEvent("WORLD_MAP_NAME_UPDATE");
 	this.poiHighlight = nil;
 	this.areaName = nil;
+	CreateWorldMapArrowFrame(WorldMapFrame);
 	WorldMapFrame_Update();
+
+	-- Hide the world behind the map when we're in widescreen mode
+	local width = GetScreenWidth();
+	local height = GetScreenHeight();
+	
+	if ( width / height < 4 / 3 ) then
+		width = width * 1.25;
+		height = height * 1.25;
+	end
+	
+	BlackoutWorld:SetWidth( width );
+	BlackoutWorld:SetHeight( height );
 end
 
 function WorldMapFrame_OnEvent()
+	-- FIX ME FOR 1.13
+	if ( event == "PLAYER_ENTERING_WORLD" ) then
+		if ( this:IsVisible() ) then
+			HideUIPanel(WorldMapFrame);
+		end
+	end
 	if ( event == "WORLD_MAP_UPDATE" ) then
-		WorldMapFrame_Update();
+		if ( this:IsVisible() ) then
+			WorldMapFrame_Update();
+		end
 	elseif ( event == "CLOSE_WORLD_MAP" ) then
 		HideUIPanel(this);
 	end
@@ -40,33 +64,37 @@ function WorldMapFrame_Update()
 
 	-- Setup the POI's
 	local numPOIs = GetNumMapLandmarks();
-	local name, textureIndex, x, y;
+	local name, description, textureIndex, x, y;
 	local worldMapPOI;
 	local x1, x2, y1, y2;
-	-- To be removed... eventually
-	if ( numPOIs > NUM_WORLDMAP_POIS ) then
-		message("Not enough POI buttons, add more to the XML");
+
+	if ( NUM_WORLDMAP_POIS < numPOIs ) then
+		for i=NUM_WORLDMAP_POIS+1, numPOIs do
+			WorldMap_CreatePOI(i);
+		end
+		NUM_WORLDMAP_POIS = numPOIs;
 	end
-	for i=1, NUM_WORLDMAP_POIS, 1 do
+	for i=1, NUM_WORLDMAP_POIS do
 		worldMapPOI = getglobal("WorldMapFramePOI"..i);
 		if ( i <= numPOIs ) then
-			name, textureIndex, x, y = GetMapLandmarkInfo(i);
+			name, description, textureIndex, x, y = GetMapLandmarkInfo(i);
 			x1, x2, y1, y2 = WorldMap_GetPOITextureCoords(textureIndex);
 			getglobal(worldMapPOI:GetName().."Texture"):SetTexCoord(x1, x2, y1, y2);
 			x = x * WorldMapButton:GetWidth();
 			y = -y * WorldMapButton:GetHeight();
 			worldMapPOI:SetPoint("CENTER", "WorldMapButton", "TOPLEFT", x, y );
 			worldMapPOI.name = name;
+			worldMapPOI.description = description;
 			worldMapPOI:Show();
 		else
 			worldMapPOI:Hide();
 		end
 	end
-	
-	-- Overlay stuff
+
+	-- Setup the overlays
 	local numOverlays = GetNumMapOverlays();
 	local textureName, textureWidth, textureHeight, offsetX, offsetY, mapPointX, mapPointY;
-	local textureCount = 1;
+	local textureCount = 0, neededTextures;
 	local texture;
 	local texturePixelWidth, textureFileWidth, texturePixelHeight, textureFileHeight;
 	local numTexturesWide, numTexturesTall;
@@ -74,6 +102,13 @@ function WorldMapFrame_Update()
 		textureName, textureWidth, textureHeight, offsetX, offsetY, mapPointX, mapPointY = GetMapOverlayInfo(i);
 		numTexturesWide = ceil(textureWidth/256);
 		numTexturesTall = ceil(textureHeight/256);
+		neededTextures = textureCount + (numTexturesWide * numTexturesTall);
+		if ( neededTextures > NUM_WORLDMAP_OVERLAYS ) then
+			for j=NUM_WORLDMAP_OVERLAYS+1, neededTextures do
+				WorldMapDetailFrame:CreateTexture("WorldMapOverlay"..j, "ARTWORK");
+			end
+			NUM_WORLDMAP_OVERLAYS = neededTextures;
+		end
 		for j=1, numTexturesTall do
 			if ( j < numTexturesTall ) then
 				texturePixelHeight = 256;
@@ -89,10 +124,7 @@ function WorldMapFrame_Update()
 				end
 			end
 			for k=1, numTexturesWide do
-				if ( textureCount > NUM_WORLDMAP_OVERLAYS ) then
-					message("Too many worldmap overlays!");
-					return;
-				end
+				textureCount = textureCount + 1;
 				texture = getglobal("WorldMapOverlay"..textureCount);
 				if ( k < numTexturesWide ) then
 					texturePixelWidth = 256;
@@ -110,21 +142,56 @@ function WorldMapFrame_Update()
 				texture:SetWidth(texturePixelWidth);
 				texture:SetHeight(texturePixelHeight);
 				texture:SetTexCoord(0, texturePixelWidth/textureFileWidth, 0, texturePixelHeight/textureFileHeight);
-				texture:ClearAllPoints();
-				texture:SetPoint("TOPLEFT", "WorldMapDetailFrame", "TOPLEFT", offsetX + (256 * (k-1)), -(offsetY + (256 * (j - 1))));
+				texture:SetPoint("TOPLEFT", offsetX + (256 * (k-1)), -(offsetY + (256 * (j - 1))));
 				texture:SetTexture(textureName..(((j - 1) * numTexturesWide) + k));
 				texture:Show();
-				textureCount = textureCount +1;
 			end
 		end
 	end
-	for i=textureCount, NUM_WORLDMAP_OVERLAYS do
+	for i=textureCount+1, NUM_WORLDMAP_OVERLAYS do
 		getglobal("WorldMapOverlay"..i):Hide();
 	end
 end
 
+function WorldMapPOI_OnEnter()
+	WorldMapFrame.poiHighlight = 1;
+	if ( this.description and strlen(this.description) > 0 ) then
+		WorldMapFrameAreaLabel:SetText(this.name);
+		WorldMapFrameAreaDescription:SetText(this.description);
+	else
+		WorldMapFrameAreaLabel:SetText(this.name);
+		WorldMapFrameAreaDescription:SetText("");
+	end
+end
+
+function WorldMapPOI_OnLeave()
+	WorldMapFrame.poiHighlight = nil;
+	WorldMapFrameAreaLabel:SetText(WorldMapFrame.areaName);
+	WorldMapFrameAreaDescription:SetText("");
+end
+
+function WorldMapPOI_OnClick()
+	WorldMapButton_OnClick(arg1, WorldMapButton);
+end
+
+function WorldMap_CreatePOI(index)
+	local button = CreateFrame("Button", "WorldMapFramePOI"..index, WorldMapButton);
+	button:SetWidth(32);
+	button:SetHeight(32);
+	button:RegisterForClicks("LeftButtonUp", "RightButtonUp");
+	button:SetScript("OnEnter", WorldMapPOI_OnEnter);
+	button:SetScript("OnLeave", WorldMapPOI_OnLeave);
+	button:SetScript("OnClick", WorldMapPOI_OnClick);
+
+	local texture = button:CreateTexture(button:GetName().."Texture", "BACKGROUND");
+	texture:SetWidth(16);
+	texture:SetHeight(16);
+	texture:SetPoint("CENTER", 0, 0);
+	texture:SetTexture("Interface\\Minimap\\POIIcons");
+end
+
 function WorldMap_GetPOITextureCoords(index)
-	local worldMapIconDimension = WorldMapFramePOI1Texture:GetWidth();
+	local worldMapIconDimension = 16;
 	local xCoord1, xCoord2, yCoord1, yCoord2; 
 	local coordIncrement = worldMapIconDimension / WORLDMAP_POI_TEXTURE_WIDTH;
 	xCoord1 = mod(index , NUM_WORLDMAP_POI_COLUMNS) * coordIncrement;
@@ -214,8 +281,8 @@ function WorldMapButton_OnClick(mouseButton, button)
 			button = this;
 		end
 		local x, y = GetCursorPosition();
-		x = x / button:GetScale();
-		y = y / button:GetScale();
+		x = x / button:GetEffectiveScale();
+		y = y / button:GetEffectiveScale();
 
 		local centerX, centerY = button:GetCenter();
 		local width = button:GetWidth();
@@ -228,10 +295,10 @@ function WorldMapButton_OnClick(mouseButton, button)
 	end
 end
 
-function WorldMapButton_OnUpdate()
+function WorldMapButton_OnUpdate(elapsed)
 	local x, y = GetCursorPosition();
-	x = x / this:GetScale();
-	y = y / this:GetScale();
+	x = x / this:GetEffectiveScale();
+	y = y / this:GetEffectiveScale();
 
 	local centerX, centerY = this:GetCenter();
 	local width = this:GetWidth();
@@ -263,31 +330,117 @@ function WorldMapButton_OnUpdate()
 		WorldMapHighlight:Hide();
 	end
 	--Position player
+	UpdateWorldMapArrowFrames();
 	local playerX, playerY = GetPlayerMapPosition("player");
 	if ( playerX == 0 and playerY == 0 ) then
-		WorldMapPlayer:Hide();
+		ShowWorldMapArrowFrame(nil);
+		WorldMapPing:Hide();
 	else
 		playerX = playerX * WorldMapDetailFrame:GetWidth();
 		playerY = -playerY * WorldMapDetailFrame:GetHeight();
-		
+		PositionWorldMapArrowFrame("CENTER", "WorldMapDetailFrame", "TOPLEFT", playerX, playerY);
+		ShowWorldMapArrowFrame(1);
+
+		-- Position clear button to detect mouseovers
 		WorldMapPlayer:SetPoint("CENTER", "WorldMapDetailFrame", "TOPLEFT", playerX, playerY);
-		WorldMapPlayer:Show();
+
+		-- Position player ping if its shown
+		if ( WorldMapPing:IsVisible() ) then
+			WorldMapPing:SetPoint("CENTER", "WorldMapDetailFrame", "TOPLEFT", playerX-7, playerY-9);
+			-- If ping has a timer greater than 0 count it down, otherwise fade it out
+			if ( WorldMapPing.timer > 0 ) then
+				WorldMapPing.timer = WorldMapPing.timer - elapsed;
+				if ( WorldMapPing.timer <= 0 ) then
+					WorldMapPing.fadeOut = 1;
+					WorldMapPing.fadeOutTimer = MINIMAPPING_FADE_TIMER;
+				end
+			elseif ( WorldMapPing.fadeOut ) then
+				WorldMapPing.fadeOutTimer = WorldMapPing.fadeOutTimer - elapsed;
+				if ( WorldMapPing.fadeOutTimer > 0 ) then
+					WorldMapPing:SetAlpha(255 * (WorldMapPing.fadeOutTimer/MINIMAPPING_FADE_TIMER))
+				else
+					WorldMapPing.fadeOut = nil;
+					WorldMapPing:Hide();
+				end
+			end
+		end
 	end
+
 	--Position groupmates
 	local partyX, partyY, partyMemberFrame;
-	for i=1, MAX_PARTY_MEMBERS, 1 do
-		partyX, partyY = GetPlayerMapPosition("party"..i);
-		partyMemberFrame = getglobal("WorldMapParty"..i);
+	local playerCount = 0;
+	if ( GetNumRaidMembers() > 0 ) then
+		for i=1, MAX_PARTY_MEMBERS do
+			partyMemberFrame = getglobal("WorldMapParty"..i);
+			partyMemberFrame:Hide();
+		end
+		for i=1, MAX_RAID_MEMBERS do
+			local unit = "raid"..i;
+			partyX, partyY = GetPlayerMapPosition(unit);
+			partyMemberFrame = getglobal("WorldMapRaid"..playerCount + 1);
+			if ( (partyX ~= 0 or partyY ~= 0) and not UnitIsUnit(unit, "player") ) then
+				partyX = partyX * WorldMapDetailFrame:GetWidth();
+				partyY = -partyY * WorldMapDetailFrame:GetHeight();
+				partyMemberFrame:SetPoint("CENTER", "WorldMapDetailFrame", "TOPLEFT", partyX, partyY);
+				partyMemberFrame.name = nil;
+				partyMemberFrame.unit = unit;
+				partyMemberFrame:Show();
+				playerCount = playerCount + 1;
+			end
+		end
+	else
+		for i=1, MAX_PARTY_MEMBERS do
+			partyX, partyY = GetPlayerMapPosition("party"..i);
+			partyMemberFrame = getglobal("WorldMapParty"..i);
+			if ( partyX == 0 and partyY == 0 ) then
+				partyMemberFrame:Hide();
+			else
+				partyX = partyX * WorldMapDetailFrame:GetWidth();
+				partyY = -partyY * WorldMapDetailFrame:GetHeight();
+				partyMemberFrame:SetPoint("CENTER", "WorldMapDetailFrame", "TOPLEFT", partyX, partyY);
+				partyMemberFrame:Show();
+			end
+		end
+	end
+	-- Position Team Members
+	local numTeamMembers = GetNumBattlefieldPositions();
+	for i=playerCount+1, MAX_RAID_MEMBERS do
+		partyX, partyY, name = GetBattlefieldPosition(i - playerCount);
+		partyMemberFrame = getglobal("WorldMapRaid"..i);
 		if ( partyX == 0 and partyY == 0 ) then
 			partyMemberFrame:Hide();
 		else
 			partyX = partyX * WorldMapDetailFrame:GetWidth();
 			partyY = -partyY * WorldMapDetailFrame:GetHeight();
 			partyMemberFrame:SetPoint("CENTER", "WorldMapDetailFrame", "TOPLEFT", partyX, partyY);
+			partyMemberFrame.name = name;
 			partyMemberFrame:Show();
 		end
 	end
-	--Position corpse
+
+	-- Position flags
+	local flagX, flagY, flagToken, flagFrame, flagTexture;
+	local numFlags = GetNumBattlefieldFlagPositions();
+	for i=1, numFlags do
+		flagX, flagY, flagToken = GetBattlefieldFlagPosition(i);
+		flagFrame = getglobal("WorldMapFlag"..i);
+		flagTexture = getglobal("WorldMapFlag"..i.."Texture");
+		if ( flagX == 0 and flagY == 0 ) then
+			flagFrame:Hide();
+		else
+			flagX = flagX * WorldMapDetailFrame:GetWidth();
+			flagY = -flagY * WorldMapDetailFrame:GetHeight();
+			flagFrame:SetPoint("CENTER", "WorldMapDetailFrame", "TOPLEFT", flagX, flagY);
+			flagTexture:SetTexture("Interface\\WorldStateFrame\\"..flagToken);
+			flagFrame:Show();
+		end
+	end
+	for i=numFlags+1, NUM_WORLDMAP_FLAGS do
+		flagFrame = getglobal("WorldMapFlag"..i);
+		flagFrame:Hide();
+	end
+
+	-- Position corpse
 	local corpseX, corpseY = GetCorpseMapPosition();
 	if ( corpseX == 0 and corpseY == 0 ) then
 		WorldMapCorpse:Hide();
@@ -298,13 +451,65 @@ function WorldMapButton_OnUpdate()
 		WorldMapCorpse:SetPoint("CENTER", "WorldMapDetailFrame", "TOPLEFT", corpseX, corpseY);
 		WorldMapCorpse:Show();
 	end
+
+end
+
+function WorldMapUnit_OnEnter()
+	-- Adjust the tooltip based on which side the unit button is on
+	local x, y = this:GetCenter();
+	local parentX, parentY = this:GetParent():GetCenter();
+	if ( x > parentX ) then
+		WorldMapTooltip:SetOwner(this, "ANCHOR_LEFT");
+	else
+		WorldMapTooltip:SetOwner(this, "ANCHOR_RIGHT");
+	end
+	
+	-- See which POI's are in the same region and include their names in the tooltip
+	local unitButton;
+	local newLineString = "";
+	local tooltipText = "";
+	
+	-- Check player
+	if ( MouseIsOver(WorldMapPlayer) ) then
+		tooltipText = UnitName(WorldMapPlayer.unit);
+		newLineString = "\n";
+	end
+	-- Check party
+	for i=1, MAX_PARTY_MEMBERS do
+		unitButton = getglobal("WorldMapParty"..i);
+		if ( unitButton:IsVisible() and MouseIsOver(unitButton) ) then
+			tooltipText = tooltipText..newLineString..UnitName(unitButton.unit);
+			newLineString = "\n";
+		end
+	end
+	--Check Raid
+	for i=1, MAX_RAID_MEMBERS do
+		unitButton = getglobal("WorldMapRaid"..i);
+		if ( unitButton:IsVisible() and MouseIsOver(unitButton) ) then
+			-- Handle players not in your raid or party, but on your team
+			if ( unitButton.name ) then
+				tooltipText = tooltipText..newLineString..unitButton.name;		
+			else
+				tooltipText = tooltipText..newLineString..UnitName(unitButton.unit);
+			end
+			newLineString = "\n";
+		end
+	end
+	WorldMapTooltip:SetText(tooltipText);
+	WorldMapTooltip:Show();
+end
+
+function WorldMapFrame_PingPlayerPosition()
+	WorldMapPing:SetAlpha(255);
+	WorldMapPing:Show();
+	--PlaySound("MapPing");
+	WorldMapPing.timer = 1;
 end
 
 function ToggleWorldMap()
 	if ( WorldMapFrame:IsVisible() ) then
 		HideUIPanel(WorldMapFrame);
 	else
-		SetupWorldMapScale();
 		ShowUIPanel(WorldMapFrame);
 	end
 end

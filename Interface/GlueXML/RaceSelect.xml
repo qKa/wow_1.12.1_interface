@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="RaceSelect.lua"/>
 	<Model name="RaceSelect" setAllPoints="true" file="Interface\Glues\Models\UI_RaceSelection\UI_RaceSelection.mdx" hidden="true" parent="GlueParent" enableKeyboard="true">
 		<Frames>
@@ -273,8 +273,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 								RaceSelect_Back();
 							</OnClick>
 						</Scripts>
-						<NormalText inherits="GlueFontNormalLarge" text="BACK"/>
-						<HighlightText inherits="GlueFontHighlightLarge" text="BACK"/>
+						<ButtonText text="BACK"/>
+						<NormalFont inherits="GlueFontNormalLarge"/>
+						<HighlightFont inherits="GlueFontHighlightLarge"/>
 					</Button>
 					<Button name="RaceSelectOkButton" inherits="GlueButtonTemplate">
 						<Anchors>
@@ -289,8 +290,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 								RaceSelect_OnOk();
 							</OnClick>
 						</Scripts>
-						<NormalText inherits="GlueFontNormalLarge" text="ACCEPT"/>
-						<HighlightText inherits="GlueFontHighlightLarge" text="ACCEPT"/>
+						<ButtonText text="ACCEPT"/>
+						<NormalFont inherits="GlueFontNormalLarge"/>
+						<HighlightFont inherits="GlueFontHighlightLarge"/>
 					</Button>
 				</Frames>
 			</Frame>

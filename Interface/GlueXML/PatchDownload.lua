@@ -12,6 +12,7 @@ function PatchDownload_OnShow()
 	CurrentGlueMusic = "Sound\\Music\\GlueScreenMusic\\wow_main_theme.mp3";
 	PatchDownload_UpdateProgress();
 	PatchDownload_UpdateButtons();
+	PatchDownloadRestartButton:Enable();
 end
 
 function PatchDownload_UpdateButtons()
@@ -34,13 +35,17 @@ function PatchDownload_UpdateButtons()
 end
 
 function PatchDownload_OnKeyDown()
---	if ( arg1 == "ESCAPE" ) then
---		AccountLogin_Exit();
---	elseif ( arg1 == "ENTER" ) then
---		AccountLogin_Login();
---	elseif ( arg1 == "PRINTSCREEN" ) then
---		Screenshot();
---	end
+	if ( arg1 == "ESCAPE" ) then
+		if ( PatchDownloadCancelButton:IsVisible() ) then
+			PatchDownload_Cancel();
+		end
+	elseif ( arg1 == "ENTER" ) then
+		if ( PatchDownloadRestartButton:IsVisible() ) then
+			PatchDownload_Restart();
+		end
+	elseif ( arg1 == "PRINTSCREEN" ) then
+		Screenshot();
+	end
 end
 
 function PatchDownload_UpdateProgress()

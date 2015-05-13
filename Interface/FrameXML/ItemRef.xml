@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="ItemRef.lua"/>
 	<GameTooltip name="ItemRefTooltip" inherits="GameTooltipTemplate" parent="UIParent" enableMouse="true" toplevel="true" movable="true" frameStrata="HIGH" hidden="true">
 		<Size>
@@ -12,7 +12,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</Offset>
 			</Anchor>
 		</Anchors>
-		<TitleRegion setAllPoints="true"/>
 		<Frames>
 			<Button name="ItemRefCloseButton">
 				<Size>
@@ -39,7 +38,15 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<OnLoad>
 				GameTooltip_OnLoad();
 				this:SetPadding(16);
+				this:RegisterForDrag("LeftButton");
 			</OnLoad>
+			<OnDragStart>
+				this:StartMoving();
+			</OnDragStart>
+			<OnDragStop>
+				this:StopMovingOrSizing();
+				ValidateFramePosition(this);
+			</OnDragStop> 
 		</Scripts>
 	</GameTooltip>
 </Ui>

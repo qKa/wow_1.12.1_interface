@@ -11,8 +11,11 @@ end
 
 function RealmList_OnEvent()
 	if ( event == "OPEN_REALM_LIST" ) then
-		RealmListUpdate();
-		this:Show();
+		if ( this:IsVisible() ) then
+			RealmListUpdate();
+		else
+			this:Show();
+		end
 	end
 end
 
@@ -31,7 +34,7 @@ function RealmListUpdate()
 	local numRealms = GetNumRealms(RealmList.selectedCategory);
 	local name, numCharacters, invalidRealm, currentRealm, pvp, rp, load;
 	local realmIndex;
-	local pvpText, loadText;
+	local pvpText, loadText, isFull;
 
 	RealmListOkButton:Disable();
 	RealmListHighlight:Hide();
@@ -41,14 +44,15 @@ function RealmListUpdate()
 		if ( realmIndex > numRealms ) then
 			button:Hide();
 		else
-			name, numCharacters, invalidRealm, currentRealm, pvp, rp, load = GetRealmInfo(RealmList.selectedCategory, realmIndex);
-			
+			name, numCharacters, invalidRealm, realmDown, currentRealm, pvp, rp, load = GetRealmInfo(RealmList.selectedCategory, realmIndex);
+
 			if ( not name ) then
 				button:Hide();
 			else
 				pvpText = getglobal("RealmListRealmButton"..i.."PVP");
 				if ( pvp and rp ) then
 					pvpText:SetText(RPPVP_PARENTHESES);
+					pvpText:SetTextColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
 				elseif ( rp ) then
 					pvpText:SetText(RP_PARENTHESES);
 					pvpText:SetTextColor(GREEN_FONT_COLOR.r, GREEN_FONT_COLOR.g, GREEN_FONT_COLOR.b);
@@ -59,8 +63,24 @@ function RealmListUpdate()
 					pvpText:SetText(GAMETYPE_NORMAL);
 					pvpText:SetTextColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
 				end
+
+				isFull = nil;
 				loadText = getglobal("RealmListRealmButton"..i.."Load");
-				if ( load > 0 ) then
+				
+				if ( realmDown ) then
+					loadText:SetText(REALM_DOWN);
+					loadText:SetTextColor(GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b);
+				elseif ( load == -3.0 ) then
+					loadText:SetText(LOAD_RECOMMENDED);
+					loadText:SetTextColor(BLUE_FONT_COLOR.r, BLUE_FONT_COLOR.g, BLUE_FONT_COLOR.b);
+				elseif ( load == -2.0 ) then
+					loadText:SetText(LOAD_NEW);
+					loadText:SetTextColor(GREEN_FONT_COLOR.r, GREEN_FONT_COLOR.g, GREEN_FONT_COLOR.b);
+				elseif ( load == 2.0 ) then
+					loadText:SetText(LOAD_FULL);
+					loadText:SetTextColor(RED_FONT_COLOR.r, RED_FONT_COLOR.g, RED_FONT_COLOR.b);
+					isFull = 1;
+				elseif ( load > 0 ) then
 					loadText:SetText(LOAD_HIGH);
 					loadText:SetTextColor(RED_FONT_COLOR.r, RED_FONT_COLOR.g, RED_FONT_COLOR.b);
 				elseif ( load < 0 ) then
@@ -70,6 +90,7 @@ function RealmListUpdate()
 					loadText:SetText(LOAD_MEDIUM);
 					loadText:SetTextColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
 				end
+
 				button:SetText(name);
 				players = getglobal("RealmListRealmButton"..i.."Players");
 				if ( numCharacters > 0 ) then
@@ -77,58 +98,93 @@ function RealmListUpdate()
 				else
 					players:SetText("");
 				end
-				if ( invalidRealm ) then
-					button:SetTextColor(1.0, 0.1, 0.1);
-					button:SetHighlightTextColor(1.0, 0.5, 0.5);
+				if ( realmDown ) then
+					button:SetTextColor(0.5, 0.5, 0.5);
+					button:SetHighlightTextColor(0.8, 0.8, 0.8);
 				else
-					if ( numCharacters > 0 ) then
-						button:SetTextColor(0.1, 1.0, 0.1);
-						button:SetHighlightTextColor(1.0, 1.0, 1.0);
+					if ( invalidRealm ) then
+						button:SetTextColor(1.0, 0.1, 0.1);
+						button:SetHighlightTextColor(1.0, 0.5, 0.5);
 					else
-						button:SetTextColor(1.0, 0.78, 0.0);
-						button:SetHighlightTextColor(1.0, 1.0, 1.0);
+						if ( numCharacters > 0 ) then
+							button:SetTextColor(0.1, 1.0, 0.1);
+							button:SetHighlightTextColor(1.0, 1.0, 1.0);
+						else
+							button:SetTextColor(1.0, 0.78, 0.0);
+							button:SetHighlightTextColor(1.0, 1.0, 1.0);
+						end
+						
 					end
-					
-				end	
+				end
 				
 				button:Show();
 				button:SetID(realmIndex);
 				button.name = name;
+
+				if ( realmDown ) then
+					button:Disable();
+				else
+					button:Enable();
+				end
+				
 				if ( RealmList.selectedName ) then
 					if ( name == RealmList.selectedName ) then
-						RealmList.currentRealm = i;
+						RealmList.currentRealm = realmIndex;
 						button:LockHighlight();
 						RealmListOkButton:Enable();
-						RealmListHighlight:SetPoint("TOPLEFT", button:GetName(), "TOPLEFT", 0, 0);
-						if ( invalidRealm ) then
-							RealmListHighlightTexture:SetVertexColor(1.0, 0.1, 0.1);
+						RealmListHighlight:SetPoint("TOPLEFT", button, "TOPLEFT", 0, 0);
+						
+						-- If realm is full and the player has no chars on that server show a dialog
+						if ( isFull and numCharacters == 0 ) then
+							RealmList.showRealmIsFullDialog = 1;
 						else
-							if ( numCharacters > 0 ) then
-								RealmListHighlightTexture:SetVertexColor(0.1, 1.0, 0.1);
+							RealmList.showRealmIsFullDialog = nil;
+						end
+						
+						if ( realmDown ) then
+							RealmListHighlight:Hide();
+							RealmListOkButton:Disable();
+						else
+							RealmListHighlight:Show();
+							pvpText:SetTextColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
+							loadText:SetTextColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
+							RealmListOkButton:Enable();
+							if ( invalidRealm ) then
+								RealmListHighlightTexture:SetVertexColor(1.0, 0.1, 0.1);
 							else
-								RealmListHighlightTexture:SetVertexColor(1.0, 0.78, 0.0);
+								if ( numCharacters > 0 ) then
+									RealmListHighlightTexture:SetVertexColor(0.1, 1.0, 0.1);
+								else
+									RealmListHighlightTexture:SetVertexColor(1.0, 0.78, 0.0);
+								end
 							end
 						end
-						pvpText:SetTextColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
-						loadText:SetTextColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
-						RealmListHighlight:Show();
 					else
 						button:UnlockHighlight();
 					end
 				else
 					if ( currentRealm == 1 ) then
-						RealmList.currentRealm = i;
+						RealmList.currentRealm = realmIndex;
 						button:LockHighlight();
-						RealmListHighlight:SetPoint("TOPLEFT", button:GetName(), "TOPLEFT", 0, 0);
-						if ( invalidRealm ) then
-							RealmListHighlightTexture:SetVertexColor(1.0, 0.1, 0.1);
+						RealmListHighlight:SetPoint("TOPLEFT", button, "TOPLEFT", 0, 0);
+						if ( realmDown ) then
+							RealmListHighlight:Hide();
+							RealmListOkButton:Disable();
 						else
-							RealmListHighlightTexture:SetVertexColor(1.0, 0.78, 0.0);
+							RealmListHighlight:Show();
+							pvpText:SetTextColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
+							loadText:SetTextColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
+							RealmListOkButton:Enable();
+							if ( invalidRealm ) then
+								RealmListHighlightTexture:SetVertexColor(1.0, 0.1, 0.1);
+							else
+								if ( numCharacters > 0 ) then
+									RealmListHighlightTexture:SetVertexColor(0.1, 1.0, 0.1);
+								else
+									RealmListHighlightTexture:SetVertexColor(1.0, 0.78, 0.0);
+								end
+							end
 						end
-						RealmListHighlight:Show();
-						pvpText:SetTextColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
-						loadText:SetTextColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
-						RealmListOkButton:Enable();
 					else
 						button:UnlockHighlight();
 					end
@@ -145,12 +201,14 @@ end
 
 function RealmList_UpdateTabs(...)
 	if ( arg.n > MAX_REALM_CATEGORY_TABS ) then
-		_ERRORMESSAGE("Not enough category tabs!  Tell Derek");
+		message("Not enough category tabs!  Tell Derek");
 	end
 	local tab;
 	for i=1, MAX_REALM_CATEGORY_TABS do
 		tab = getglobal("RealmListTab"..i);
-		if ( i <= arg.n ) then
+		if ( arg.n == 1 ) then
+			tab:Hide();
+		elseif ( i <= arg.n ) then
 			tab:SetText(arg[i]);
 			GlueTemplates_TabResize(0, tab);
 			tab:Show();
@@ -177,6 +235,11 @@ end
 function RealmList_OnOk()
 	PlaySound("gsLoginChangeRealmOK");
 	RealmList:Hide();
+	-- If trying to join a Full realm then popup a dialog
+	if ( RealmList.showRealmIsFullDialog ) then
+		GlueDialog_Show("REALM_IS_FULL");
+		return;
+	end
 	if ( RealmList.currentRealm > 0 ) then
 		ChangeRealm(RealmList.selectedCategory , RealmList.currentRealm);
 	end
@@ -185,6 +248,10 @@ end
 function RealmList_OnCancel()
 	PlaySound("gsLoginChangeRealmCancel");
 	RealmList:Hide();
+	RealmListDialogCancelled();
+	if ( GetNumRealms(RealmList.selectedCategory) == 0 ) then
+		SetGlueScreen("realmwizard");
+	end
 end
 
 function RealmSelectButton_OnClick(id)
@@ -210,6 +277,16 @@ end
 
 function RealmList_OnShow()
 	this.refreshTime = REALM_LIST_REFRESH_TIME;
+	local selectedCategory = GetSelectedCategory();
+	if ( selectedCategory == 0 ) then
+		selectedCategory = 1;
+	end
+	local button = getglobal("RealmListTab"..selectedCategory);
+	if ( button ) then
+		RealmListTab_OnClick(button);
+		GlueTemplates_SetTab(RealmList, selectedCategory);
+	end
+	RealmListUpdate();
 end
 
 function RealmList_OnHide()

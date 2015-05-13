@@ -1,5 +1,5 @@
  <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
- C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="GossipFrame.lua"/>
 	<Frame name="GossipFramePanelTemplate" virtual="true">
 		<Size>
@@ -44,7 +44,7 @@
 				</Texture>	
 			</Layer>
 			<Layer level="BORDER">
-				<Texture name="$parentMaterialTopLeft" file="">
+				<Texture name="$parentMaterialTopLeft">
 					<Size>
 						<AbsDimension x="239" y="241"/>
 					</Size>
@@ -56,7 +56,7 @@
 						</Anchor>
 					</Anchors>
 				</Texture>
-				<Texture name="$parentMaterialTopRight" file="">
+				<Texture name="$parentMaterialTopRight">
 					<Size>
 						<AbsDimension x="64" y="241"/>
 					</Size>
@@ -64,7 +64,7 @@
 						<Anchor point="TOPLEFT" relativeTo="$parentMaterialTopLeft" relativePoint="TOPRIGHT"/>
 					</Anchors>
 				</Texture>
-				<Texture name="$parentMaterialBotLeft" file="">
+				<Texture name="$parentMaterialBotLeft">
 					<Size>
 						<AbsDimension x="239" y="128"/>
 					</Size>
@@ -72,7 +72,7 @@
 						<Anchor point="TOPLEFT" relativeTo="$parentMaterialTopLeft" relativePoint="BOTTOMLEFT"/>
 					</Anchors>
 				</Texture>
-				<Texture name="$parentMaterialBotRight" file="">
+				<Texture name="$parentMaterialBotRight">
 					<Size>
 						<AbsDimension x="64" y="128"/>
 					</Size>
@@ -109,7 +109,7 @@
 			</OnClick>
 		</Scripts>
 		<HighlightTexture file="Interface\QuestFrame\UI-QuestTitleHighlight" alphaMode="ADD"/>
-		<NormalText inherits="QuestFont" justifyH="LEFT">
+		<ButtonText>
 			<Size>
 				<AbsDimension x="275" y="0"/>
 			</Size>
@@ -120,7 +120,8 @@
 					</Offset>
 				</Anchor>
 			</Anchors>
-		</NormalText>
+		</ButtonText>
+		<NormalFont inherits="QuestFont" justifyH="LEFT"/>
 	</Button>
 	<Frame name="GossipFrame" toplevel="true" parent="UIParent" movable="true" enableMouse="true" hidden="true">
  		<Size>
@@ -179,7 +180,7 @@
 				<Anchors>
 					<Anchor point="CENTER" relativeTo="GossipFrame" relativePoint="TOPRIGHT">
 						<Offset>
-							<AbsDimension x="-42" y="-30"/>
+							<AbsDimension x="-42" y="-31"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
@@ -204,7 +205,7 @@
 				<Frames>
 					<Button name="GossipFrameGreetingGoodbyeButton" inherits="UIPanelButtonTemplate" text="GOODBYE">
 						<Size>
-							<AbsDimension x="77" y="22"/>
+							<AbsDimension x="78" y="22"/>
 						</Size>
 						<Anchors>
 							<Anchor point="BOTTOMRIGHT" relativeTo="GossipFrame" relativePoint="BOTTOMRIGHT">
@@ -230,11 +231,6 @@
 								</Offset>
 							</Anchor>
 						</Anchors>
-						<Scripts>
-							<OnShow>
-								this:UpdateScrollChildRect();
-							</OnShow>
-						</Scripts>
 						<ScrollChild>
 							<Frame name="GossipGreetingScrollChildFrame">
 								<Size>
@@ -341,6 +337,99 @@
 											<Anchor point="TOPLEFT" relativeTo="GossipTitleButton15" relativePoint="BOTTOMLEFT"/>
 										</Anchors>
 									</Button>
+
+									<Button name="GossipTitleButton17" inherits="GossipTitleButtonTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativeTo="GossipTitleButton16" relativePoint="BOTTOMLEFT"/>
+										</Anchors>
+									</Button>
+									<Button name="GossipTitleButton18" inherits="GossipTitleButtonTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativeTo="GossipTitleButton17" relativePoint="BOTTOMLEFT"/>
+										</Anchors>
+									</Button>
+									<Button name="GossipTitleButton19" inherits="GossipTitleButtonTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativeTo="GossipTitleButton18" relativePoint="BOTTOMLEFT"/>
+										</Anchors>
+									</Button>
+									<Button name="GossipTitleButton20" inherits="GossipTitleButtonTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativeTo="GossipTitleButton19" relativePoint="BOTTOMLEFT"/>
+										</Anchors>
+									</Button>
+									<Button name="GossipTitleButton21" inherits="GossipTitleButtonTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativeTo="GossipTitleButton20" relativePoint="BOTTOMLEFT"/>
+										</Anchors>
+									</Button>
+									<Button name="GossipTitleButton22" inherits="GossipTitleButtonTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativeTo="GossipTitleButton21" relativePoint="BOTTOMLEFT"/>
+										</Anchors>
+									</Button>
+									<Button name="GossipTitleButton23" inherits="GossipTitleButtonTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativeTo="GossipTitleButton22" relativePoint="BOTTOMLEFT"/>
+										</Anchors>
+									</Button>
+									<Button name="GossipTitleButton24" inherits="GossipTitleButtonTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativeTo="GossipTitleButton23" relativePoint="BOTTOMLEFT"/>
+										</Anchors>
+									</Button>
+									<Button name="GossipTitleButton25" inherits="GossipTitleButtonTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativeTo="GossipTitleButton24" relativePoint="BOTTOMLEFT"/>
+										</Anchors>
+									</Button>
+									<Button name="GossipTitleButton26" inherits="GossipTitleButtonTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativeTo="GossipTitleButton25" relativePoint="BOTTOMLEFT"/>
+										</Anchors>
+									</Button>
+									<Button name="GossipTitleButton27" inherits="GossipTitleButtonTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativeTo="GossipTitleButton26" relativePoint="BOTTOMLEFT"/>
+										</Anchors>
+									</Button>
+									<Button name="GossipTitleButton28" inherits="GossipTitleButtonTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativeTo="GossipTitleButton27" relativePoint="BOTTOMLEFT"/>
+										</Anchors>
+									</Button>
+									<Button name="GossipTitleButton29" inherits="GossipTitleButtonTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativeTo="GossipTitleButton28" relativePoint="BOTTOMLEFT"/>
+										</Anchors>
+									</Button>
+									<Button name="GossipTitleButton30" inherits="GossipTitleButtonTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativeTo="GossipTitleButton29" relativePoint="BOTTOMLEFT"/>
+										</Anchors>
+									</Button>
+									<Button name="GossipTitleButton31" inherits="GossipTitleButtonTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativeTo="GossipTitleButton30" relativePoint="BOTTOMLEFT"/>
+										</Anchors>
+									</Button>
+									<Button name="GossipTitleButton32" inherits="GossipTitleButtonTemplate">
+										<Anchors>
+											<Anchor point="TOPLEFT" relativeTo="GossipTitleButton31" relativePoint="BOTTOMLEFT"/>
+										</Anchors>
+									</Button>
+									<Frame name="GossipSpacerFrame">
+										<Size>
+											<AbsDimension x="5" y="15"/>
+										</Size>
+										<Anchors>
+											<Anchor point="TOP">
+												<Offset>
+													<AbsDimension x="0" y="0"/>
+												</Offset>
+											</Anchor>
+										</Anchors>
+									</Frame>
 								</Frames>
 							</Frame>
 						</ScrollChild>

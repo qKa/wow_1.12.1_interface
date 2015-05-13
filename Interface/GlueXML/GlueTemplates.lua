@@ -84,7 +84,6 @@ function GlueScrollFrame_OnScrollRangeChanged(scrollrange)
 			getglobal(scrollbar:GetName().."ScrollDownButton"):Show();
 			getglobal(scrollbar:GetName().."ScrollUpButton"):Show();
 		end
-		
 	else
 		getglobal(scrollbar:GetName().."ScrollDownButton"):Show();
 		getglobal(scrollbar:GetName().."ScrollUpButton"):Show();

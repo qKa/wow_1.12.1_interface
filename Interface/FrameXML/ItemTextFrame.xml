@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="ItemTextFrame.lua"/>
 	<Frame name="ItemTextFrame" toplevel="true" movable="true" enableMouse="true" hidden="true" parent="UIParent">
 		<Size>
@@ -77,7 +77,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</Texture>
 			</Layer>
 			<Layer level="ARTWORK">
-				<Texture name="ItemTextMaterialTopLeft" file="">
+				<Texture name="ItemTextMaterialTopLeft">
 					<Size>
 						<AbsDimension x="256" y="256"/>
 					</Size>
@@ -89,7 +89,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Anchor>
 					</Anchors>
 				</Texture>
-				<Texture name="ItemTextMaterialTopRight" file="">
+				<Texture name="ItemTextMaterialTopRight">
 					<Size>
 						<AbsDimension x="64" y="256"/>
 					</Size>
@@ -97,7 +97,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						<Anchor point="TOPLEFT" relativeTo="ItemTextMaterialTopLeft" relativePoint="TOPRIGHT"/>
 					</Anchors>
 				</Texture>
-				<Texture name="ItemTextMaterialBotLeft" file="">
+				<Texture name="ItemTextMaterialBotLeft">
 					<Size>
 						<AbsDimension x="256" y="128"/>
 					</Size>
@@ -105,7 +105,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						<Anchor point="TOPLEFT" relativeTo="ItemTextMaterialTopLeft" relativePoint="BOTTOMLEFT"/>
 					</Anchors>
 				</Texture>
-				<Texture name="ItemTextMaterialBotRight" file="">
+				<Texture name="ItemTextMaterialBotRight">
 					<Size>
 						<AbsDimension x="64" y="128"/>
 					</Size>
@@ -132,44 +132,92 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						<AbsDimension x="192" y="0"/>
 					</Size>
 					<Anchors>
-						<Anchor point="BOTTOM">
+						<Anchor point="TOP">
 							<Offset>
-								<AbsDimension x="-14" y="96"/>
+								<AbsDimension x="10" y="-50"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
-				</FontString>						
+				</FontString>
 			</Layer>
 		</Layers>
 		<Frames>
 			<ScrollFrame name="ItemTextScrollFrame" inherits="UIPanelScrollFrameTemplate">
 				<Size>
-					<AbsDimension x="250" y="304"/>
+					<AbsDimension x="280" y="355"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOP">
+					<Anchor point="TOPRIGHT">
 						<Offset>
-							<AbsDimension x="-12" y="-90"/>
+							<AbsDimension x="-66" y="-76"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
-				<ScrollChild>
-					<SimpleHTML name="ItemTextPageText">
-						<Size>
-							<AbsDimension x="240" y="304"/>
-						</Size>
-						<FontString name="ItemTextFontString" inherits="ItemTextFontNormal">
+				<Layers>
+					<Layer level="ARTWORK">
+						<Texture name="$parentTop" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
 							<Size>
-								<AbsDimension x="240" y="0"/>
+								<AbsDimension x="28" y="256"/>
 							</Size>
 							<Anchors>
-								<Anchor point="TOPLEFT"/>
+								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
+									<Offset>
+										<AbsDimension x="0" y="5"/>
+									</Offset>
+								</Anchor>
 							</Anchors>
-						</FontString>
-					</SimpleHTML>
+							<TexCoords left="0" right="0.484375" top="0" bottom="1.0"/>
+						</Texture>
+						<Texture name="$parentBottom" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
+							<Size>
+								<AbsDimension x="28" y="107"/>
+							</Size>
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT">
+									<Offset>
+										<AbsDimension x="0" y="-3"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+							<TexCoords left="0.515625" right="1.0" top="0" bottom="0.4140625"/>
+						</Texture>
+					</Layer>
+					<Layer level="BACKGROUND">
+						<Texture name="$parentMiddle">
+							<Size>
+								<AbsDimension x="25" y="365"/>
+							</Size>
+							<Anchors>
+								<Anchor point="TOPRIGHT" relativeTo="$parentTop"/>
+							</Anchors>
+							<Color r="0" g="0" b="0" a="0.8"/>
+						</Texture>
+					</Layer>
+				</Layers>
+				<ScrollChild>
+					<Frame name="ItemTextPageScrollChild">
+						<Size>
+							<AbsDimension x="10" y="10"/>
+						</Size>
+						<Frames>
+							<SimpleHTML name="ItemTextPageText">
+								<Size>
+									<AbsDimension x="270" y="304"/>
+								</Size>
+								<Anchors>
+									<Anchor point="TOPLEFT">
+										<Offset>
+											<AbsDimension x="0" y="-15"/>
+										</Offset>
+									</Anchor>
+								</Anchors>
+								<FontString inherits="ItemTextFontNormal"/>
+							</SimpleHTML>
+						</Frames>
+					</Frame>
 				</ScrollChild>
 			</ScrollFrame>
-			<StatusBar name="ItemTextStatusBar">
+			<StatusBar name="ItemTextStatusBar" hidden="true">
 				<Size>
 					<AbsDimension x="250" y="21"/>
 				</Size>
@@ -206,9 +254,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					<AbsDimension x="32" y="32"/>
 				</Size>
 				<Anchors>
-					<Anchor point="CENTER" relativePoint="BOTTOMLEFT">
+					<Anchor point="CENTER" relativePoint="TOPLEFT">
 						<Offset>
-							<AbsDimension x="50" y="104"/>
+							<AbsDimension x="90" y="-56"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
@@ -237,9 +285,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					<AbsDimension x="32" y="32"/>
 				</Size>
 				<Anchors>
-					<Anchor point="CENTER" relativePoint="BOTTOMLEFT">
+					<Anchor point="CENTER" relativePoint="TOPRIGHT">
 						<Offset>
-							<AbsDimension x="314" y="104"/>
+							<AbsDimension x="-55" y="-56"/>
 						</Offset>
 					</Anchor>
 				</Anchors>

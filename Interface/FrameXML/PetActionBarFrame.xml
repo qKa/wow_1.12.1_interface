@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="PetActionBarFrame.lua"/>
 	<Button name="PetActionButtonTemplate" inherits="ActionButtonTemplate" frameStrata="DIALOG" virtual="true">
 		<Size>
@@ -23,9 +23,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		</Layers>
 		<Frames>
 			<Model name="$parentAutoCast" file="Interface\Buttons\UI-AutoCastButton.mdx" scale="1.2" hidden="true" setAllPoints="true">
-				<Frames>
-					<Model name="$parentCooldown" inherits="CooldownFrameTemplate"/>
-				</Frames>
 				<Scripts>
 					<OnLoad>
 						this:SetSequence(0);
@@ -36,65 +33,26 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		</Frames>
 		<Scripts>
 			<OnLoad>
-				this:RegisterForDrag("LeftButton", "RightButton");
-				this:RegisterForClicks("LeftButtonUp", "RightButtonUp");
-				this:RegisterEvent("UPDATE_BINDINGS");
-				getglobal(this:GetName().."Cooldown"):SetScale(0.65);
-				getglobal(this:GetName().."Cooldown"):ClearAllPoints();
-				getglobal(this:GetName().."Cooldown"):SetWidth(30);
-				getglobal(this:GetName().."Cooldown"):SetHeight(32);
-				getglobal(this:GetName().."Cooldown"):SetPoint("CENTER", this:GetName(), "CENTER", 0, 0);
-				PetActionButton_SetHotkeys();
+				PetActionButton_OnLoad();
 			</OnLoad>
 			<OnEvent>
 				PetActionButton_OnEvent();
 			</OnEvent>
 			<OnClick>
-				this:SetChecked(0);
-				if ( IsShiftKeyDown() ) then
-					PickupPetAction(this:GetID());
-				else
-					if ( arg1 == "LeftButton" ) then
-						CastPetAction(this:GetID());
-					else
-						TogglePetAutocast(this:GetID());
-					end
-				end
+				PetActionButton_OnClick(arg1);
 			</OnClick>
 			<OnDragStart>
-				this:SetChecked(0);
-				PickupPetAction(this:GetID());
+				PetActionButton_OnDragStart();
 			</OnDragStart>
 			<OnReceiveDrag>
-				this:SetChecked(0);
-				PickupPetAction(this:GetID());
+				PetActionButton_OnReceiveDrag();
 			</OnReceiveDrag>
 			<OnEnter>
-				if ( not this.tooltipName ) then
-					return;
-				end
-				local uber = GetCVar("UberTooltips");
-				if ( this.isToken or (uber == "0") ) then
-					if ( uber == "0" ) then
-						GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
-					else
-						GameTooltip_SetDefaultAnchor(GameTooltip, this);
-					end
-					GameTooltip:SetText(this.tooltipName..NORMAL_FONT_COLOR_CODE.." ("..KeyBindingFrame_GetLocalizedName(GetBindingKey("BONUSACTIONBUTTON"..this:GetID()), "KEY_")..")"..FONT_COLOR_CODE_CLOSE, 1.0, 1.0, 1.0);
-					if ( this.tooltipSubtext ) then
-						GameTooltip:AddLine(this.tooltipSubtext, "", 0.5, 0.5, 0.5);
-					end
-					GameTooltip:Show();
-				else
-					GameTooltip_SetDefaultAnchor(GameTooltip, this);
-					GameTooltip:SetPetAction(this:GetID());
-				end
+				PetActionButton_OnEnter();
 			</OnEnter>
 			<OnLeave>
-				GameTooltip:Hide();
+				PetActionButton_OnLeave();
 			</OnLeave>
-			<OnUpdate>
-			</OnUpdate>
 		</Scripts>
 		<NormalTexture name="$parentNormalTexture2" file="Interface\Buttons\UI-Quickslot2">
 			<Size>
@@ -116,7 +74,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<Anchors>
 			<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT">
 				<Offset>
-					<AbsDimension x="40" y="114"/>
+					<AbsDimension x="40" y="112"/>
 				</Offset>
 			</Anchor>
 		</Anchors>
@@ -124,21 +82,21 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<Layer level="OVERLAY">
 				<Texture name="SlidingActionBarTexture0" file="Interface\PetActionBar\UI-PetBar">
 					<Size>
-						<AbsDimension x="256" y="46"/>
+						<AbsDimension x="256" y="44"/>
 					</Size>
 					<Anchors>
 						<Anchor point="TOPLEFT"/>
 					</Anchors>
-					<TexCoords left="0" right="1.0" top="0" bottom="0.359375"/>
+					<TexCoords left="0" right="1.0" top="0.015625" bottom="0.359375"/>
 				</Texture>
-				<Texture file="Interface\PetActionBar\UI-PetBar">
+				<Texture name="SlidingActionBarTexture1" file="Interface\PetActionBar\UI-PetBar">
 					<Size>
-						<AbsDimension x="184" y="46"/>
+						<AbsDimension x="184" y="44"/>
 					</Size>
 					<Anchors>
 						<Anchor point="LEFT" relativeTo="SlidingActionBarTexture0" relativePoint="RIGHT"/>
 					</Anchors>
-					<TexCoords left="0" right="0.71875" top="0.359375" bottom="0.71875"/>
+					<TexCoords left="0" right="0.71875" top="0.375" bottom="0.71875"/>
 				</Texture>
 			</Layer>
 		</Layers>
@@ -147,7 +105,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				<Anchors>
 					<Anchor point="BOTTOMLEFT">
 						<Offset>
-							<AbsDimension x="36" y="1"/>
+							<AbsDimension x="36" y="2"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
@@ -201,7 +159,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				<Anchors>
 					<Anchor point="LEFT" relativeTo="PetActionButton6" relativePoint="RIGHT">
 						<Offset>
-							<AbsDimension x="8" y="0"/>
+							<AbsDimension x="7" y="0"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
@@ -244,6 +202,12 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<OnUpdate>
 				PetActionBarFrame_OnUpdate(arg1);
 			</OnUpdate>
+			<OnShow>
+				UIParent_ManageFramePositions();
+			</OnShow>
+			<OnHide>
+				UIParent_ManageFramePositions();
+			</OnHide>
 		</Scripts>
 	</Frame>
 </Ui>

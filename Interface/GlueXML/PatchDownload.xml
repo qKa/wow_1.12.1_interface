@@ -1,7 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="PatchDownload.lua"/>
-	<Model name="PatchDownload" setAllPoints="true" file="Interface\Glues\Models\UI_NightElf\UI_NightElf.mdx" hidden="false" parent="GlueParent" enableKeyboard="true" fogNear="0" fogFar="1200">
+	<Model name="PatchDownload" setAllPoints="true" file="Interface\Glues\Models\UI_NightElf\UI_NightElf.mdx" hidden="true" parent="GlueParent" enableKeyboard="true" fogNear="0" fogFar="1200">
 		<Frames>
 			<Frame name="PatchDownloadUI" setAllPoints="true">
 				<Layers>
@@ -61,7 +61,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 								</Anchor>
 							</Anchors>
 						</Texture>
-						<Texture file="Interface\Glues\Common\Glues-Logo-Right">
+						<Texture name="PatchDownloadLogoRight" file="Interface\Glues\Common\Glues-Logo-Right">
 							<Size>
 								<AbsDimension x="120" y="120"/>
 							</Size>

@@ -6,11 +6,11 @@ function MainMenuExpBar_Update()
 end
 
 function ExhaustionTick_OnLoad()
+	this:RegisterEvent("PLAYER_ENTERING_WORLD");
 	this:RegisterEvent("PLAYER_XP_UPDATE");
 	this:RegisterEvent("UPDATE_EXHAUSTION");
 	this:RegisterEvent("PLAYER_LEVEL_UP");
 	this:RegisterEvent("PLAYER_UPDATE_RESTING");
-	this:RegisterEvent("PLAYER_ENTERING_WORLD");
 end
 
 function ExhaustionTick_Update()
@@ -24,20 +24,17 @@ function ExhaustionTick_Update()
 		exhaustionStateID, exhaustionStateName, exhaustionStateMultiplier = GetRestState();
 		if (exhaustionStateID >= 3) then
 			ExhaustionTick:SetPoint("CENTER", "MainMenuExpBar", "RIGHT", 0, 0);
-			
 		end
 
 		if (not exhaustionThreshold) then
 			ExhaustionTick:Hide();
 			ExhaustionLevelFillBar:Hide();
 		else
-			local exhaustionTickSet = ((playerCurrXP + exhaustionThreshold) / playerMaxXP) * MainMenuExpBar:GetWidth();
-			ExhaustionTick:Show();
-			ExhaustionLevelFillBar:Show();
+			local exhaustionTickSet = max(((playerCurrXP + exhaustionThreshold) / playerMaxXP) * MainMenuExpBar:GetWidth(), 0);
 --			local exhaustionTotalXP = playerCurrXP + (exhaustionMaxXP - exhaustionCurrXP);
 --			local exhaustionTickSet = (exhaustionTotalXP / playerMaxXP) * MainMenuExpBar:GetWidth();
 			ExhaustionTick:ClearAllPoints();
-			if (exhaustionTickSet > MainMenuExpBar:GetWidth()) then
+			if (exhaustionTickSet > MainMenuExpBar:GetWidth() or MainMenuBarMaxLevelBar:IsShown()) then
 				ExhaustionTick:Hide();
 				ExhaustionLevelFillBar:Hide();
 				-- Saving this code in case we want to always leave the exhaustion tick onscreen
@@ -49,6 +46,11 @@ function ExhaustionTick_Update()
 				ExhaustionLevelFillBar:Show();
 				ExhaustionLevelFillBar:SetPoint("TOPRIGHT", "MainMenuExpBar", "TOPLEFT", exhaustionTickSet, 0);
 			end
+		end
+
+		-- Hide exhaustion tick if player is max level and the reputation watch bar is shown
+		if ( UnitLevel("player") == MAX_PLAYER_LEVEL and ReputationWatchBar:IsShown() ) then
+			ExhaustionTick:Hide();
 		end
 	end
 	if ((event == "PLAYER_ENTERING_WORLD") or (event == "UPDATE_EXHAUSTION")) then
@@ -62,21 +64,34 @@ function ExhaustionTick_Update()
 			ExhaustionLevelFillBar:SetVertexColor(0.58, 0.0, 0.55, 0.15);
 			ExhaustionTickHighlight:SetVertexColor(0.58, 0.0, 0.55);
 		end
+
+	end
+	if ( ReputationWatchBar:IsShown() and not MainMenuExpBar:IsShown() ) then
+		ExhaustionTick:Hide();
 	end
 end
 
 function ExhaustionToolTipText()
-	local x,y;
-	x,y = ExhaustionTick:GetCenter();
-	if ( ExhaustionTick:IsVisible() ) then
-		if ( x >= ( GetScreenWidth() / 2 ) ) then
-			GameTooltip:SetOwner(ExhaustionTick, "ANCHOR_LEFT");
-		else
-			GameTooltip:SetOwner(ExhaustionTick, "ANCHOR_RIGHT");
-		end
-	else
-		GameTooltip_SetDefaultAnchor(GameTooltip, UIParent);
+	-- If showing newbie tips then only show the explanation
+	--[[if ( SHOW_NEWBIE_TIPS == "1" ) then
+		return;
 	end
+	]]
+
+	if ( SHOW_NEWBIE_TIPS ~= "1" ) then
+		local x,y;
+		x,y = ExhaustionTick:GetCenter();
+		if ( ExhaustionTick:IsVisible() ) then
+			if ( x >= ( GetScreenWidth() / 2 ) ) then
+				GameTooltip:SetOwner(ExhaustionTick, "ANCHOR_LEFT");
+			else
+				GameTooltip:SetOwner(ExhaustionTick, "ANCHOR_RIGHT");
+			end
+		else
+			GameTooltip_SetDefaultAnchor(GameTooltip, UIParent);
+		end
+	end
+	
 	local exhaustionStateID, exhaustionStateName, exhaustionStateMultiplier;
 	exhaustionStateID, exhaustionStateName, exhaustionStateMultiplier = GetRestState();
 
@@ -110,7 +125,15 @@ function ExhaustionToolTipText()
 		tooltipText = tooltipText..append;
 	end
 
-	GameTooltip:SetText(tooltipText);
+	if ( SHOW_NEWBIE_TIPS ~= "1" ) then
+		GameTooltip:SetText(tooltipText);
+	else
+		if ( GameTooltip.canAddRestStateLine ) then
+			GameTooltip:AddLine("\n"..tooltipText);
+			GameTooltip:Show();
+			GameTooltip.canAddRestStateLine = nil;
+		end
+	end
 
 --[[
 	if ((exhaustionStateID == 1) and (IsResting()) and (not exhaustionThreshold)) then
@@ -143,5 +166,18 @@ function ExhaustionTick_OnUpdate(elapsed)
 		else
 			ExhaustionTick.timer = ExhaustionTick.timer - elapsed;
 		end
+	end
+end
+
+--KeyRing Functions
+
+function MainMenuBar_UpdateKeyRing()
+	if ( SHOW_KEYRING == 1 ) then
+		MainMenuBarTexture3:SetTexture("Interface\\MainMenuBar\\UI-MainMenuBar-KeyRing");
+		MainMenuBarTexture3:SetTexCoord(0, 1, 0.1640625, 0.5);
+		MainMenuBarTexture2:SetTexture("Interface\\MainMenuBar\\UI-MainMenuBar-KeyRing");
+		MainMenuBarTexture2:SetTexCoord(0, 1, 0.6640625, 1);
+		MainMenuBarPerformanceBarFrame:SetPoint("BOTTOMRIGHT", MainMenuBar, "BOTTOMRIGHT", -235, -10);
+		KeyRingButton:Show();
 	end
 end

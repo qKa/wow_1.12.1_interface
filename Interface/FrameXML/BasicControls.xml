@@ -1,6 +1,5 @@
-<!-- edited with XMLSPY v5 rel. 2 U (http://www.xmlspy.com) by Sam Lantinga (Blizzard Entertainment) -->
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<!-- This function is called when a script error occurs -->
 	<Script>
 		function _ERRORMESSAGE(message)
@@ -9,10 +8,16 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				ScriptErrors_Message:SetText(message);
 				ScriptErrors:Show();
 			end
+			return message;
 		end
 		function message(text)
 			_ERRORMESSAGE(text);
 		end
+		seterrorhandler(_ERRORMESSAGE);
+	</Script>
+	<!-- This script turns on verbose messages in the FrameXML log -->
+	<Script>
+		--FrameXML_Debug(1);
 	</Script>
 	<!-- This function is used to translate text (actually it's already translated as-is) -->
 	<Script>
@@ -65,8 +70,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				<NormalTexture inherits="DialogButtonNormalTexture"/>
 				<PushedTexture inherits="DialogButtonPushedTexture"/>
 				<HighlightTexture inherits="DialogButtonHighlightTexture"/>
-				<NormalText inherits="DialogButtonNormalText" text="OKAY"/>
-				<HighlightText inherits="DialogButtonHighlightText" text="OKAY"/>
+				<ButtonText text="OKAY"/>
+				<NormalFont inherits="DialogButtonNormalText"/>
+				<HighlightFont inherits="DialogButtonHighlightText"/>
 			</Button>
 		</Frames>
 	</Frame>
@@ -77,7 +83,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		</Size>
 		<Layers>
 			<Layer level="ARTWORK">
-				<FontString name="ScriptErrors_Message" inherits="GameFontRedLarge" justifyH="CENTER" justifyV="TOP">
+				<FontString name="ScriptErrors_Message" inherits="GameFontRedLarge" justifyH="CENTER" justifyV="TOP" nonspacewrap="true">
 					<Size>
 						<AbsDimension x="360" y="0"/>
 					</Size>

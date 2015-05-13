@@ -1,37 +1,12 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="MailFrame.lua"/>
-	<CheckButton name="SendMailRadioButtonTemplate" virtual="true">
-		<Size>
-			<AbsDimension x="16" y="16"/>
-		</Size>
-		<Layers>
-			<Layer level="BACKGROUND">
-				<FontString name="$parentText" inherits="GameFontNormalSmall">
-					<Anchors>
-						<Anchor point="LEFT" relativePoint="RIGHT">
-							<Offset>
-								<AbsDimension x="5" y="0"/>
-							</Offset>
-						</Anchor>
-					</Anchors>
-				</FontString>
-			</Layer>
-		</Layers>
+	<CheckButton name="SendMailRadioButtonTemplate" inherits="UIRadioButtonTemplate" virtual="true">
 		<Scripts>
 			<OnClick>
 				SendMailRadioButton_OnClick(this:GetID());
 			</OnClick>
 		</Scripts>
-		<NormalTexture file="Interface\Buttons\UI-RadioButton">
-			<TexCoords left="0" right="0.25" top="0" bottom="1"/>
-		</NormalTexture>
-		<HighlightTexture file="Interface\Buttons\UI-RadioButton" alphaMode="ADD">
-			<TexCoords left="0.5" right="0.75" top="0" bottom="1"/>
-		</HighlightTexture>
-		<CheckedTexture file="Interface\Buttons\UI-RadioButton">
-			<TexCoords left="0.25" right="0.5" top="0" bottom="1"/>
-		</CheckedTexture>
 	</CheckButton>
 	<Frame name="MailItemTemplate" virtual="true">
 		<Size>
@@ -82,14 +57,14 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<FontString name="$parentSubject" inherits="GameFontHighlightSmall" justifyH="LEFT">
+				<FontString name="$parentSubject" inherits="GameFontHighlightSmall" justifyV="TOP" justifyH="LEFT">
 					<Size>
-						<AbsDimension x="220" y="32"/>
+						<AbsDimension x="248" y="18"/>
 					</Size>
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="$parentSender" relativePoint="BOTTOMLEFT">
 							<Offset>
-								<AbsDimension x="0" y="7"/>
+								<AbsDimension x="0" y="0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -104,7 +79,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				<Anchors>
 					<Anchor point="TOPRIGHT">
 						<Offset>
-							<AbsDimension x="-4" y="-8"/>
+							<AbsDimension x="-4" y="-4"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
@@ -120,7 +95,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						GameTooltip:Hide();
 					</OnLeave>
 				</Scripts>
-				<NormalText inherits="GameFontHighlightSmall" justifyH="RIGHT"/>
+				<NormalFont inherits="GameFontHighlightSmall" justifyH="RIGHT"/>
 				<PushedTextOffset>
 					<AbsDimension x="0" y="0"/> 
 				</PushedTextOffset>
@@ -519,6 +494,24 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 								</Anchor>
 							</Anchors>
 						</FontString>
+						<FontString name="SendMailErrorText" inherits="GameFontRedSmall" hidden="true">
+							<Size>
+								<AbsDimension x="0" y="10"/>
+							</Size>
+						</FontString>
+						<Texture name="SendMailErrorCoin" file="Interface\MoneyFrame\UI-MoneyIcons" hidden="true">
+							<Size>
+								<AbsDimension x="10" y="10"/>
+							</Size>
+							<Anchors>
+								<Anchor point="LEFT" relativeTo="SendMailErrorText" relativePoint="RIGHT">
+									<Offset>
+										<AbsDimension x="1" y="-1"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+							<TexCoords left="0" right="0.25" top="0" bottom="1"/>
+						</Texture>
 						<Texture name="SendMailHorizontalBarLeft" file="Interface\ClassTrainerFrame\UI-ClassTrainer-HorizontalBar">
 							<Size>
 								<AbsDimension x="256" y="16"/>
@@ -550,12 +543,12 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				<Frames>
 					<ScrollFrame name="SendMailScrollFrame" inherits="UIPanelScrollFrameTemplate">
 						<Size>
-							<AbsDimension x="300" y="258"/>
+							<AbsDimension x="296" y="257"/>
 						</Size>
 						<Anchors>
 							<Anchor point="TOPLEFT">
 								<Offset>
-									<AbsDimension x="19" y="-97"/>
+									<AbsDimension x="21" y="-97"/>
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -563,7 +556,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							<Layer level="BACKGROUND">
 								<Texture name="StationeryBackgroundLeft">
 									<Size>
-										<AbsDimension x="256" y="256"/>
+										<AbsDimension x="252" y="256"/>
 									</Size>
 									<Anchors>
 										<Anchor point="TOPLEFT"/>
@@ -579,14 +572,14 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 								</Texture>
 							</Layer>
 							<Layer level="ARTWORK">
-								<Texture name="$parentTop" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
+								<Texture file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
 									<Size>
 										<AbsDimension x="31" y="256"/>
 									</Size>
 									<Anchors>
-										<Anchor point="TOP" relativeTo="$parentScrollBarScrollUpButton">
+										<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
 											<Offset>
-												<AbsDimension x="0" y="5"/>
+												<AbsDimension x="-2" y="5"/>
 											</Offset>
 										</Anchor>
 									</Anchors>
@@ -597,9 +590,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 										<AbsDimension x="31" y="106"/>
 									</Size>
 									<Anchors>
-										<Anchor point="BOTTOM" relativeTo="$parentScrollBarScrollDownButton">
+										<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT">
 											<Offset>
-												<AbsDimension x="0" y="-2"/>
+												<AbsDimension x="-2" y="-2"/>
 											</Offset>
 										</Anchor>
 									</Anchors>
@@ -632,6 +625,15 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 											</Anchor>
 										</Anchors>
 										<Scripts>
+											<OnTextChanged>
+												ScrollingEdit_OnTextChanged(SendMailScrollFrame);
+											</OnTextChanged>
+											<OnCursorChanged>
+												ScrollingEdit_OnCursorChanged(arg1, arg2-10, arg3, arg4);
+											</OnCursorChanged>
+											<OnUpdate>
+												ScrollingEdit_OnUpdate(SendMailScrollFrame);
+											</OnUpdate>
 											<OnTabPressed>
 												if ( IsShiftKeyDown() ) then
 													SendMailSubjectEditBox:SetFocus();
@@ -642,27 +644,16 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 											<OnEscapePressed>
 												this:ClearFocus();
 											</OnEscapePressed>
-											<OnTextChanged>
-												local scrollBar = getglobal(this:GetParent():GetParent():GetName().."ScrollBar")
-												this:GetParent():GetParent():UpdateScrollChildRect();
-												local min;
-												local max;
-												min, max = scrollBar:GetMinMaxValues();
-												if ( max > 0 and (this.max ~= max) ) then
-													this.max = max;
-													scrollBar:SetValue(max);
-												end
-											</OnTextChanged>
-											<OnClick>
-												this:SetFocus();
-											</OnClick>
 										</Scripts>
-										<FontString inherits="ItemTextFontNormal"/>
+										<FontString inherits="MailTextFontNormal"/>
 									</EditBox>
 								</Frames>
 								<Scripts>
 									<OnMouseUp>
 										SendMailBodyEditBox:SetFocus();
+										if ( CursorHasItem() ) then
+											SendMailPackageButton_OnClick();
+										end
 									</OnMouseUp> 
 								</Scripts>
 							</Frame>
@@ -879,7 +870,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 									<Anchors>
 										<Anchor point="TOPLEFT">
 											<Offset>
-												<AbsDimension x="49" y="-4"/>
+												<AbsDimension x="49" y="-5"/>
 											</Offset>
 										</Anchor>
 									</Anchors>
@@ -906,6 +897,11 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 										</Offset>
 									</Anchor>
 								</Anchors>
+								<Scripts>
+									<OnLoad>
+										MoneyInputFrame_SetOnvalueChangedFunc(this, SendMailFrame_CanSend);
+									</OnLoad>
+								</Scripts>
 							</Frame>
 							<CheckButton name="SendMailSendMoneyButton" inherits="SendMailRadioButtonTemplate" id="1">
 								<Anchors>
@@ -938,13 +934,13 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Frames>
 						<Scripts>
 							<OnClick>
-								ClickSendMailItemButton();
+								SendMailPackageButton_OnClick();
 							</OnClick>
 							<OnDragStart>
-								ClickSendMailItemButton();
+								SendMailPackageButton_OnClick();
 							</OnDragStart>
 							<OnReceiveDrag>
-								ClickSendMailItemButton();
+								SendMailPackageButton_OnClick();
 							</OnReceiveDrag>
 							<OnLoad>
 								this:RegisterForDrag("LeftButton");
@@ -985,9 +981,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 								end
 							</OnClick>
 						</Scripts>
-						<NormalText inherits="GameFontNormalSmall"/>
-						<DisabledText inherits="GameFontDisableSmall"/>
-						<HighlightText inherits="GameFontHighlightSmall"/>
+						<NormalFont inherits="GameFontNormalSmall"/>
+						<HighlightFont inherits="GameFontHighlightSmall"/>
+						<DisabledFont inherits="GameFontDisableSmall"/>
 						<NormalTexture inherits="UIPanelButtonUpTexture"/>
 						<PushedTexture inherits="UIPanelButtonDownTexture"/>
 						<DisabledTexture inherits="UIPanelButtonDisabledTexture"/>
@@ -1039,23 +1035,35 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Button>
 				</Frames>
 				<Scripts>
+					<OnLoad>
+						SendMailErrorText:SetText(format(MAIL_COD_ERROR, MAX_COD_AMOUNT));
+						SendMailErrorText:SetPoint("BOTTOMLEFT", "SendMailMoneyText", "TOPLEFT", 0, 2);
+					</OnLoad>
 					<OnShow>
 						StationeryPopupFrame_Update();
 						StationeryPopupButton_OnClick(1);
 						SendMailNameEditBox:SetFocus();
 						SendMailRadioButton_OnClick(1);
 					</OnShow>
+					<OnMouseUp>
+						if ( CursorHasItem() ) then
+							SendMailPackageButton_OnClick();
+						end
+					</OnMouseUp> 
 				</Scripts>
 			</Frame>
 			<Button name="InboxCloseButton" inherits="UIPanelCloseButton">
 				<Anchors>
 					<Anchor point="CENTER" relativePoint="TOPRIGHT">
 						<Offset>
-							<AbsDimension x="-45" y="-26"/>
+							<AbsDimension x="-45" y="-25"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
 				<Scripts>
+					<OnLoad>
+						this:SetFrameLevel(this:GetFrameLevel() + 1);
+					</OnLoad>
 					<OnClick>
 						HideUIPanel(MailFrame);
 					</OnClick>
@@ -1099,8 +1107,8 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</OnEvent>
 			<OnHide>
 				CloseMail();
+				HideUIPanel(OpenMailFrame);
 				StationeryPopupFrame:Hide();
-				OpenMailFrame:Hide();
 				SendMailBodyEditBox:SetText("");
 				SendMailNameEditBox:SetText("");
 				SendMailSubjectEditBox:SetText("");
@@ -1157,7 +1165,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</Layer>
 		</Layers>
 		<Frames>
-			<ScrollFrame name="StationeryPopupScrollFrame" inherits="ClassTrainerListScrollFrameTemplate">
+			<ScrollFrame name="StationeryPopupScrollFrame" inherits="FauxScrollFrameTemplate">
 				<Size>
 					<AbsDimension x="200" y="250"/>
 				</Size>
@@ -1168,6 +1176,36 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Offset>
 					</Anchor>
 				</Anchors>
+				<Layers>
+					<Layer level="BACKGROUND">
+						<Texture file="Interface\ClassTrainerFrame\UI-ClassTrainer-ScrollBar">
+							<Size>
+								<AbsDimension x="30" y="120"/>
+							</Size>
+							<Anchors>
+								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
+									<Offset>
+										<AbsDimension x="-3" y="2"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+							<TexCoords left="0" right="0.46875" top="0.0234375" bottom="0.9609375"/>
+						</Texture>
+						<Texture file="Interface\ClassTrainerFrame\UI-ClassTrainer-ScrollBar">
+							<Size>
+								<AbsDimension x="30" y="123"/>
+							</Size>
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT">
+									<Offset>
+										<AbsDimension x="-3" y="-2"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+							<TexCoords left="0.53125" right="1.0" top="0.03125" bottom="1.0"/>
+						</Texture>
+					</Layer>
+				</Layers>
 				<Scripts>
 					<OnVerticalScroll>
 						FauxScrollFrame_OnVerticalScroll(STATIONERY_ICON_ROW_HEIGHT, StationeryPopupFrame_Update);
@@ -1388,7 +1426,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</FontString>
 				<FontString name="OpenMailSubject" inherits="GameFontNormalSmall" justifyH="LEFT" justifyV="TOP">
 					<Size>
-						<AbsDimension x="235" y="32"/>
+						<AbsDimension x="225" y="16"/>
 					</Size>
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="OpenMailSubjectLabel" relativePoint="TOPRIGHT">
@@ -1434,20 +1472,20 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				<Anchors>
 					<Anchor point="TOPLEFT">
 						<Offset>
-							<AbsDimension x="22" y="-97"/>
+							<AbsDimension x="21" y="-97"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
 				<Layers>
-					<Layer level="BACKGROUND">
-						<Texture name="$parentTop" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
+					<Layer level="OVERLAY">
+						<Texture file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
 							<Size>
 								<AbsDimension x="31" y="256"/>
 							</Size>
 							<Anchors>
-								<Anchor point="TOP" relativeTo="$parentScrollBarScrollUpButton">
+								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
 									<Offset>
-										<AbsDimension x="0" y="5"/>
+										<AbsDimension x="-2" y="5"/>
 									</Offset>
 								</Anchor>
 							</Anchors>
@@ -1458,13 +1496,31 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 								<AbsDimension x="31" y="106"/>
 							</Size>
 							<Anchors>
-								<Anchor point="BOTTOM" relativeTo="$parentScrollBarScrollDownButton">
+								<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT">
 									<Offset>
-										<AbsDimension x="0" y="-2"/>
+										<AbsDimension x="-2" y="-2"/>
 									</Offset>
 								</Anchor>
 							</Anchors>
 							<TexCoords left="0.515625" right="1.0" top="0" bottom="0.4140625"/>
+						</Texture>
+					</Layer>
+					<Layer level="BACKGROUND">
+						<Texture name="OpenStationeryBackgroundLeft">
+							<Size>
+								<AbsDimension x="252" y="256"/>
+							</Size>
+							<Anchors>
+								<Anchor point="TOPLEFT"/>
+							</Anchors>
+						</Texture>
+						<Texture name="OpenStationeryBackgroundRight">
+							<Size>
+								<AbsDimension x="64" y="256"/>
+							</Size>
+							<Anchors>
+								<Anchor point="TOPLEFT" relativeTo="OpenStationeryBackgroundLeft" relativePoint="TOPRIGHT"/>
+							</Anchors>
 						</Texture>
 					</Layer>
 				</Layers>
@@ -1482,7 +1538,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Anchors>
 						<Layers>
 							<Layer level="BACKGROUND">
-								<FontString name="OpenMailBodyText" inherits="ItemTextFontNormal">
+								<FontString name="OpenMailBodyText" inherits="MailTextFontNormal">
 									<Size>
 										<AbsDimension x="276" y="0"/>
 									</Size>
@@ -1494,24 +1550,182 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 										</Anchor>
 									</Anchors>
 								</FontString>
-								<Texture name="OpenStationeryBackgroundLeft">
-									<Size>
-										<AbsDimension x="256" y="256"/>
-									</Size>
-									<Anchors>
-										<Anchor point="TOPLEFT"/>
-									</Anchors>
-								</Texture>
-								<Texture name="OpenStationeryBackgroundRight">
-									<Size>
-										<AbsDimension x="64" y="256"/>
-									</Size>
-									<Anchors>
-										<Anchor point="TOPLEFT" relativeTo="OpenStationeryBackgroundLeft" relativePoint="TOPRIGHT"/>
-									</Anchors>
-								</Texture>
 							</Layer>
 						</Layers>
+						<Frames>
+							<Frame name="OpenMailInvoiceFrame" setAllPoints="true">
+								<Layers>
+									<Layer level="BACKGROUND">
+										<FontString name="OpenMailInvoiceItemLabel" inherits="InvoiceTextFontNormal" text="ITEM_SOLD_COLON">
+											<Size>
+												<AbsDimension x="240" y="0"/>
+											</Size>
+											<Anchors>
+												<Anchor point="TOPLEFT">
+													<Offset>
+														<AbsDimension x="30" y="-35"/>
+													</Offset>
+												</Anchor>
+											</Anchors>
+										</FontString>
+										<FontString name="OpenMailInvoicePurchaser" inherits="InvoiceTextFontNormal" text="PURCHASED_BY_COLON">
+											<Anchors>
+												<Anchor point="TOPLEFT" relativeTo="OpenMailInvoiceItemLabel" relativePoint="BOTTOMLEFT">
+													<Offset>
+														<AbsDimension x="0" y="-5"/>
+													</Offset>
+												</Anchor>
+											</Anchors>
+										</FontString>
+										<FontString name="OpenMailInvoiceBuyMode" inherits="InvoiceTextFontSmall">
+											<Anchors>
+												<Anchor point="LEFT" relativeTo="OpenMailInvoicePurchaser" relativePoint="RIGHT">
+													<Offset>
+														<AbsDimension x="5" y="0"/>
+													</Offset>
+												</Anchor>
+											</Anchors>
+										</FontString>
+										<FontString name="OpenMailInvoiceSalePrice" inherits="InvoiceTextFontNormal" text="SALE_PRICE_COLON">
+											<Anchors>
+												<Anchor point="TOPRIGHT" relativeTo="OpenMailInvoicePurchaser" relativePoint="BOTTOMLEFT">
+													<Offset>
+														<AbsDimension x="125" y="-26"/>
+													</Offset>
+												</Anchor>
+											</Anchors>
+										</FontString>
+										<FontString name="OpenMailInvoiceDeposit" inherits="InvoiceTextFontNormal" text="DEPOSIT_COLON">
+											<Anchors>
+												<Anchor point="TOPRIGHT" relativeTo="OpenMailInvoiceSalePrice" relativePoint="BOTTOMRIGHT">
+													<Offset>
+														<AbsDimension x="0" y="-13"/>
+													</Offset>
+												</Anchor>
+											</Anchors>
+										</FontString>
+										<FontString name="OpenMailInvoiceHouseCut" inherits="InvoiceTextFontNormal" text="AUCTION_HOUSE_CUT_COLON">
+											<Anchors>
+												<Anchor point="TOPRIGHT" relativeTo="OpenMailInvoiceDeposit" relativePoint="BOTTOMRIGHT">
+													<Offset>
+														<AbsDimension x="0" y="-13"/>
+													</Offset>
+												</Anchor>
+											</Anchors>
+										</FontString>
+										<FontString name="OpenMailInvoiceAmountReceived" inherits="InvoiceTextFontNormal" text="AMOUNT_RECEIVED_COLON">
+											<Anchors>
+												<Anchor point="TOPRIGHT" relativeTo="OpenMailInvoiceHouseCut" relativePoint="BOTTOMRIGHT">
+													<Offset>
+														<AbsDimension x="0" y="-13"/>
+													</Offset>
+												</Anchor>
+											</Anchors>
+										</FontString>
+										<Texture name="OpenMailArithmeticLine" file="Interface\MailFrame\UI-MailFrame-InvoiceLine">
+											<Size>
+												<AbsDimension x="256" y="32"/>
+											</Size>
+											<Anchors>
+												<Anchor point="TOP" relativeTo="OpenMailInvoiceHouseCut" relativePoint="BOTTOMRIGHT">
+													<Offset>
+														<AbsDimension x="0" y="9"/>
+													</Offset>
+												</Anchor>
+											</Anchors>
+										</Texture>
+									</Layer>
+								</Layers>
+								<Frames>
+									<Frame name="OpenMailTransactionAmountMoneyFrame" inherits="SmallMoneyFrameTemplate">
+										<Anchors>
+											<Anchor point="RIGHT" relativeTo="OpenMailInvoiceAmountReceived" relativePoint="RIGHT">
+												<Offset>
+													<AbsDimension x="130" y="0"/>
+												</Offset>
+											</Anchor>
+										</Anchors>
+										<Scripts>
+											<OnLoad>
+												SmallMoneyFrame_OnLoad();
+												MoneyFrame_SetType("AUCTION");
+											</OnLoad>
+										</Scripts>
+									</Frame>
+									<Frame name="OpenMailDepositMoneyFrame" inherits="SmallMoneyFrameTemplate">
+										<Anchors>
+											<Anchor point="RIGHT" relativeTo="OpenMailInvoiceDeposit" relativePoint="RIGHT">
+												<Offset>
+													<AbsDimension x="130" y="0"/>
+												</Offset>
+											</Anchor>
+										</Anchors>
+										<Layers>
+											<Layer level="BACKGROUND">
+												<FontString inherits="InvoiceTextFontNormal" text="+">
+													<Anchors>
+														<Anchor point="RIGHT" relativePoint="LEFT">
+															<Offset>
+																<AbsDimension x="-5" y="0"/>
+															</Offset>
+														</Anchor>
+													</Anchors>
+												</FontString>
+											</Layer>
+										</Layers>
+										<Scripts>
+											<OnLoad>
+												SmallMoneyFrame_OnLoad();
+												MoneyFrame_SetType("AUCTION");
+											</OnLoad>
+										</Scripts>
+									</Frame>
+									<Frame name="OpenMailHouseCutMoneyFrame" inherits="SmallMoneyFrameTemplate">
+										<Anchors>
+											<Anchor point="RIGHT" relativeTo="OpenMailInvoiceHouseCut" relativePoint="RIGHT">
+												<Offset>
+													<AbsDimension x="130" y="0"/>
+												</Offset>
+											</Anchor>
+										</Anchors>
+										<Layers>
+											<Layer level="BACKGROUND">
+												<FontString inherits="InvoiceTextFontNormal" text="-">
+													<Anchors>
+														<Anchor point="RIGHT" relativePoint="LEFT">
+															<Offset>
+																<AbsDimension x="-5" y="0"/>
+															</Offset>
+														</Anchor>
+													</Anchors>
+												</FontString>
+											</Layer>
+										</Layers>
+										<Scripts>
+											<OnLoad>
+												SmallMoneyFrame_OnLoad();
+												MoneyFrame_SetType("AUCTION");
+											</OnLoad>
+										</Scripts>
+									</Frame>
+									<Frame name="OpenMailSalePriceMoneyFrame" inherits="SmallMoneyFrameTemplate">
+										<Anchors>
+											<Anchor point="RIGHT" relativeTo="OpenMailInvoiceSalePrice" relativePoint="RIGHT">
+												<Offset>
+													<AbsDimension x="130" y="0"/>
+												</Offset>
+											</Anchor>
+										</Anchors>
+										<Scripts>
+											<OnLoad>
+												SmallMoneyFrame_OnLoad();
+												MoneyFrame_SetType("AUCTION");
+											</OnLoad>
+										</Scripts>
+									</Frame>
+								</Frames>
+							</Frame>
+						</Frames>
 					</Frame>
 				</ScrollChild>
 			</ScrollFrame>
@@ -1529,6 +1743,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</OnLoad>
 					<OnClick>
 						TakeInboxTextItem(InboxFrame.openMailID);
+						PlaySound("igMainMenuOptionCheckBoxOn");
 					</OnClick>
 					<OnEnter>
 						GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
@@ -1554,7 +1769,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						this:RegisterForClicks("LeftButtonUp", "RightButtonUp");
 					</OnLoad>
 					<OnEvent>
-						GameTooltip:Hide();
+						--GameTooltip:Hide();
 						if ( GameTooltip:IsOwned(this) ) then
 							GameTooltip:SetInboxItem(InboxFrame.openMailID);
 							GameTooltip:Show();
@@ -1568,6 +1783,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						else
 							TakeInboxItem(InboxFrame.openMailID);
 						end
+						PlaySound("igMainMenuOptionCheckBoxOn");
 					</OnClick>
 					<OnEnter>
 						OpenMailPackage_OnEnter();
@@ -1592,7 +1808,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						this:RegisterForClicks("LeftButtonUp", "RightButtonUp");
 					</OnLoad>
 					<OnEvent>
-						GameTooltip:Hide();
+						--GameTooltip:Hide();
 						if ( GameTooltip:IsOwned(this) ) then
 							if ( OpenMailFrame.money ) then
 								GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
@@ -1684,6 +1900,11 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</Button>
 		</Frames>
 		<Scripts>
+			<OnShow>
+				if ( GetCenterFrame() ) then
+					HideUIPanel(GetCenterFrame());
+				end
+			</OnShow>
 			<OnHide>
 				OpenMailFrame_OnHide();
 			</OnHide>

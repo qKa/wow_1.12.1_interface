@@ -1,14 +1,13 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
-	<Script file="MoneyInputFrame.lua"/>
+..\FrameXML\UI.xsd">
 	<Frame name="MoneyInputFrameTemplate" virtual="true">
 		<Size>
 			<AbsDimension x="176" y="18"/>
 		</Size>
 		<Frames>
-			<EditBox name="$parentGold" letters="8" historyLines="0" numeric="true" autoFocus="false">
+			<EditBox name="$parentGold" historyLines="0" numeric="true" autoFocus="false">
 				<Size>
-					<AbsDimension x="68" y="20"/>
+					<AbsDimension x="58" y="20"/>
 				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT"/>
@@ -35,7 +34,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							<Anchors>
 								<Anchor point="RIGHT">
 									<Offset>
-										<AbsDimension x="-10" y="0"/>
+										<AbsDimension x="0" y="0"/>
 									</Offset>
 								</Anchor>
 							</Anchors>
@@ -58,7 +57,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							<Anchors>
 								<Anchor point="LEFT" relativePoint="RIGHT">
 									<Offset>
-										<AbsDimension x="-8" y="0"/>
+										<AbsDimension x="2" y="0"/>
 									</Offset>
 								</Anchor>
 							</Anchors>
@@ -99,7 +98,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				<Anchors>
 					<Anchor point="LEFT" relativeTo="$parentGold" relativePoint="RIGHT">
 						<Offset>
-							<AbsDimension x="16" y="0"/>
+							<AbsDimension x="26" y="0"/>
 						</Offset>
 					</Anchor>
 				</Anchors>

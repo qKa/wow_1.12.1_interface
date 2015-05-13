@@ -23,34 +23,37 @@ function TextStatusBar_OnEvent(cvar, value)
 	end
 end
 
-function TextStatusBar_UpdateTextString()
-	local string = this.TextString;
+function TextStatusBar_UpdateTextString(textStatusBar)
+	if ( not textStatusBar ) then
+		textStatusBar = this;
+	end
+	local string = textStatusBar.TextString;
 	if(string) then
-		local value = this:GetValue();
-		local valueMin, valueMax = this:GetMinMaxValues();
+		local value = textStatusBar:GetValue();
+		local valueMin, valueMax = textStatusBar:GetMinMaxValues();
 		if ( valueMax > 0 ) then
-			this:Show();
-			if ( value == 0 and this.zeroText ) then
-				string:SetText(this.zeroText);
-				this.isZero = 1;
+			textStatusBar:Show();
+			if ( value == 0 and textStatusBar.zeroText ) then
+				string:SetText(textStatusBar.zeroText);
+				textStatusBar.isZero = 1;
 				string:Show();
 			else
-				this.isZero = nil;
-				if ( this.prefix ) then
-					string:SetText(this.prefix.." "..value.." / "..valueMax);
+				textStatusBar.isZero = nil;
+				if ( textStatusBar.prefix ) then
+					string:SetText(textStatusBar.prefix.." "..value.." / "..valueMax);
 				else
 					string:SetText(value.." / "..valueMax);
 				end
-				if ( UIOptionsFrameCheckButtons["STATUS_BAR_TEXT"].value == "1" and this.textLockable ) then
+				if ( GetCVar("statusBarText") == "1" and textStatusBar.textLockable ) then
 					string:Show();
-				elseif ( this.lockShow > 0 ) then
+				elseif ( textStatusBar.lockShow > 0 ) then
 					string:Show();
 				else
 					string:Hide();
 				end
 			end
 		else
-			this:Hide();
+			textStatusBar:Hide();
 		end
 	end
 end
@@ -91,7 +94,7 @@ function HideTextStatusBarText(bar)
 		end
 		if ( bar.lockShow > 0 or this.isZero == 1) then
 			bar.TextString:Show();
-		elseif ( UIOptionsFrameCheckButtons["STATUS_BAR_TEXT"].value == "1" and bar.textLockable ) then
+		elseif ( GetCVar("statusBarText") == "1" and bar.textLockable ) then
 			bar.TextString:Show();
 		else
 			bar.TextString:Hide();

@@ -19,7 +19,7 @@ function ItemTextFrame_OnEvent(event)
 		if ( not material ) then
 			material = "Parchment";
 		end
-		local textColor = MATERIAL_TEXT_COLOR_TABLE[material];
+		local textColor = GetMaterialTextColors(material);
 		ItemTextPageText:SetTextColor(textColor[1], textColor[2], textColor[3]);
 		return;
 	end
@@ -30,17 +30,21 @@ function ItemTextFrame_OnEvent(event)
 		ItemTextStatusBar:SetMinMaxValues(0, arg1);
 		ItemTextStatusBar:Show();
 		ShowUIPanel(this);
+		if ( not this:IsVisible() ) then
+			CloseItemText();
+		end
 		return;
 	end
 	if ( event == "ITEM_TEXT_READY" ) then
 		local creator = ItemTextGetCreator();
 		if ( creator ) then
-			creator = "\n\n"..ITEM_TEXT_FROM.."\n"..creator;
-			ItemTextPageText:SetText(ItemTextGetText()..creator);
+			creator = "\n\n"..ITEM_TEXT_FROM.."\n"..creator.."\n\n";
+			ItemTextPageText:SetText("\n"..ItemTextGetText()..creator);
 		else
-			ItemTextPageText:SetText(ItemTextGetText());
+			ItemTextPageText:SetText("\n"..ItemTextGetText().."\n");
 		end
 		
+		ItemTextScrollFrameScrollBar:SetValue(0);
 		ItemTextScrollFrame:UpdateScrollChildRect();
 		ItemTextScrollFrame:Show();	
 		local page = ItemTextGetPage();
@@ -80,6 +84,9 @@ function ItemTextFrame_OnEvent(event)
 		end	
 		ItemTextStatusBar:Hide();
 		ShowUIPanel(this);
+		if ( not this:IsVisible() ) then
+			CloseItemText();
+		end
 		return;
 	end
 	if ( event == "ITEM_TEXT_CLOSED" ) then

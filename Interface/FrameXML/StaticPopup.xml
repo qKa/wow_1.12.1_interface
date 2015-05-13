@@ -1,6 +1,5 @@
-<!-- edited with XMLSPY v5 rel. 4 U (http://www.xmlspy.com) by Sam Lantinga (Blizzard Entertainment) -->
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="StaticPopup.lua"/>
 	<Button name="StaticPopupButtonTemplate" virtual="true">
 		<Size>
@@ -23,11 +22,11 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<HighlightTexture file="Interface\Buttons\UI-DialogBox-Button-Highlight" alphaMode="ADD">
 			<TexCoords left="0.0" right="1.0" top="0.0" bottom="0.625"/>
 		</HighlightTexture>
-		<NormalText inherits="GameFontNormal"/>
-		<DisabledText inherits="GameFontDisable"/>
-		<HighlightText inherits="GameFontHighlight"/>
+		<NormalFont inherits="GameFontNormal"/>
+		<DisabledFont inherits="GameFontDisable"/>
+		<HighlightFont inherits="GameFontHighlight"/>
 	</Button>
-	<Frame name="StaticPopupTemplate" toplevel="true" enableMouse="true" frameStrata="DIALOG" hidden="true" parent="UIParent" virtual="true">
+	<Frame name="StaticPopupTemplate" toplevel="true" enableMouse="true" frameStrata="DIALOG" hidden="true" virtual="true">
 		<Size>
 			<AbsDimension x="320" y="72"/>
 		</Size>
@@ -87,7 +86,11 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					<AbsDimension x="130" y="32"/>
 				</Size>
 				<Anchors>
-					<Anchor point="CENTER"/>
+					<Anchor point="BOTTOM" >
+						<Offset>
+							<AbsDimension x="0" y="45"/>
+						</Offset>
+					</Anchor>
 				</Anchors>
 				<Layers>
 					<Layer level="BACKGROUND">
@@ -126,6 +129,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					<OnEscapePressed>
 						StaticPopup_EditBoxOnEscapePressed();
 					</OnEscapePressed>
+					<OnTextChanged>
+						StaticPopup_EditBoxOnTextChanged();
+					</OnTextChanged>
 				</Scripts>
 				<FontString inherits="ChatFontNormal"/>
 			</EditBox>
@@ -212,7 +218,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		</Frames>
 		<Scripts>
 			<OnUpdate>
-				StaticPopup_OnUpdate(arg1);
+				StaticPopup_OnUpdate(this, arg1);
 			</OnUpdate>
 			<OnShow>
 				StaticPopup_OnShow();
@@ -222,7 +228,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</OnHide>
 		</Scripts>
 	</Frame>
-	<Frame name="StaticPopup1" inherits="StaticPopupTemplate">
+	<Frame name="StaticPopup1" inherits="StaticPopupTemplate" parent="UIParent">
 		<Anchors>
 			<Anchor point="TOP">
 				<Offset>
@@ -231,17 +237,17 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</Anchor>
 		</Anchors>
 	</Frame>
-	<Frame name="StaticPopup2" inherits="StaticPopupTemplate">
+	<Frame name="StaticPopup2" inherits="StaticPopupTemplate" parent="UIParent">
 		<Anchors>
 			<Anchor point="TOP" relativeTo="StaticPopup1" relativePoint="BOTTOM"/>
 		</Anchors>
 	</Frame>
-	<Frame name="StaticPopup3" inherits="StaticPopupTemplate">
+	<Frame name="StaticPopup3" inherits="StaticPopupTemplate" parent="UIParent">
 		<Anchors>
 			<Anchor point="TOP" relativeTo="StaticPopup2" relativePoint="BOTTOM"/>
 		</Anchors>
 	</Frame>
-	<Frame name="StaticPopup4" inherits="StaticPopupTemplate">
+	<Frame name="StaticPopup4" inherits="StaticPopupTemplate" parent="UIParent">
 		<Anchors>
 			<Anchor point="TOP" relativeTo="StaticPopup3" relativePoint="BOTTOM"/>
 		</Anchors>

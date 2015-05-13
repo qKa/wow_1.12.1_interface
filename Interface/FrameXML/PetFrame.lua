@@ -7,16 +7,14 @@ function PetFrame_OnLoad()
 	this.attackModeSign = -1;
 	--this.flashState = 1;
 	--this.flashTimer = 0;
-	PetFrame_Update();
 	CombatFeedback_Initialize(PetHitIndicator, 30);
+	PetFrame_Update();
+	this:RegisterEvent("UNIT_PET");
 	this:RegisterEvent("UNIT_COMBAT");
-	this:RegisterEvent("UNIT_SPELLMISS");
 	this:RegisterEvent("UNIT_AURA");
-	this:RegisterEvent("PLAYER_PET_CHANGED");
 	this:RegisterEvent("PET_ATTACK_START");
 	this:RegisterEvent("PET_ATTACK_STOP");
 	this:RegisterEvent("UNIT_HAPPINESS");
-	this:RegisterEvent("PLAYER_ENTERING_WORLD");
 end
 
 function PetFrame_Update()
@@ -33,8 +31,10 @@ function PetFrame_Update()
 		else
 			PetFrameTexture:SetTexture("Interface\\TargetingFrame\\UI-SmallTargetingFrame");
 		end
+		PetAttackModeTexture:Hide();
 
 		PetFrame_SetHappiness();
+		RefreshBuffs(getglobal("PetFrame"), 1, "pet");
 	else
 		this:Hide();
 	end
@@ -43,44 +43,25 @@ end
 function PetFrame_OnEvent(event)
 	UnitFrame_OnEvent(event);
 
-	if ( event == "UNIT_SPELLMISS" ) then
-		if ( arg1 == "pet" ) then
-			CombatFeedback_OnSpellMissEvent(arg2);
+	if ( event == "UNIT_PET" ) then
+		if ( arg1 == "player" ) then
+			PetFrame_Update();
 		end
-	end
-	if ( event == "UNIT_COMBAT" ) then
+	elseif ( event == "UNIT_COMBAT" ) then
 		if ( arg1 == "pet" ) then
 			CombatFeedback_OnCombatEvent(arg2, arg3, arg4, arg5);
 		end
-		return;
-	end
-	if ( event == "UNIT_AURA" ) then
+	elseif ( event == "UNIT_AURA" ) then
 		if ( arg1 == "pet" ) then
-			PetFrame_RefreshBuffs();
+			RefreshBuffs(this, 1, "pet");
 		end
-	end
-	if ( event == "PLAYER_PET_CHANGED" ) then
-		PetFrame_Update();
-		PetAttackModeTexture:Hide();
-		PetFrame_RefreshBuffs();
-		return;
-	end
-	if ( event == "PET_ATTACK_START" ) then
+	elseif ( event == "PET_ATTACK_START" ) then
 		PetAttackModeTexture:SetVertexColor(1.0, 1.0, 1.0, 1.0);
 		PetAttackModeTexture:Show();
-		return;
-	end
-	if ( event == "PET_ATTACK_STOP" ) then
+	elseif ( event == "PET_ATTACK_STOP" ) then
 		PetAttackModeTexture:Hide();
-		return;
-	end
-	if ( event == "UNIT_HAPPINESS" ) then
+	elseif ( event == "UNIT_HAPPINESS" ) then
 		PetFrame_SetHappiness();
-		return;
-	end
-	if ( event == "PLAYER_ENTERING_WORLD" ) then
-		PetFrame_Update();
-		return;
 	end
 end
 
@@ -144,23 +125,14 @@ function PetFrame_OnClick(button)
 			TargetUnit("pet");
 		end
 	else
-		if(PetCanBeAbandoned()) then
-			if(PetCanBeRenamed()) then
-				UnitPopup_ShowMenu(this, "PET_RENAME", "pet");
-			else
-				UnitPopup_ShowMenu(this, "PET", "pet");
-			end
-		else
-			UnitPopup_ShowMenu(this, "PET_NOABANDON", "pet");
-		end
-		UnitPopup:ClearAllPoints();
-		UnitPopup:SetPoint("TOPLEFT", this:GetName(), "BOTTOMLEFT", 30, 24);
+		ToggleDropDownMenu(1, nil, PetFrameDropDown);
 	end
 end
 
 function PetFrame_SetHappiness()
 	local happiness, damagePercentage, loyaltyRate = GetPetHappiness();
-	if ( not HasPetUI() ) then
+	local hasPetUI, isHunterPet = HasPetUI();
+	if ( not happiness or not isHunterPet ) then
 		PetFrameHappiness:Hide();
 		return;	
 	end
@@ -183,15 +155,12 @@ function PetFrame_SetHappiness()
 	end
 end
 
-function PetFrame_RefreshBuffs()
-	local debuff, debuffButton;
-	for i=1, MAX_PARTY_DEBUFFS do
-		debuff = UnitDebuff("pet", i);
-		if ( debuff ) then
-			getglobal("PetDebuff"..i.."Icon"):SetTexture(debuff);
-			getglobal("PetDebuff"..i):Show();
-		else
-			getglobal("PetDebuff"..i):Hide();
-		end
+function PetFrameDropDown_OnLoad()
+	UIDropDownMenu_Initialize(this, PetFrameDropDown_Initialize, "MENU");
+end
+
+function PetFrameDropDown_Initialize()
+	if ( UnitExists("pet") ) then
+		UnitPopup_ShowMenu(PetFrameDropDown, "PET", "pet");
 	end
 end

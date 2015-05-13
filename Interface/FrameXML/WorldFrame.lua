@@ -22,6 +22,23 @@ function WorldFrame_OnUpdate(elapsed)
 			this.fpsTime = timeLeft;
 		end
 	end
+	-- Process dialog onUpdates if the map is up or the ui is hidden
+	local dialog;
+	for i = 1, STATICPOPUP_NUMDIALOGS, 1 do
+		dialog = getglobal("StaticPopup"..i);
+		if ( dialog and dialog:IsShown() and not dialog:IsVisible() ) then
+			StaticPopup_OnUpdate(dialog, elapsed);
+		end
+	end
+
+	-- Process breathbar onUpdates if the map is up or the ui is hidden
+	local bar;
+	for i=1, MIRRORTIMER_NUMTIMERS do
+		bar = getglobal("MirrorTimer"..i);
+		if ( bar and bar:IsShown() and not bar:IsVisible() ) then
+			MirrorTimerFrame_OnUpdate(bar, arg1);
+		end
+	end
 end
 
 SCREENSHOT_STATUS_FADETIME = 1.5;
@@ -61,37 +78,3 @@ function ScreenshotStatus_OnUpdate(elapsed)
 end
 
 
-
-AUTOFOLLOW_STATUS_FADETIME = 4.0;
-
-function AutoFollowStatus_OnLoad()
-	this:RegisterEvent("AUTOFOLLOW_BEGIN");
-	this:RegisterEvent("AUTOFOLLOW_END");
-end
-
-function AutoFollowStatus_OnEvent(event)
-	if ( event == "AUTOFOLLOW_BEGIN" ) then
-		this.unit = arg1;
-		this.fadeTime = nil;
-		this:SetAlpha(1.0);
-		AutoFollowStatusText:SetText(format(TEXT(AUTOFOLLOWSTART),this.unit));
-		this:Show();
-	end
-	if ( event == "AUTOFOLLOW_END" ) then
-		this.fadeTime = AUTOFOLLOW_STATUS_FADETIME;
-		AutoFollowStatusText:SetText(format(TEXT(AUTOFOLLOWSTOP),this.unit));
-		this:Show();
-	end
-end
-
-function AutoFollowStatus_OnUpdate(elapsed)
-	if( this.fadeTime ) then
-		if( elapsed >= this.fadeTime ) then
-			this:Hide();
-		else
-			this.fadeTime = this.fadeTime - elapsed;
-			local alpha = this.fadeTime / AUTOFOLLOW_STATUS_FADETIME;
-			this:SetAlpha(alpha);
-		end
-	end
-end

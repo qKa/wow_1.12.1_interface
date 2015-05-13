@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="ChatFrame.lua"/>
 	<ScrollingMessageFrame name="ChatFrameTemplate" frameStrata="BACKGROUND" toplevel="true" displayDuration="120.0" maxLines="128" hidden="true" virtual="true">
 		<Scripts>
@@ -13,11 +13,8 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				ChatFrame_OnUpdate(arg1);
 			</OnUpdate>
 			<OnHyperlinkClick>
-				ChatFrame_OnHyperlinkShow(arg1);
+				ChatFrame_OnHyperlinkShow(arg1, arg2, arg3);
 			</OnHyperlinkClick>
-			<OnHyperlinkLeave>
-				ChatFrame_OnHyperlinkHide();
-			</OnHyperlinkLeave>
 		</Scripts>
 		<FontString inherits="ChatFontNormal" justifyH="LEFT"/>
 	</ScrollingMessageFrame>
@@ -72,6 +69,27 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</FontString>
 			</Layer>
 		</Layers>
+		<Frames>
+			<Button name="$parentLanguage" hidden="true">
+				<Size>
+					<AbsDimension x="32" y="32"/>
+				</Size>
+				<Anchors>
+					<Anchor point="LEFT" relativePoint="RIGHT">
+						<Offset>
+							<AbsDimension x="-8" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						this:GetParent():ToggleInputLanguage();
+					</OnClick>
+				</Scripts>
+				<NormalTexture file="Interface\Buttons\UI-CheckBox-Up"/>
+				<NormalFont inherits="DialogButtonNormalText"/>
+			</Button>
+		</Frames>
 		<Scripts>
 			<OnLoad>
 				ChatEdit_OnLoad();
@@ -100,6 +118,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<OnTextSet>
 				ChatEdit_OnTextSet();
 			</OnTextSet>
+			<OnInputLanguageChanged>
+				ChatEdit_OnInputLanguageChanged();
+			</OnInputLanguageChanged>
 		</Scripts>
 		<FontString inherits="ChatFontNormal" bytes="256"/>
 	</EditBox>

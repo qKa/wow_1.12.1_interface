@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="RealmList.lua"/>
 	<Button name="RealmListTabButtonTemplate" virtual="true">
         <Size>
@@ -73,7 +73,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				RealmListTab_OnClick();
 			</OnClick>
 		</Scripts>
-		<NormalText name="$parentText" inherits="GlueFontNormalSmall">
+		<ButtonText name="$parentText">
 			<Anchors>
 				<Anchor point="CENTER">
 					<Offset>
@@ -81,25 +81,10 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Offset>
 				</Anchor>
 			</Anchors>
-		</NormalText>
-		<HighlightText inherits="GlueFontHighlightSmall">
-			<Anchors>
-				<Anchor point="CENTER">
-					<Offset>
-						<AbsDimension x="0" y="2"/>
-					</Offset>
-				</Anchor>
-			</Anchors>
-		</HighlightText>
-		<DisabledText inherits="GlueFontHighlightSmall">
-			<Anchors>
-				<Anchor point="CENTER">
-					<Offset>
-						<AbsDimension x="0" y="2"/>
-					</Offset>
-				</Anchor>
-			</Anchors>
-		</DisabledText>
+		</ButtonText>
+		<NormalFont inherits="GlueFontNormalSmall"/>
+		<HighlightFont inherits="GlueFontHighlightSmall"/>
+		<DisabledFont inherits="GlueFontHighlightSmall"/>
 		<HighlightTexture name="$parentHighlightTexture" file="Interface\PaperDollInfoFrame\UI-Character-Tab-Highlight" alphaMode="ADD">
 			<Anchors>
 				<Anchor point="LEFT">
@@ -148,7 +133,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</Texture>
 			</Layer>
 		</Layers>
-		<NormalText name="$parentText" inherits="GlueFontHighlightSmall">
+		<ButtonText name="$parentText">
 			<Anchors>
 				<Anchor point="LEFT">
 					<Offset>
@@ -156,7 +141,8 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Offset>
 				</Anchor>
 			</Anchors>
-		</NormalText>
+		</ButtonText>
+		<NormalFont inherits="GlueFontHighlightSmall"/>
 		<NormalTexture name="$parentArrow" file="Interface\Buttons\UI-SortArrow">
 			<Size>
 				<AbsDimension x="9" y="8"/>
@@ -218,12 +204,12 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</FontString>
 				<FontString name="$parentLoad" inherits="GlueFontHighlightSmall">
 					<Size>
-						<AbsDimension x="60" y="12"/>
+						<AbsDimension x="115" y="12"/>
 					</Size>
 					<Anchors>
 						<Anchor point="LEFT" relativeTo="$parentPlayers" relativePoint="RIGHT">
 							<Offset>
-								<AbsDimension x="71" y="0"/>
+								<AbsDimension x="50" y="0"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -241,7 +227,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				RealmSelectButton_OnDoubleClick(this:GetID());
 			</OnDoubleClick>
 		</Scripts>
-		<NormalText name="$parentNormalText" inherits="GlueFontNormal" justifyH="LEFT">
+		<ButtonText name="$parentNormalText">
 			<Size>
 				<AbsDimension x="220" y="12"/>
 			</Size>
@@ -252,21 +238,12 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Offset>
 				</Anchor>
 			</Anchors>
-		</NormalText>
-		<HighlightText inherits="GlueFontHighlight" justifyH="LEFT">
-			<Size>
-				<AbsDimension x="220" y="12"/>
-			</Size>
-			<Anchors>
-				<Anchor point="LEFT">
-					<Offset>
-						<AbsDimension x="5" y="0"/>
-					</Offset>
-				</Anchor>
-			</Anchors>
-		</HighlightText>
+		</ButtonText>
+		<NormalFont inherits="GlueFontNormal" justifyH="LEFT"/>
+		<HighlightFont inherits="GlueFontHighlight" justifyH="LEFT"/>
+		<DisabledFont inherits="GlueFontDisable" justifyH="LEFT"/>
 	</Button>
-	<Frame name="RealmList" setAllPoints="true" enableMouse="true" enableKeyboard="true" frameStrata="DIALOG" hidden="true" parent="GlueParent">
+	<Frame name="RealmList" toplevel="true" parent="GlueParent" setAllPoints="true" enableMouse="true" enableKeyboard="true" frameStrata="DIALOG" hidden="true">
 		<Layers>
 			<Layer level="BACKGROUND">
 				<Texture setAllPoints="true">
@@ -282,7 +259,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				<Anchors>
 					<Anchor point="CENTER">
 						<Offset>
-							<AbsDimension x="0" y="0"/>
+							<AbsDimension x="24" y="0"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
@@ -402,10 +379,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							</Anchor>
 						</Anchors>
 						<Scripts>
-							<OnLoad>
-								this:Disable();
-								getglobal(this:GetName().."Arrow"):Hide();
-							</OnLoad>
+							<OnClick>
+								SortRealms("mode");
+							</OnClick>
 						</Scripts>
 					</Button>
 					<Button name="RealmCharactersSort" inherits="RealmSortButtonTemplate" text="REALM_CHARACTERS">
@@ -717,43 +693,43 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Anchors>
 						<Layers>
 							<Layer level="BACKGROUND">
-								<Texture name="$parentTop" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
+								<Texture name="$parentScrollBarTop" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
 									<Size>
 										<AbsDimension x="31" y="256"/>
 									</Size>
 									<Anchors>
-										<Anchor point="TOP" relativeTo="$parentScrollBarScrollUpButton">
+										<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
 											<Offset>
-												<AbsDimension x="0" y="5"/>
+												<AbsDimension x="-2" y="5"/>
 											</Offset>
 										</Anchor>
 									</Anchors>
 									<TexCoords left="0" right="0.484375" top="0" bottom="1.0"/>
 								</Texture>
-								<Texture name="$parentBottom" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
+								<Texture name="$parentScrollBarBottom" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
 									<Size>
 										<AbsDimension x="31" y="106"/>
 									</Size>
 									<Anchors>
-										<Anchor point="BOTTOM" relativeTo="$parentScrollBarScrollDownButton">
+										<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT">
 											<Offset>
-												<AbsDimension x="0" y="-2"/>
+												<AbsDimension x="-2" y="-2"/>
 											</Offset>
 										</Anchor>
 									</Anchors>
 									<TexCoords left="0.515625" right="1.0" top="0" bottom="0.4140625"/>
 								</Texture>
-								<Texture name="$parentMiddle" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
+								<Texture name="$parentScrollBarMiddle" file="Interface\PaperDollInfoFrame\UI-Character-ScrollBar">
 									<Size>
 										<AbsDimension x="31" y="60"/>
 									</Size>
 									<Anchors>
-										<Anchor point="TOP" relativeTo="$parentTop" relativePoint="BOTTOM">
+										<Anchor point="TOP" relativeTo="$parentScrollBarTop" relativePoint="BOTTOM">
 											<Offset>
 												<AbsDimension x="0" y="0"/>
 											</Offset>
 										</Anchor>
-										<Anchor point="BOTTOM" relativeTo="$parentBottom" relativePoint="TOP">
+										<Anchor point="BOTTOM" relativeTo="$parentScrollBarBottom" relativePoint="TOP">
 											<Offset>
 												<AbsDimension x="0" y="0"/>
 											</Offset>

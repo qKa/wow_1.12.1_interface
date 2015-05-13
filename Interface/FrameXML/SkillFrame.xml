@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="SkillFrame.lua"/>
 	<StatusBar name="SkillStatusBarTemplate" hidden="true" virtual="true" drawLayer="BACKGROUND" minValue="0" maxValue="1" defaultValue="0">
 		<Size>
@@ -27,18 +27,13 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					<Size>
 						<AbsDimension x="0" y="15"/>
 					</Size>
-					<Anchor point="TOPRIGHT" relativeTo="$parent">
-						<Offset>
-							<AbsDimension x="0" y="0"/>
-						</Offset>
-					</Anchor>
 					<Color r="1.0" g="1.0" b="1.0" a="0.5"/>
 				</Texture>
 			</Layer>
 			<Layer level="BACKGROUND">
-						<Texture name="$parentBackground">
-							<Color r="1.0" g="1.0" b="1.0" a="0.2"/>
-						</Texture>
+				<Texture name="$parentBackground">
+					<Color r="1.0" g="1.0" b="1.0" a="0.2"/>
+				</Texture>
 			</Layer>
 		</Layers>
 		<Frames>
@@ -56,17 +51,17 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				<HitRectInsets>
 					<AbsInset left="0" right="0" top="7" bottom="7"/>
 				</HitRectInsets>
-				<NormalTexture name="$parentNormal" file="Interface\PaperDollInfoFrame\UI-Character-Skills-BarBorder" />
-				<HighlightTexture name="$parentHighlight" file="Interface\PaperDollInfoFrame\UI-Character-Skills-BarBorderHighlight" />
 				<Scripts>
 					<OnClick>
 						SkillBar_OnClick();				
 					</OnClick>
 				</Scripts>
-			</Button>			
+				<NormalTexture name="$parentNormal" file="Interface\PaperDollInfoFrame\UI-Character-Skills-BarBorder"/>
+				<HighlightTexture name="$parentHighlight" file="Interface\PaperDollInfoFrame\UI-Character-Skills-BarBorderHighlight"/>
+			</Button>
 		</Frames>
-		<BarTexture name="$parentBar" file="Interface\PaperDollInfoFrame\UI-Character-Skills-Bar" />
-		<BarColor r="0.25" g="0.25" b="0.75" />
+		<BarTexture name="$parentBar" file="Interface\PaperDollInfoFrame\UI-Character-Skills-Bar"/>
+		<BarColor r="0.25" g="0.25" b="0.75"/>
 	</StatusBar>
 	<Button name="SkillLabelTemplate" virtual="true">
 		<Size>
@@ -76,6 +71,10 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<OnClick>
 				if (this.isExpanded) then
 					CollapseSkillHeader(this.skillIndex);
+					local dialog = StaticPopup_FindVisible("UNLEARN_SKILL");
+					if ( dialog and ( dialog.data ~= GetSelectedSkill() ) ) then
+						StaticPopup_Hide("UNLEARN_SKILL");
+					end
 				else
 					ExpandSkillHeader(this.skillIndex);
 				end
@@ -117,7 +116,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</Anchor>
 			</Anchors>
 		</DisabledTexture>
-		<NormalText inherits="GameFontHighlight" justifyH="LEFT">
+		<ButtonText>
 			<Anchors>
 				<Anchor point="LEFT">
 					<Offset>
@@ -125,7 +124,8 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Offset>
 				</Anchor>
 			</Anchors>
-		</NormalText>
+		</ButtonText>
+		<NormalFont inherits="GameFontHighlight" justifyH="LEFT"/>
 	</Button>
 	<Frame name="SkillFrame" setAllPoints="true" enableMouse="true" parent="CharacterFrame" hidden="true" id="4">
 		<HitRectInsets>
@@ -212,7 +212,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</Layer>
 		</Layers>
 		<Frames>
-<!--	Replace once code is ready...	
+			<!--	Replace once code is ready...	
 			<CheckButton name="SkillSortButton" inherits="OptionsCheckButtonTemplate">
 				<Size>
 					<AbsDimension x="25" y="25"/>
@@ -264,26 +264,28 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 								</Anchor>
 							</Anchors>
 						</Texture>
-						<Texture name="SkillFrameExpandTabMiddle" file="Interface\QuestFrame\UI-QuestLogSortTab-Middle">
-							<Size>
-								<AbsDimension x="42" y="32"/>
-							</Size>
-							<Anchors>
-								<Anchor point="LEFT" relativeTo="SkillFrameExpandTabLeft" relativePoint="RIGHT">
-									<Offset>
-										<AbsDimension x="0" y="0"/>
-									</Offset>
-								</Anchor>
-							</Anchors>
-						</Texture>
-						<Texture file="Interface\QuestFrame\UI-QuestLogSortTab-Right">
+						<Texture name="SkillFrameExpandTabRight" file="Interface\QuestFrame\UI-QuestLogSortTab-Right">
 							<Size>
 								<AbsDimension x="8" y="32"/>
 							</Size>
 							<Anchors>
-								<Anchor point="LEFT" relativeTo="SkillFrameExpandTabMiddle" relativePoint="RIGHT"/>
+								<Anchor point="TOPRIGHT">
+									<Offset>
+										<AbsDimension x="0" y="6"/>
+									</Offset>
+								</Anchor>
 							</Anchors>
 						</Texture>
+						<Texture name="SkillFrameExpandTabMiddle" file="Interface\QuestFrame\UI-QuestLogSortTab-Middle">
+							<Size>
+								<AbsDimension x="0" y="32"/>
+							</Size>
+							<Anchors>
+								<Anchor point="LEFT" relativeTo="SkillFrameExpandTabLeft" relativePoint="RIGHT"/>
+								<Anchor point="RIGHT" relativeTo="SkillFrameExpandTabRight" relativePoint="LEFT"/>
+							</Anchors>
+						</Texture>
+						
 					</Layer>
 				</Layers>
 				<Frames>
@@ -300,15 +302,20 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Anchors>
 						<Scripts>
 							<OnLoad>
-								getglobal(this:GetName()):SetText(ALL);
+								this:SetText(ALL);
 								this.skillIndex = 0;
 								this.isExpanded = 1;
 							</OnLoad>
 						</Scripts>
 					</Button>
 				</Frames>
+				<Scripts>
+					<OnLoad>
+						this:SetWidth(SkillFrameCollapseAllButton:GetTextWidth()+45);
+					</OnLoad>
+				</Scripts>
 			</Frame>
-		<!--
+			<!--
 			<Button name="SkillFrameAcceptButton" inherits="UIPanelButtonTemplate" text="ACCEPT">
 				<Size>
 					<AbsDimension x="80" y="22"/>
@@ -474,9 +481,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 								<AbsDimension x="30" y="128"/>
 							</Size>
 							<Anchors>
-								<Anchor point="TOP" relativeTo="$parentScrollBarScrollUpButton">
+								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
 									<Offset>
-										<AbsDimension x="-2" y="3"/>
+										<AbsDimension x="-3" y="5"/>
 									</Offset>
 								</Anchor>
 							</Anchors>
@@ -487,9 +494,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 								<AbsDimension x="30" y="128"/>
 							</Size>
 							<Anchors>
-								<Anchor point="BOTTOM" relativeTo="$parentScrollBarScrollDownButton">
+								<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT">
 									<Offset>
-										<AbsDimension x="-2" y="-1"/>
+										<AbsDimension x="-3" y="-2"/>
 									</Offset>
 								</Anchor>
 							</Anchors>
@@ -516,27 +523,27 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</Anchors>
 				<Layers>
 					<Layer level="ARTWORK">
-						<Texture name="$parentTop" file="Interface\ClassTrainerFrame\UI-ClassTrainer-ScrollBar">
+						<Texture file="Interface\ClassTrainerFrame\UI-ClassTrainer-ScrollBar">
 							<Size>
 								<AbsDimension x="30" y="100"/>
 							</Size>
 							<Anchors>
-								<Anchor point="TOP" relativeTo="$parentScrollBarScrollUpButton">
+								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
 									<Offset>
-										<AbsDimension x="-2" y="5"/>
+										<AbsDimension x="-3" y="5"/>
 									</Offset>
 								</Anchor>
 							</Anchors>
 							<TexCoords left="0" right="0.46875" top="0" bottom="0.78125"/>
 						</Texture>
-						<Texture name="$parentBottom" file="Interface\ClassTrainerFrame\UI-ClassTrainer-ScrollBar">
+						<Texture file="Interface\ClassTrainerFrame\UI-ClassTrainer-ScrollBar">
 							<Size>
 								<AbsDimension x="30" y="100"/>
 							</Size>
 							<Anchors>
-								<Anchor point="BOTTOM" relativeTo="$parentScrollBarScrollDownButton">
+								<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT">
 									<Offset>
-										<AbsDimension x="-2" y="-1"/>
+										<AbsDimension x="-3" y="-2"/>
 									</Offset>
 								</Anchor>
 							</Anchors>
@@ -544,6 +551,12 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Texture>
 					</Layer>
 				</Layers>
+				<Scripts>
+					<OnLoad>
+						ScrollFrame_OnLoad();
+						this.scrollBarHideable = 1;
+					</OnLoad>
+				</Scripts>
 				<ScrollChild>
 					<Frame name="SkillDetailScrollChildFrame">
 						<Size>
@@ -623,18 +636,13 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 											<Size>
 												<AbsDimension x="0" y="15"/>
 											</Size>
-											<Anchor point="TOPLEFT" relativeTo="$parent">
-												<Offset>
-													<AbsDimension x="0" y="0"/>
-												</Offset>
-											</Anchor>
 											<Color r="1.0" g="1.0" b="1.0" a="0.5"/>
 										</Texture>
 									</Layer>
 									<Layer level="BACKGROUND">
-												<Texture name="$parentBackground">
-													<Color r="1.0" g="1.0" b="1.0" a="0.2"/>
-												</Texture>
+										<Texture name="$parentBackground">
+											<Color r="1.0" g="1.0" b="1.0" a="0.2"/>
+										</Texture>
 									</Layer>
 								</Layers>
 								<Frames>
@@ -728,18 +736,12 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 										<HighlightTexture file="Interface\Buttons\CancelButton-Highlight" alphaMode="ADD"/>
 									</Button>
 								</Frames>
-								<BarTexture name="$parentBar" file="Interface\PaperDollInfoFrame\UI-Character-Skills-Bar" />
-								<BarColor r="0.25" g="0.25" b="0.75" />
+								<BarTexture name="$parentBar" file="Interface\PaperDollInfoFrame\UI-Character-Skills-Bar"/>
+								<BarColor r="0.25" g="0.25" b="0.75"/>
 							</StatusBar>
 						</Frames>
 					</Frame>
 				</ScrollChild>
-				<Scripts>
-					<OnLoad>
-						ScrollFrame_OnLoad();
-						this.scrollBarHideable = 1;
-					</OnLoad>
-				</Scripts>
 			</ScrollFrame>
 			<StatusBar name="SkillRankFrame1" inherits="SkillStatusBarTemplate" minValue="0" maxValue="1" defaultValue="1" id="1">
 				<Anchors>

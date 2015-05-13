@@ -1,19 +1,22 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="MovieFrame.lua"/>
 	<MovieFrame name="MovieFrame" setAllPoints="true" hidden="true" parent="GlueParent" enableKeyboard="true">
 		<Layers>
 			<Layer level="OVERLAY">
-				<FontString name="MovieFrameSubtitleString" inherits="GlueFontNormalHuge" hidden="true">
-					<Size>
-						<AbsDimension x="800" y="138"/>
-					</Size>
+				<Texture name="MovieFrameSubtitleArea">
+					<Size x="800" y="138"/>
 					<Anchors>
 						<Anchor point="TOP">
-							<Offset>
-								<AbsDimension x="0" y="-630"/>
-							</Offset>
+							<Offset x="0" y="-630"/>
 						</Anchor>
+					</Anchors>
+					<Color r="0" g="0" b="0"/>
+				</Texture>
+				<FontString name="MovieFrameSubtitleString" inherits="GlueFontNormalHuge" hidden="true">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="MovieFrameSubtitleArea"/>
+						<Anchor point="BOTTOMRIGHT" relativeTo="MovieFrameSubtitleArea"/>
 					</Anchors>
 				</FontString>
 			</Layer>

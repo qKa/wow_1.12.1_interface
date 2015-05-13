@@ -1,5 +1,5 @@
  <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
- C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="GuildRegistrarFrame.lua"/>
 	<Frame name="GuildRegistrarFrame" toplevel="true" parent="UIParent" movable="true" enableMouse="true" hidden="true">
  		<Size>
@@ -272,7 +272,7 @@
 							</OnClick>
 						</Scripts>
 					</Button>
-					<EditBox name="GuildRegistrarFrameEditBox" letters="23" historyLines="1">
+					<EditBox name="GuildRegistrarFrameEditBox" letters="24" historyLines="1">
 						<Size>
 							<AbsDimension x="130" y="32"/>
 						</Size>
@@ -336,6 +336,9 @@
 			<OnEvent>
 				if ( event == "GUILD_REGISTRAR_SHOW" ) then
 					ShowUIPanel(GuildRegistrarFrame);
+					if ( not GuildRegistrarFrame:IsVisible() ) then
+						CloseGuildRegistrar();
+					end
 				elseif ( event == "GUILD_REGISTRAR_CLOSED" ) then
 					HideUIPanel(GuildRegistrarFrame);
 				end

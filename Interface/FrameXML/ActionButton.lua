@@ -3,11 +3,17 @@ NUM_ACTIONBAR_PAGES = 6;
 NUM_ACTIONBAR_BUTTONS = 12;
 ATTACK_BUTTON_FLASH_TIME = 0.4;
 
-IN_ATTACK_MODE = nil;
-IN_AUTOREPEAT_MODE = nil;
+BOTTOMLEFT_ACTIONBAR_PAGE = 6;
+BOTTOMRIGHT_ACTIONBAR_PAGE = 5;
+LEFT_ACTIONBAR_PAGE = 4;
+RIGHT_ACTIONBAR_PAGE = 3;
+RANGE_INDICATOR = "●";
+
+-- Table of actionbar pages and whether they're viewable or not
+VIEWABLE_ACTION_BAR_PAGES = {1, 1, 1, 1, 1, 1};
 
 function ActionButtonDown(id)
-	if ( BonusActionBarFrame:IsVisible() ) then
+	if ( BonusActionBarFrame:IsShown() ) then
 		local button = getglobal("BonusActionButton"..id);
 		if ( button:GetButtonState() == "NORMAL" ) then
 			button:SetButtonState("PUSHED");
@@ -22,12 +28,13 @@ function ActionButtonDown(id)
 end
 
 function ActionButtonUp(id, onSelf)
-	if ( BonusActionBarFrame:IsVisible() ) then
+	if ( BonusActionBarFrame:IsShown() ) then
 		local button = getglobal("BonusActionButton"..id);
 		if ( button:GetButtonState() == "PUSHED" ) then
 			button:SetButtonState("NORMAL");
-			-- Used to save a macro
-			MacroFrame_EditMacro();
+			if ( MacroFrame_SaveMacro ) then
+				MacroFrame_SaveMacro();
+			end
 			UseAction(ActionButton_GetPagedID(button), 0);
 			if ( IsCurrentAction(ActionButton_GetPagedID(button)) ) then
 				button:SetChecked(1);
@@ -41,8 +48,9 @@ function ActionButtonUp(id, onSelf)
 	local button = getglobal("ActionButton"..id);
 	if ( button:GetButtonState() == "PUSHED" ) then
 		button:SetButtonState("NORMAL");
-		-- Used to save a macro
-		MacroFrame_EditMacro();
+		if ( MacroFrame_SaveMacro ) then
+			MacroFrame_SaveMacro();
+		end
 		UseAction(ActionButton_GetPagedID(button), 0, onSelf);
 		if ( IsCurrentAction(ActionButton_GetPagedID(button)) ) then
 			button:SetChecked(1);
@@ -54,17 +62,41 @@ end
 
 function ActionBar_PageUp()
 	CURRENT_ACTIONBAR_PAGE = CURRENT_ACTIONBAR_PAGE + 1;
-	if ( CURRENT_ACTIONBAR_PAGE > NUM_ACTIONBAR_PAGES ) then
+	local nextPage;
+	for i=CURRENT_ACTIONBAR_PAGE, NUM_ACTIONBAR_PAGES do
+		if ( VIEWABLE_ACTION_BAR_PAGES[i] ) then
+			nextPage = i;
+			break;
+		end
+	end
+	
+	if ( not nextPage ) then
 		CURRENT_ACTIONBAR_PAGE = 1;
+	else
+		CURRENT_ACTIONBAR_PAGE = nextPage;
 	end
 	ChangeActionBarPage();
 end
 
 function ActionBar_PageDown()
 	CURRENT_ACTIONBAR_PAGE = CURRENT_ACTIONBAR_PAGE - 1;
-	if ( CURRENT_ACTIONBAR_PAGE < 1 ) then
-		CURRENT_ACTIONBAR_PAGE = NUM_ACTIONBAR_PAGES;
+	local prevPage;
+	for i=CURRENT_ACTIONBAR_PAGE, 1, -1 do
+		if ( VIEWABLE_ACTION_BAR_PAGES[i] ) then
+			prevPage = i;
+			break;
+		end
 	end
+	
+	if ( not prevPage ) then
+		for i=NUM_ACTIONBAR_PAGES, 1, -1 do
+			if ( VIEWABLE_ACTION_BAR_PAGES[i] ) then
+				prevPage = i;
+				break;
+			end
+		end
+	end
+	CURRENT_ACTIONBAR_PAGE = prevPage;
 	ChangeActionBarPage();
 end
 
@@ -75,34 +107,15 @@ function ActionButton_OnLoad()
 	ActionButton_Update();
 	this:RegisterForDrag("LeftButton", "RightButton");
 	this:RegisterForClicks("LeftButtonUp", "RightButtonUp");
+	this:RegisterEvent("PLAYER_ENTERING_WORLD");
+	this:RegisterEvent("UPDATE_BONUS_ACTIONBAR");
 	this:RegisterEvent("ACTIONBAR_SHOWGRID");
 	this:RegisterEvent("ACTIONBAR_HIDEGRID");
 	this:RegisterEvent("ACTIONBAR_PAGE_CHANGED");
 	this:RegisterEvent("ACTIONBAR_SLOT_CHANGED");
-	this:RegisterEvent("ACTIONBAR_UPDATE_STATE");
-	this:RegisterEvent("ACTIONBAR_UPDATE_USABLE");
-	this:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN");
-	this:RegisterEvent("PLAYER_AURAS_CHANGED");
-	this:RegisterEvent("PLAYER_TARGET_CHANGED");
-	this:RegisterEvent("UNIT_AURASTATE");
-	this:RegisterEvent("UNIT_INVENTORY_CHANGED");
-	this:RegisterEvent("CRAFT_SHOW");
-	this:RegisterEvent("CRAFT_CLOSE");
-	this:RegisterEvent("TRADE_SKILL_SHOW");
-	this:RegisterEvent("TRADE_SKILL_CLOSE");
-	this:RegisterEvent("UNIT_HEALTH");
-	this:RegisterEvent("UNIT_MANA");
-	this:RegisterEvent("UNIT_RAGE");
-	this:RegisterEvent("UNIT_FOCUS");
-	this:RegisterEvent("UNIT_ENERGY");
-	this:RegisterEvent("UPDATE_BONUS_ACTIONBAR");
-	this:RegisterEvent("PLAYER_ENTER_COMBAT");
-	this:RegisterEvent("PLAYER_LEAVE_COMBAT");
-	this:RegisterEvent("PLAYER_COMBO_POINTS");
 	this:RegisterEvent("UPDATE_BINDINGS");
-	this:RegisterEvent("START_AUTOREPEAT_SPELL");
-	this:RegisterEvent("STOP_AUTOREPEAT_SPELL");
-	ActionButton_UpdateHotkeys();
+
+	ActionButton_UpdateHotkeys(this.buttonType);
 end
 
 function ActionButton_UpdateHotkeys(actionButtonType)
@@ -111,23 +124,28 @@ function ActionButton_UpdateHotkeys(actionButtonType)
 	end
 	local hotkey = getglobal(this:GetName().."HotKey");
 	local action = actionButtonType..this:GetID();
-	hotkey:SetText(KeyBindingFrame_GetLocalizedName(GetBindingKey(action), "KEY_"));
+	local button = ActionButton_GetPagedID(this);
+
+	if ( GetBindingText(GetBindingKey(action), "KEY_", 1) == "" ) then
+		if ( not HasAction(button) ) then
+			hotkey:SetText("");
+		elseif ( ActionHasRange(button) ) then
+			if ( IsActionInRange(button) ) then
+				hotkey:SetText(RANGE_INDICATOR);
+				hotkey:SetTextHeight(8);
+				hotkey:SetPoint("TOPRIGHT", this:GetName(), "TOPRIGHT", -3, 5);
+			else
+				hotkey:SetText("");			
+			end
+		end
+	else
+		hotkey:SetText(GetBindingText(GetBindingKey(action), "KEY_", 1));
+	end
 end
 
 function ActionButton_Update()
-	-- Determine whether or not the button should be flashing or not since the button may have missed the enter combat event
-	local pagedID = ActionButton_GetPagedID(this);
-	if ( IsAttackAction(pagedID) and IsCurrentAction(pagedID) ) then
-		IN_ATTACK_MODE = 1;
-	else
-		IN_ATTACK_MODE = nil;
-	end
-	IN_AUTOREPEAT_MODE = IsAutoRepeatAction(pagedID);
-	
 	-- Special case code for bonus bar buttons
 	-- Prevents the button from updating if the bonusbar is still in an animation transition
-
-	-- Derek, I had to comment this out because it was causing them all to be grayed out after a cinematic...
 	if ( this.isBonus and this.inTransition ) then
 		ActionButton_UpdateUsable();
 		ActionButton_UpdateCooldown();
@@ -140,34 +158,75 @@ function ActionButton_Update()
 	if ( texture ) then
 		icon:SetTexture(texture);
 		icon:Show();
-		this.rangeTimer = TOOLTIP_UPDATE_TIME;
+		this.rangeTimer = -1;
 		this:SetNormalTexture("Interface\\Buttons\\UI-Quickslot2");
 		-- Save texture if the button is a bonus button, will be needed later
 		if ( this.isBonus ) then
 			this.texture = texture;
 		end
-		
 	else
 		icon:Hide();
 		buttonCooldown:Hide();
 		this.rangeTimer = nil;
 		this:SetNormalTexture("Interface\\Buttons\\UI-Quickslot");
+		getglobal(this:GetName().."HotKey"):SetVertexColor(0.6, 0.6, 0.6);
 	end
 	ActionButton_UpdateCount();
 	if ( HasAction(ActionButton_GetPagedID(this)) ) then
+		this:RegisterEvent("ACTIONBAR_UPDATE_STATE");
+		this:RegisterEvent("ACTIONBAR_UPDATE_USABLE");
+		this:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN");
+		this:RegisterEvent("UPDATE_INVENTORY_ALERTS");
+		this:RegisterEvent("PLAYER_AURAS_CHANGED");
+		this:RegisterEvent("PLAYER_TARGET_CHANGED");
+		this:RegisterEvent("UNIT_INVENTORY_CHANGED");
+		this:RegisterEvent("CRAFT_SHOW");
+		this:RegisterEvent("CRAFT_CLOSE");
+		this:RegisterEvent("TRADE_SKILL_SHOW");
+		this:RegisterEvent("TRADE_SKILL_CLOSE");
+		this:RegisterEvent("PLAYER_ENTER_COMBAT");
+		this:RegisterEvent("PLAYER_LEAVE_COMBAT");
+		this:RegisterEvent("START_AUTOREPEAT_SPELL");
+		this:RegisterEvent("STOP_AUTOREPEAT_SPELL");
+
 		this:Show();
+		ActionButton_UpdateState();
 		ActionButton_UpdateUsable();
 		ActionButton_UpdateCooldown();
-	elseif ( this.showgrid == 0 ) then
-		this:Hide();
+		ActionButton_UpdateFlash();
 	else
-		getglobal(this:GetName().."Cooldown"):Hide();
+		this:UnregisterEvent("ACTIONBAR_UPDATE_STATE");
+		this:UnregisterEvent("ACTIONBAR_UPDATE_USABLE");
+		this:UnregisterEvent("ACTIONBAR_UPDATE_COOLDOWN");
+		this:UnregisterEvent("UPDATE_INVENTORY_ALERTS");
+		this:UnregisterEvent("PLAYER_AURAS_CHANGED");
+		this:UnregisterEvent("PLAYER_TARGET_CHANGED");
+		this:UnregisterEvent("UNIT_INVENTORY_CHANGED");
+		this:UnregisterEvent("CRAFT_SHOW");
+		this:UnregisterEvent("CRAFT_CLOSE");
+		this:UnregisterEvent("TRADE_SKILL_SHOW");
+		this:UnregisterEvent("TRADE_SKILL_CLOSE");
+		this:UnregisterEvent("PLAYER_ENTER_COMBAT");
+		this:UnregisterEvent("PLAYER_LEAVE_COMBAT");
+		this:UnregisterEvent("START_AUTOREPEAT_SPELL");
+		this:UnregisterEvent("STOP_AUTOREPEAT_SPELL");
+
+		if ( this.showgrid == 0 ) then
+			this:Hide();
+		else
+			buttonCooldown:Hide();
+		end
 	end
-	if ( IN_ATTACK_MODE or IN_AUTOREPEAT_MODE ) then
-		ActionButton_StartFlash();
+
+	-- Add a green border if button is an equipped item
+	local border = getglobal(this:GetName().."Border");
+	if ( IsEquippedAction(ActionButton_GetPagedID(this)) ) then
+		border:SetVertexColor(0, 1.0, 0, 0.35);
+		border:Show();
 	else
-		ActionButton_StopFlash();
+		border:Hide();
 	end
+
 	if ( GameTooltip:IsOwned(this) ) then
 		ActionButton_SetTooltip();
 	else
@@ -179,16 +238,23 @@ function ActionButton_Update()
 	macroName:SetText(GetActionText(ActionButton_GetPagedID(this)));
 end
 
-function ActionButton_ShowGrid()
-	this.showgrid = this.showgrid+1;
-	getglobal(this:GetName().."NormalTexture"):SetVertexColor(1.0, 1.0, 1.0);
-	this:Show();
+function ActionButton_ShowGrid(button)
+	if ( not button ) then
+		button = this;
+	end
+	button.showgrid = button.showgrid+1;
+	getglobal(button:GetName().."NormalTexture"):SetVertexColor(1.0, 1.0, 1.0, 0.5);
+	
+	button:Show();
 end
 
-function ActionButton_HideGrid()	
-	this.showgrid = this.showgrid-1;
-	if ( this.showgrid == 0 and not HasAction(ActionButton_GetPagedID(this)) ) then
-		this:Hide();
+function ActionButton_HideGrid(button)	
+	if ( not button ) then
+		button = this;
+	end
+	button.showgrid = button.showgrid-1;
+	if ( button.showgrid == 0 and not HasAction(ActionButton_GetPagedID(button)) ) then
+		button:Hide();
 	end
 end
 
@@ -218,9 +284,8 @@ end
 
 function ActionButton_UpdateCount()
 	local text = getglobal(this:GetName().."Count");
-	local count = GetActionCount(ActionButton_GetPagedID(this));
-	if ( count > 1 ) then
-		text:SetText(count);
+	if ( IsConsumableAction(ActionButton_GetPagedID(this)) ) then
+		text:SetText(GetActionCount(ActionButton_GetPagedID(this)));
 	else
 		text:SetText("");
 	end
@@ -234,14 +299,19 @@ end
 
 function ActionButton_OnEvent(event)
 	if ( event == "ACTIONBAR_SLOT_CHANGED" ) then
-		if ( arg1 == -1 or arg1 == ActionButton_GetPagedID(this) ) then
+		if ( arg1 == 0 or arg1 == ActionButton_GetPagedID(this) ) then
 			ActionButton_Update();
 		end
 		return;
 	end
-	if ( event == "ACTIONBAR_PAGE_CHANGED" or event == "PLAYER_AURAS_CHANGED" or event == "UPDATE_BONUS_ACTIONBAR" ) then
+	if ( event == "PLAYER_ENTERING_WORLD" or event == "ACTIONBAR_PAGE_CHANGED" ) then
 		ActionButton_Update();
-		ActionButton_UpdateState();
+		return;
+	end
+	if ( event == "UPDATE_BONUS_ACTIONBAR" ) then
+		if ( this.isBonus ) then
+			ActionButton_Update();
+		end
 		return;
 	end
 	if ( event == "ACTIONBAR_SHOWGRID" ) then
@@ -253,81 +323,42 @@ function ActionButton_OnEvent(event)
 		return;
 	end
 	if ( event == "UPDATE_BINDINGS" ) then
-		ActionButton_UpdateHotkeys();
-	end
-
-	-- All event handlers below this line MUST only be valid when the button is visible
-	if ( not this:IsVisible() ) then
+		ActionButton_UpdateHotkeys(this.buttonType);
 		return;
 	end
 
-	if ( event == "PLAYER_TARGET_CHANGED" ) then
+	-- All event handlers below this line are only set when the button has an action
+
+	if ( event == "PLAYER_TARGET_CHANGED" or event == "PLAYER_AURAS_CHANGED" ) then
 		ActionButton_UpdateUsable();
-		return;
-	end
-	if ( event == "UNIT_AURASTATE" ) then
-		if ( arg1 == "player" or arg1 == "target" ) then
-			ActionButton_UpdateUsable();
-		end
-		return;
-	end
-	if ( event == "UNIT_INVENTORY_CHANGED" ) then
+		ActionButton_UpdateHotkeys(this.buttonType);
+	elseif ( event == "UNIT_INVENTORY_CHANGED" ) then
 		if ( arg1 == "player" ) then
 			ActionButton_Update();
 		end
-		return;
-	end
-	if ( event == "ACTIONBAR_UPDATE_STATE" ) then
+	elseif ( event == "ACTIONBAR_UPDATE_STATE" ) then
 		ActionButton_UpdateState();
-		return;
-	end
-	if ( event == "ACTIONBAR_UPDATE_USABLE" ) then
+	elseif ( event == "ACTIONBAR_UPDATE_USABLE" or event == "UPDATE_INVENTORY_ALERTS" or event == "ACTIONBAR_UPDATE_COOLDOWN" ) then
 		ActionButton_UpdateUsable();
-		return;
-	end
-	if ( event == "ACTIONBAR_UPDATE_COOLDOWN" ) then
 		ActionButton_UpdateCooldown();
-		return;
-	end
-	if ( event == "CRAFT_SHOW" or event == "CRAFT_CLOSE" or event == "TRADE_SKILL_SHOW" or event == "TRADE_SKILL_CLOSE" ) then
+	elseif ( event == "CRAFT_SHOW" or event == "CRAFT_CLOSE" or event == "TRADE_SKILL_SHOW" or event == "TRADE_SKILL_CLOSE" ) then
 		ActionButton_UpdateState();
-		return;
-	end
-	if ( arg1 == "player" and (event == "UNIT_HEALTH" or event == "UNIT_MANA" or event == "UNIT_RAGE" or event == "UNIT_FOCUS" or event == "UNIT_ENERGY") ) then
-		ActionButton_UpdateUsable();
-		return;
-	end
-	if ( event == "PLAYER_ENTER_COMBAT" ) then
-		IN_ATTACK_MODE = 1;
+	elseif ( event == "PLAYER_ENTER_COMBAT" ) then
 		if ( IsAttackAction(ActionButton_GetPagedID(this)) ) then
 			ActionButton_StartFlash();
 		end
-		return;
-	end
-	if ( event == "PLAYER_LEAVE_COMBAT" ) then
-		IN_ATTACK_MODE = nil;
+	elseif ( event == "PLAYER_LEAVE_COMBAT" ) then
 		if ( IsAttackAction(ActionButton_GetPagedID(this)) ) then
 			ActionButton_StopFlash();
 		end
-		return;
-	end
-	if ( event == "PLAYER_COMBO_POINTS" ) then
-		ActionButton_UpdateUsable();
-		return;
-	end
-	if ( event == "START_AUTOREPEAT_SPELL" ) then
-		IN_AUTOREPEAT_MODE = 1;
+	elseif ( event == "START_AUTOREPEAT_SPELL" ) then
 		if ( IsAutoRepeatAction(ActionButton_GetPagedID(this)) ) then
 			ActionButton_StartFlash();
 		end
-		return;
-	end
-	if ( event == "STOP_AUTOREPEAT_SPELL" ) then
-		IN_AUTOREPEAT_MODE = nil;
+	elseif ( event == "STOP_AUTOREPEAT_SPELL" ) then
 		if ( ActionButton_IsFlashing() and not IsAttackAction(ActionButton_GetPagedID(this)) ) then
 			ActionButton_StopFlash();
 		end
-		return;
 	end
 end
 
@@ -335,7 +366,12 @@ function ActionButton_SetTooltip()
 	if ( GetCVar("UberTooltips") == "1" ) then
 		GameTooltip_SetDefaultAnchor(GameTooltip, this);
 	else
-		GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
+		if ( this:GetParent() == MultiBarBottomRight or this:GetParent() == MultiBarRight or this:GetParent() == MultiBarLeft ) then
+			GameTooltip:SetOwner(this, "ANCHOR_LEFT");
+		else
+			GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
+		end
+		
 	end
 	
 	if ( GameTooltip:SetAction(ActionButton_GetPagedID(this)) ) then
@@ -346,6 +382,18 @@ function ActionButton_SetTooltip()
 end
 
 function ActionButton_OnUpdate(elapsed)
+
+	local hotkey = getglobal(this:GetName().."HotKey");
+	local button = ActionButton_GetPagedID(this);
+
+	if ( hotkey:GetText() == RANGE_INDICATOR ) then
+		if ( IsActionInRange(button) == 1 ) then
+			hotkey:Hide();
+		else
+			hotkey:Show();
+		end
+	end
+
 	if ( ActionButton_IsFlashing() ) then
 		this.flashtime = this.flashtime - elapsed;
 		if ( this.flashtime <= 0 ) then
@@ -366,7 +414,9 @@ function ActionButton_OnUpdate(elapsed)
 	
 	-- Handle range indicator
 	if ( this.rangeTimer ) then
-		if ( this.rangeTimer < 0 ) then
+		this.rangeTimer = this.rangeTimer - elapsed;
+
+		if ( this.rangeTimer <= 0 ) then
 			local count = getglobal(this:GetName().."HotKey");
 			if ( IsActionInRange( ActionButton_GetPagedID(this)) == 0 ) then
 				count:SetVertexColor(1.0, 0.1, 0.1);
@@ -374,8 +424,6 @@ function ActionButton_OnUpdate(elapsed)
 				count:SetVertexColor(0.6, 0.6, 0.6);
 			end
 			this.rangeTimer = TOOLTIP_UPDATE_TIME;
-		else
-			this.rangeTimer = this.rangeTimer - elapsed;
 		end
 	end
 
@@ -396,14 +444,34 @@ function ActionButton_OnUpdate(elapsed)
 end
 
 function ActionButton_GetPagedID(button)
-	if( button == nil ) then
-		message("nil button passed into ActionButton_GetPagedID(), contact Jeff");
-		return 0;
-	end
 	if ( button.isBonus and CURRENT_ACTIONBAR_PAGE == 1 ) then
-		return (button:GetID() + ((NUM_ACTIONBAR_PAGES + GetBonusBarOffset() - 1) * NUM_ACTIONBAR_BUTTONS));
+		local offset = GetBonusBarOffset();
+		if ( offset == 0 and BonusActionBarFrame and BonusActionBarFrame.lastBonusBar ) then
+			offset = BonusActionBarFrame.lastBonusBar;
+		end
+		return (button:GetID() + ((NUM_ACTIONBAR_PAGES + offset - 1) * NUM_ACTIONBAR_BUTTONS));
+	end
+	
+	local parentName = button:GetParent():GetName();
+	if ( parentName == "MultiBarBottomLeft" ) then
+		return (button:GetID() + ((BOTTOMLEFT_ACTIONBAR_PAGE - 1) * NUM_ACTIONBAR_BUTTONS));
+	elseif ( parentName == "MultiBarBottomRight" ) then
+		return (button:GetID() + ((BOTTOMRIGHT_ACTIONBAR_PAGE - 1) * NUM_ACTIONBAR_BUTTONS));
+	elseif ( parentName == "MultiBarLeft" ) then
+		return (button:GetID() + ((LEFT_ACTIONBAR_PAGE - 1) * NUM_ACTIONBAR_BUTTONS));
+	elseif ( parentName == "MultiBarRight" ) then
+		return (button:GetID() + ((RIGHT_ACTIONBAR_PAGE - 1) * NUM_ACTIONBAR_BUTTONS));
 	else
 		return (button:GetID() + ((CURRENT_ACTIONBAR_PAGE - 1) * NUM_ACTIONBAR_BUTTONS))
+	end
+end
+
+function ActionButton_UpdateFlash()
+	local pagedID = ActionButton_GetPagedID(this);
+	if ( (IsAttackAction(pagedID) and IsCurrentAction(pagedID)) or IsAutoRepeatAction(pagedID) ) then
+		ActionButton_StartFlash();
+	else
+		ActionButton_StopFlash();
 	end
 end
 

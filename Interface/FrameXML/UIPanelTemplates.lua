@@ -28,7 +28,7 @@ function PanelTemplates_UpdateTabs(frame)
 	end
 end
 
-function PanelTemplates_TabResize(padding, tab, absoluteSize)
+function PanelTemplates_TabResize(padding, tab, absoluteSize, maxWidth)
 	local tabName;
 	if ( tab ) then
 		tabName = tab:GetName();
@@ -55,12 +55,22 @@ function PanelTemplates_TabResize(padding, tab, absoluteSize)
 	else
 		-- Otherwise try to use padding
 		if ( padding ) then
-			width = tabText:GetStringWidth() + padding;
+			width = tabText:GetWidth() + padding;
 		else
-			width = tabText:GetStringWidth() + 24;
+			width = tabText:GetWidth() + 24;
+		end
+		-- If greater than the maxWidth then cap it
+		if ( maxWidth and width > maxWidth ) then
+			if ( padding ) then
+				width = maxWidth + padding;
+			else
+				width = maxWidth + 24;
+			end
+			tabText:SetWidth(width);
+		else
+			tabText:SetWidth(0);
 		end
 		tabWidth = width + sideWidths;
-		tabText:SetWidth(0);
 	end
 	
 	if ( buttonMiddle ) then
@@ -147,12 +157,14 @@ function ScrollFrameTemplate_OnMouseWheel(value)
 end
 
 -- Function to handle the update of manually calculated scrollframes.  Used mostly for listings with an indeterminate number of items
-function FauxScrollFrame_Update(frame, numItems, numToDisplay, valueStep, highlightFrame, smallHighlightWidth, bigHighlightWidth )
+function FauxScrollFrame_Update(frame, numItems, numToDisplay, valueStep, button, smallWidth, bigWidth, highlightFrame, smallHighlightWidth, bigHighlightWidth )
 	-- If more than one screen full of skills then show the scrollbar
 	local frameName = frame:GetName();
 	local scrollBar = getglobal( frameName.."ScrollBar" );
+	local showScrollBar;
 	if ( numItems > numToDisplay ) then
 		frame:Show();
+		showScrollBar = 1;
 	else
 		scrollBar:SetValue(0);
 		frame:Hide();
@@ -177,11 +189,6 @@ function FauxScrollFrame_Update(frame, numItems, numToDisplay, valueStep, highli
 		scrollBar:SetMinMaxValues(0, scrollFrameHeight); 
 		scrollBar:SetValueStep(valueStep);
 		scrollChildFrame:SetHeight(scrollChildHeight);
-
-		-- To handle bad initialization
-		if ( scrollBar:GetValue() < 0 ) then
-			scrollBar:SetValue(0);
-		end
 		
 		-- Arrow button handling
 		if ( scrollBar:GetValue() == 0 ) then
@@ -199,12 +206,23 @@ function FauxScrollFrame_Update(frame, numItems, numToDisplay, valueStep, highli
 		if ( highlightFrame ) then
 			highlightFrame:SetWidth(smallHighlightWidth);
 		end
+		if ( button ) then
+			for i=1, numToDisplay do
+				getglobal(button..i):SetWidth(smallWidth);
+			end
+		end
 	else
 		-- Widen because scrollbar is hidden
 		if ( highlightFrame ) then
 			highlightFrame:SetWidth(bigHighlightWidth);
 		end
+		if ( button ) then
+			for i=1, numToDisplay do
+				getglobal(button..i):SetWidth(bigWidth);
+			end
+		end
 	end
+	return showScrollBar;
 end
 
 function FauxScrollFrame_OnVerticalScroll(itemHeight, updateFunction)
@@ -226,6 +244,10 @@ end
 function ScrollFrame_OnLoad()
 	getglobal(this:GetName().."ScrollBarScrollDownButton"):Disable();
 	getglobal(this:GetName().."ScrollBarScrollUpButton"):Disable();
+
+	local scrollbar = getglobal(this:GetName().."ScrollBar");
+	scrollbar:SetMinMaxValues(0, 0);
+	scrollbar:SetValue(0);
 	this.offset = 0;
 end
 
@@ -251,18 +273,20 @@ function ScrollFrame_OnScrollRangeChanged(scrollrange)
 			getglobal(scrollbar:GetName().."ScrollDownButton"):Show();
 			getglobal(scrollbar:GetName().."ScrollUpButton"):Show();
 		end
-		
+		getglobal(scrollbar:GetName().."ThumbTexture"):Hide();
 	else
 		getglobal(scrollbar:GetName().."ScrollDownButton"):Show();
 		getglobal(scrollbar:GetName().."ScrollUpButton"):Show();
 		getglobal(this:GetName().."ScrollBar"):Show();
 		getglobal(scrollbar:GetName().."ScrollDownButton"):Enable();
+		getglobal(scrollbar:GetName().."ThumbTexture"):Show();
 	end
 	
 	-- Hide/show scrollframe borders
 	local top = getglobal(this:GetName().."Top");
 	local bottom = getglobal(this:GetName().."Bottom");
-	if ( top and bottom ) then
+	local middle = getglobal(this:GetName().."Middle");
+	if ( top and bottom and this.scrollBarHideable) then
 		if ( this:GetVerticalScrollRange() == 0 ) then
 			top:Hide();
 			bottom:Hide();
@@ -270,5 +294,52 @@ function ScrollFrame_OnScrollRangeChanged(scrollrange)
 			top:Show();
 			bottom:Show();
 		end
+	end
+	if ( middle and this.scrollBarHideable) then
+		if ( this:GetVerticalScrollRange() == 0 ) then
+			middle:Hide();
+		else
+			middle:Show();
+		end
+	end
+end
+
+function ScrollingEdit_OnTextChanged(scrollFrame)
+	if ( not scrollFrame ) then
+		scrollFrame = this:GetParent();
+	end
+	scrollFrame:UpdateScrollChildRect();
+end
+
+function ScrollingEdit_OnCursorChanged(x, y, w, h)
+	this.cursorOffset = y;
+	this.cursorHeight = h;
+end
+
+function ScrollingEdit_OnUpdate(scrollFrame)
+	if ( this.cursorOffset ) then
+		if ( not scrollFrame ) then
+			scrollFrame = this:GetParent();
+		end
+		local height = scrollFrame:GetHeight();
+		local range = scrollFrame:GetVerticalScrollRange();
+		local scroll = scrollFrame:GetVerticalScroll();
+		local size = height + range;
+		local cursorOffset = -this.cursorOffset;
+		while ( cursorOffset < scroll ) do
+			scroll = (scroll - (height / 2));
+			if ( scroll < 0 ) then
+				scroll = 0;
+			end
+			scrollFrame:SetVerticalScroll(scroll);
+		end
+		while ( (cursorOffset + this.cursorHeight) > (scroll + height) and scroll < range ) do
+			scroll = (scroll + (height / 2));
+			if ( scroll > range ) then
+				scroll = range;
+			end
+			scrollFrame:SetVerticalScroll(scroll);
+		end
+		this.cursorOffset = nil;
 	end
 end

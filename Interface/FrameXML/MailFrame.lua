@@ -3,6 +3,7 @@ STATIONERY_ICON_ROW_HEIGHT = 36;
 STATIONERYITEMS_TO_DISPLAY = 5;
 PACKAGEITEMS_TO_DISPLAY = 4;
 STATIONERY_PATH = "Interface\\Stationery\\";
+MAX_COD_AMOUNT = 10000;
 
 function MailFrame_Onload()
 	-- Init pagenum
@@ -16,6 +17,8 @@ function MailFrame_Onload()
 	this:RegisterEvent("MAIL_CLOSED");
 	this:RegisterEvent("MAIL_SEND_INFO_UPDATE");
 	this:RegisterEvent("MAIL_SEND_SUCCESS");
+	this:RegisterEvent("MAIL_FAILED");
+	this:RegisterEvent("CLOSE_INBOX_ITEM");
 	-- Set previous and next fields
 	MoneyInputFrame_SetPreviousFocus(SendMailMoney, SendMailBodyEditBox);
 end
@@ -23,6 +26,16 @@ end
 function MailFrame_OnEvent()
 	if ( event == "MAIL_SHOW" ) then
 		ShowUIPanel(MailFrame);
+		if ( not MailFrame:IsVisible() ) then
+			CloseMail();
+			return;
+		end
+
+		-- Update the roster so auto-completion works
+		if ( IsInGuild() and GetNumGuildMembers() == 0 ) then
+			GuildRoster();
+		end
+
 		OpenBackpack();
 		SendMailFrame_Update();
 		MailFrameTab_OnClick(1);
@@ -39,8 +52,12 @@ function MailFrame_OnEvent()
 		if ( SendMailFrame.sendMode == "reply" ) then
 			MailFrameTab_OnClick(1);
 		end
+	elseif ( event == "MAIL_FAILED" ) then
+		SendMailMailButton:Enable();
 	elseif ( event == "MAIL_CLOSED" ) then
 		HideUIPanel(MailFrame);
+	elseif ( (event == "CLOSE_INBOX_ITEM") and (InboxFrame.openMailID == arg1) ) then
+		HideUIPanel(OpenMailFrame);
 	end
 end
 
@@ -80,19 +97,21 @@ end
 function InboxFrame_Update()
 	local numItems = GetInboxNumItems();
 	local index = ((InboxFrame.pageNum - 1) * INBOXITEMS_TO_DISPLAY) + 1;
-	local packageIcon, stationeryIcon, sender, subject, money, CODAmount, daysLeft, hasItem, wasRead;
+	local packageIcon, stationeryIcon, sender, subject, money, CODAmount, daysLeft, hasItem, wasRead, isGM;
 	local icon, button, expireTime, senderText, subjectText, buttonIcon;
 	for i=1, INBOXITEMS_TO_DISPLAY do
 		if ( index <= numItems ) then
 			-- Setup mail item
-			packageIcon, stationeryIcon, sender, subject, money, CODAmount, daysLeft, hasItem, wasRead = GetInboxHeaderInfo(index);
+			packageIcon, stationeryIcon, sender, subject, money, CODAmount, daysLeft, hasItem, wasRead, x, y, z, isGM = GetInboxHeaderInfo(index);
 			
 			-- Set icon
-			if ( packageIcon ) then
+			if ( packageIcon ) and ( not isGM ) then
 				icon = packageIcon;
 			else
 				icon = stationeryIcon;
 			end
+
+			
 			-- If no sender set it to "Unknown"
 			if ( not sender ) then
 				sender = UNKNOWN;
@@ -100,6 +119,7 @@ function InboxFrame_Update()
 			button = getglobal("MailItem"..i.."Button");
 			button:Show();
 			button.index = index;
+			button.hasItem = hasItem;
 			buttonIcon = getglobal("MailItem"..i.."ButtonIcon");
 			buttonIcon:SetTexture(icon);
 			subjectText = getglobal("MailItem"..i.."Subject");
@@ -182,21 +202,32 @@ function InboxFrame_OnClick(index)
 	if ( this:GetChecked() ) then
 		InboxFrame.openMailID = index;
 		OpenMail_Update();
-		OpenMailFrame:Show();
+		--OpenMailFrame:Show();
+		ShowUIPanel(OpenMailFrame);
 		PlaySound("igSpellBookOpen");
 	else
 		InboxFrame.openMailID = 0;
-		OpenMailFrame:Hide();		
+		HideUIPanel(OpenMailFrame);		
 	end
 	InboxFrame_Update();
 end
 
 function InboxFrameItem_OnEnter()
 	GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
+	if ( this.hasItem ) then
+		GameTooltip:SetInboxItem(this.index);
+	end
 	if (this.money) then
+		if ( this.hasItem ) then
+			GameTooltip:AddLine(" ");
+		end
 		GameTooltip:AddLine(ENCLOSED_MONEY, "", 1, 1, 1);
 		SetTooltipMoney(GameTooltip, this.money);
+		SetMoneyFrameColor("GameTooltipMoneyFrame", HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
 	elseif (this.cod) then
+		if ( this.hasItem ) then
+			GameTooltip:AddLine(" ");
+		end
 		GameTooltip:AddLine(COD_AMOUNT, "", 1, 1, 1);
 		SetTooltipMoney(GameTooltip, this.cod);
 		if ( this.cod > GetMoney() ) then
@@ -258,19 +289,90 @@ function OpenMail_Update()
 	OpenMailSender:SetText(sender);
 	OpenMailSubject:SetText(subject);
 	-- Set Text
-	local bodyText, texture, isTakeable = GetInboxText(InboxFrame.openMailID);
+	local bodyText, texture, isTakeable, isInvoice = GetInboxText(InboxFrame.openMailID);
 	OpenMailBodyText:SetText(bodyText);
+	OpenMailScrollFrame:UpdateScrollChildRect();
 	if ( texture ) then
 		OpenStationeryBackgroundLeft:SetTexture(STATIONERY_PATH..texture.."1");
 		OpenStationeryBackgroundRight:SetTexture(STATIONERY_PATH..texture.."2");
 	end
+	
+	-- Is an invoice
+	if ( isInvoice ) then
+		local invoiceType, itemName, playerName, bid, buyout, deposit, consignment = GetInboxInvoiceInfo(InboxFrame.openMailID);
+		if ( playerName ) then
+			-- Setup based on whether player is the buyer or the seller
+			local buyMode;
+			if ( invoiceType == "buyer" ) then
+				if ( bid == buyout ) then
+					buyMode = "("..BUYOUT..")";
+				else
+					buyMode = "("..HIGH_BIDDER..")";
+				end
+				OpenMailInvoiceItemLabel:SetText(ITEM_PURCHASED_COLON.." "..itemName.."  "..buyMode);
+				OpenMailInvoicePurchaser:SetText(SOLD_BY_COLON.." "..playerName);
+				OpenMailInvoiceAmountReceived:SetText(AMOUNT_PAID_COLON);
+				-- Clear buymode
+				OpenMailInvoiceBuyMode:SetText("");
+				-- Position amount paid
+				OpenMailInvoiceAmountReceived:SetPoint("TOPRIGHT", "OpenMailInvoiceSalePrice", "TOPRIGHT", 0, 0);
+				-- Update purchase price
+				MoneyFrame_Update("OpenMailTransactionAmountMoneyFrame", bid);	
+				-- Position buy line
+				OpenMailArithmeticLine:SetPoint("TOP", "OpenMailInvoicePurchaser", "BOTTOMLEFT", 125, 0);
+				-- Not used for a purchase invoice
+				OpenMailInvoiceSalePrice:Hide();
+				OpenMailInvoiceDeposit:Hide();
+				OpenMailInvoiceHouseCut:Hide();
+				OpenMailDepositMoneyFrame:Hide();
+				OpenMailHouseCutMoneyFrame:Hide();
+				OpenMailSalePriceMoneyFrame:Hide();
+			else
+				OpenMailInvoiceItemLabel:SetText(ITEM_SOLD_COLON.." "..itemName);
+				OpenMailInvoicePurchaser:SetText(PURCHASED_BY_COLON.." "..playerName);
+				OpenMailInvoiceAmountReceived:SetText(AMOUNT_RECEIVED_COLON);
+				-- Determine if auction was bought out or bid on
+				if ( bid == buyout ) then
+					OpenMailInvoiceBuyMode:SetText("("..BUYOUT..")");
+				else
+					OpenMailInvoiceBuyMode:SetText("("..HIGH_BIDDER..")");
+				end
+				-- Position amount received
+				OpenMailInvoiceAmountReceived:SetPoint("TOPRIGHT", "OpenMailInvoiceHouseCut", "BOTTOMRIGHT", 0, -18);
+				-- Position buy line
+				OpenMailArithmeticLine:SetPoint("TOP", "OpenMailInvoiceHouseCut", "BOTTOMRIGHT", 0, 9);
+				MoneyFrame_Update("OpenMailSalePriceMoneyFrame", bid);
+				MoneyFrame_Update("OpenMailDepositMoneyFrame", deposit);
+				MoneyFrame_Update("OpenMailHouseCutMoneyFrame", consignment);
+				SetMoneyFrameColor("OpenMailHouseCutMoneyFrame", 1.0, 0, 0);
+				MoneyFrame_Update("OpenMailTransactionAmountMoneyFrame", bid+deposit-consignment);
+
+				-- Show these guys if the player was the seller
+				OpenMailInvoiceSalePrice:Show();
+				OpenMailInvoiceDeposit:Show();
+				OpenMailInvoiceHouseCut:Show();
+				OpenMailDepositMoneyFrame:Show();
+				OpenMailHouseCutMoneyFrame:Show();
+				OpenMailSalePriceMoneyFrame:Show();
+			end
+			OpenMailInvoiceFrame:Show();
+		end
+	else
+		OpenMailInvoiceFrame:Hide();
+	end
+
 	-- Set letter
+	local hasAttachments;
 	if ( isTakeable and not textCreated ) then
 		SetItemButtonTexture(OpenMailLetterButton, stationeryIcon);
 		OpenMailLetterButton:Enable();
+		OpenMailLetterButton:Show();
+		OpenMailPackageButton:SetPoint("LEFT", "OpenMailLetterButton", "RIGHT", 10, 0);
+		hasAttachments = 1;
 	else
 		SetItemButtonTexture(OpenMailLetterButton, "");
-		OpenMailLetterButton:Disable();
+		OpenMailLetterButton:Hide();
+		OpenMailPackageButton:SetPoint("LEFT", "OpenMailLetterButton", "LEFT", 0, 0);
 	end
 	
 	-- Set Item
@@ -278,9 +380,13 @@ function OpenMail_Update()
 	if ( name ) then
 		OpenMailFrame.itemName = name;
 		OpenMailPackageButton:Enable();
+		OpenMailPackageButton:Show();
+		OpenMailMoneyButton:SetPoint("LEFT", "OpenMailPackageButton", "RIGHT", 10, 0);
+		hasAttachments = 1;
 	else
 		OpenMailFrame.itemName = nil;
-		OpenMailPackageButton:Disable();
+		OpenMailPackageButton:Hide();
+		OpenMailMoneyButton:SetPoint("LEFT", "OpenMailPackageButton", "LEFT", 0, 0);
 	end
 	SetItemButtonTexture(OpenMailPackageButton, itemTexture);
 	SetItemButtonCount(OpenMailPackageButton, count);
@@ -298,12 +404,14 @@ function OpenMail_Update()
 	-- Set Money
 	if ( money == 0 ) then
 		SetItemButtonTexture(OpenMailMoneyButton, "");
-		OpenMailMoneyButton:Disable();
+		OpenMailMoneyButton:Hide();
 		OpenMailFrame.money = nil;
 	else
 		SetItemButtonTexture(OpenMailMoneyButton, GetCoinIcon(money));
 		OpenMailMoneyButton:Enable();
+		OpenMailMoneyButton:Show();
 		OpenMailFrame.money = money;
+		hasAttachments = 1;
 	end
 	-- Set button to delete or return to sender
 	if ( InboxItemCanDelete(InboxFrame.openMailID) ) then
@@ -311,12 +419,27 @@ function OpenMail_Update()
 	else
 		OpenMailDeleteButton:SetText(MAIL_RETURN);
 	end
+	-- Set attachment text
+	if ( hasAttachments ) then
+		OpenMailAttachmentText:SetText(TAKE_ATTACHMENTS);
+		OpenMailAttachmentText:SetTextColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
+		OpenMailAttachmentText:SetPoint("BOTTOM", "OpenMailFrame", "BOTTOM", -68, 123);
+	else
+		OpenMailAttachmentText:SetText(NO_ATTACHMENTS);
+		OpenMailAttachmentText:SetTextColor(GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b);
+		OpenMailAttachmentText:SetPoint("BOTTOM", "OpenMailFrame", "BOTTOM", -5, 123);
+	end
 end
 
 function OpenMail_Reply()
 	MailFrameTab_OnClick(2);
 	SendMailNameEditBox:SetText(OpenMailSender:GetText())
-	SendMailSubjectEditBox:SetText(MAIL_REPLY_PREFIX.." "..OpenMailSubject:GetText())
+	local subject = OpenMailSubject:GetText();
+	local prefix = MAIL_REPLY_PREFIX.." ";
+	if ( strsub(subject, 1, strlen(prefix)) ~= prefix ) then
+		subject = prefix..subject;
+	end
+	SendMailSubjectEditBox:SetText(subject)
 	SendMailBodyEditBox:SetFocus();
 
 	-- Set the send mode so the work flow can change accordingly
@@ -336,9 +459,10 @@ function OpenMail_Delete()
 		end
 	else
 		ReturnInboxItem(InboxFrame.openMailID);
+		StaticPopup_Hide("COD_CONFIRMATION");
 	end
 	InboxFrame.openMailID = nil;
-	OpenMailFrame:Hide();
+	HideUIPanel(OpenMailFrame);
 end
 
 function OpenMailPackage_OnEnter()
@@ -393,7 +517,23 @@ function SendMailFrame_Update()
 	if ( itemName ) then
 		SendMailCODButton:Enable();
 		SendMailCODButtonText:SetTextColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
+
+		if ( SendMailSubjectEditBox:GetText() == "" or SendMailSubjectEditBox:GetText() == SendMailFrame.previousItem ) then
+			if ( stackCount ~= "" ) then
+				SendMailSubjectEditBox:SetText(itemName.." ("..stackCount..")");
+				SendMailFrame.previousItem = itemName.." ("..stackCount..")";
+			else
+				SendMailSubjectEditBox:SetText(itemName);
+				SendMailFrame.previousItem = itemName;
+			end
+		end
 	else
+		-- If no itemname see if the subject is the name of the previously held item, if so clear the subject
+		if ( SendMailSubjectEditBox:GetText() == SendMailFrame.previousItem ) then
+			SendMailSubjectEditBox:SetText("");	
+		end
+		SendMailFrame.previousItem = "";
+
 		SendMailRadioButton_OnClick(1);
 		SendMailCODButton:Disable();
 		SendMailCODButtonText:SetTextColor(GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b);
@@ -405,6 +545,7 @@ function SendMailFrame_Update()
 	else
 		SetMoneyFrameColor("SendMailCostMoneyFrame", HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
 	end
+
 	SendMailFrame_CanSend();
 end
 
@@ -422,6 +563,7 @@ end
 
 function SendMailFrame_CanSend()
 	local checks = 0;
+	local checksRequired = 3;
 	-- If has stationery
 	if ( StationeryPopupFrame.selectedIndex ~= nil ) then
 		checks = checks + 1;
@@ -434,7 +576,21 @@ function SendMailFrame_CanSend()
 	if ( strlen(SendMailSubjectEditBox:GetText()) > 0 ) then
 		checks = checks + 1;
 	end
-	if ( checks == 3 ) then
+	-- check c.o.d. amount
+	if ( SendMailCODButton:GetChecked() ) then
+		checksRequired = 4;
+		-- COD must be less than 10000 gold
+		if ( MoneyInputFrame_GetCopper(SendMailMoney) > MAX_COD_AMOUNT*COPPER_PER_GOLD ) then
+			SendMailErrorText:Show();
+			SendMailErrorCoin:Show();
+		else
+			SendMailErrorText:Hide();
+			SendMailErrorCoin:Hide();
+			checks = checks + 1;
+		end
+	end
+	
+	if ( checks == checksRequired ) then
 		SendMailMailButton:Enable();
 	else
 		SendMailMailButton:Disable();
@@ -451,17 +607,33 @@ function SendMailRadioButton_OnClick(index)
 		SendMailCODButton:SetChecked(1);
 		SendMailMoneyText:SetText(COD_AMOUNT);
 	end
+	PlaySound("igMainMenuOptionCheckBoxOn");
 end
 
 function SendMailFrame_SendeeAutocomplete()
 	local text = this:GetText();
 	local textlen = strlen(text);
-        local numFriends = GetNumFriends();
-	local name;
+	local numFriends, name;
+
+	-- First check your friends list
+	numFriends = GetNumFriends();
 	if ( numFriends > 0 ) then
 		for i=1, numFriends do
-			name = 	GetFriendInfo(i);
-			if ( strfind(strupper(name), "^"..strupper(text)) ) then
+			name = GetFriendInfo(i);
+			if ( strfind(strupper(name), strupper(text), 1, 1) == 1 ) then
+				this:SetText(name);
+				this:HighlightText(textlen, -1);
+				return;
+			end
+		end
+	end
+
+	-- No match, check your guild list
+	numFriends = GetNumGuildMembers(true);	-- true to include offline members
+	if ( numFriends > 0 ) then
+		for i=1, numFriends do
+			name = GetGuildRosterInfo(i);
+			if ( strfind(strupper(name), strupper(text), 1, 1) == 1 ) then
 				this:SetText(name);
 				this:HighlightText(textlen, -1);
 				return;
@@ -532,4 +704,18 @@ function StationeryPopupButton_OnClick(index)
 		StationeryBackgroundRight:SetTexture(STATIONERY_PATH..texture.."2");
 	end
 	StationeryPopupFrame_Update();
+end
+
+function SendMailPackageButton_OnClick()
+	local cursorMoney = GetCursorMoney();
+	if ( cursorMoney > 0 ) then
+		local money = MoneyInputFrame_GetCopper(SendMailMoney);
+		if ( money > 0 ) then
+			cursorMoney = cursorMoney + money;
+		end
+		MoneyInputFrame_SetCopper(SendMailMoney, cursorMoney);
+		DropCursorMoney();
+	else
+		ClickSendMailItemButton();
+	end
 end

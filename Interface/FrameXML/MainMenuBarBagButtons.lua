@@ -1,3 +1,4 @@
+KEYRING_CONTAINER = -2;
 
 function BagSlotButton_OnClick()
 	local id = this:GetID();
@@ -6,6 +7,7 @@ function BagSlotButton_OnClick()
 	if ( not hadItem ) then
 		ToggleBag(translatedID);
 		PlaySound("BAGMENUBUTTONPRESS");
+		
 	end
 	local isVisible = 0;
 	for i=1, NUM_CONTAINER_FRAMES, 1 do
@@ -34,23 +36,35 @@ function BagSlotButton_OnDrag()
 end
 
 function BagSlotButton_OnShiftClick()
-	OpenAllBags();
+	if ( GetInventoryItemTexture("player", this:GetID()) ) then
+		OpenAllBags();
+	end
+	local translatedID = this:GetID() - CharacterBag0Slot:GetID() + 1;
+	local isVisible = 0;
+	local frame;
+	for i=1, NUM_CONTAINER_FRAMES, 1 do
+		frame = getglobal("ContainerFrame"..i);
+		if ( (frame:GetID() == translatedID) and frame:IsVisible() ) then
+			isVisible = 1;
+			break;
+		end
+	end
+	this:SetChecked(isVisible);
 end
 
 function BackpackButton_OnClick()
 	if ( not PutItemInBackpack() ) then
 		ToggleBackpack();
-
-		local isVisible = 0;
-		for i=1, NUM_CONTAINER_FRAMES, 1 do
-			local frame = getglobal("ContainerFrame"..i);
-			if ( (frame:GetID() == 0) and frame:IsVisible() ) then
-				isVisible = 1;
-				break;
-			end
-		end
-		this:SetChecked(isVisible);
 	end
+	local isVisible = 0;
+	for i=1, NUM_CONTAINER_FRAMES, 1 do
+		local frame = getglobal("ContainerFrame"..i);
+		if ( (frame:GetID() == 0) and frame:IsVisible() ) then
+			isVisible = 1;
+			break;
+		end
+	end
+	this:SetChecked(isVisible);
 end
 
 function ItemAnim_OnLoad()
@@ -83,4 +97,30 @@ end
 
 function ItemAnim_OnAnimFinished()
 	this:Hide();
+end
+
+function Disable_BagButtons()
+	MainMenuBarBackpackButton:Disable();
+	SetDesaturation(MainMenuBarBackpackButtonIconTexture, 1);
+	CharacterBag0Slot:Disable();
+	SetDesaturation(CharacterBag0SlotIconTexture, 1);
+	CharacterBag1Slot:Disable();
+	SetDesaturation(CharacterBag1SlotIconTexture, 1);
+	CharacterBag2Slot:Disable();
+	SetDesaturation(CharacterBag2SlotIconTexture, 1);
+	CharacterBag3Slot:Disable();
+	SetDesaturation(CharacterBag3SlotIconTexture, 1);
+end
+
+function Enable_BagButtons()
+	MainMenuBarBackpackButton:Enable();
+	SetDesaturation(MainMenuBarBackpackButtonIconTexture, nil);
+	CharacterBag0Slot:Enable();
+	SetDesaturation(CharacterBag0SlotIconTexture, nil);
+	CharacterBag1Slot:Enable();
+	SetDesaturation(CharacterBag1SlotIconTexture, nil);
+	CharacterBag2Slot:Enable();
+	SetDesaturation(CharacterBag2SlotIconTexture, nil);
+	CharacterBag3Slot:Enable();
+	SetDesaturation(CharacterBag3SlotIconTexture, nil);
 end

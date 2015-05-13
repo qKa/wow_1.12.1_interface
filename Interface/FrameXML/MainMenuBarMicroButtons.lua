@@ -32,7 +32,7 @@ function UpdateMicroButtons()
 		SpellbookMicroButton:SetButtonState("NORMAL");
 	end
 
-	if ( TalentFrame:IsVisible() ) then
+	if ( TalentFrame and TalentFrame:IsVisible() ) then
 		TalentMicroButton:SetButtonState("PUSHED", 1);
 	else
 		TalentMicroButton:SetButtonState("NORMAL");
@@ -44,7 +44,14 @@ function UpdateMicroButtons()
 		QuestLogMicroButton:SetButtonState("NORMAL");
 	end
 	
-	if ( ( GameMenuFrame:IsVisible()) or ( OptionsFrame:IsVisible()) ) then
+	if ( ( GameMenuFrame:IsVisible() ) 
+		
+		or ( OptionsFrame:IsVisible()) 
+		or ( SoundOptionsFrame:IsVisible()) 
+		or ( UIOptionsFrame:IsVisible()) 
+		or ( KeyBindingFrame and KeyBindingFrame:IsVisible()) 
+		or ( MacroFrame and MacroFrame:IsVisible()) ) then
+		
 		MainMenuMicroButton:SetButtonState("PUSHED", 1);
 	else
 		MainMenuMicroButton:SetButtonState("NORMAL");
@@ -68,6 +75,12 @@ function UpdateMicroButtons()
 		HelpMicroButton:SetButtonState("NORMAL");
 	end
 	
+	-- Keyring microbutton
+	if ( IsBagOpen(KEYRING_CONTAINER) ) then
+		KeyRingButton:SetButtonState("PUSHED", 1);
+	else
+		KeyRingButton:SetButtonState("NORMAL");
+	end
 end
 
 function CharacterMicroButton_OnLoad()
@@ -79,6 +92,7 @@ function CharacterMicroButton_OnLoad()
 	this:RegisterEvent("UPDATE_BINDINGS");
 	this:RegisterForClicks("LeftButtonUp", "RightButtonUp");
 	this.tooltipText = MicroButtonTooltipText(TEXT(CHARACTER_BUTTON), "TOGGLECHARACTER0");
+	this.newbieText = NEWBIE_TOOLTIP_CHARACTER;
 end
 
 function CharacterMicroButton_OnEvent()
@@ -109,7 +123,7 @@ function TalentMicroButton_OnEvent()
 		if ( not CharacterFrame:IsVisible() ) then
 			SetButtonPulse(this, 60, 1);
 		end
-	elseif ( event == "UNIT_LEVEL" ) then
+	elseif ( event == "UNIT_LEVEL" or event == "PLAYER_ENTERING_WORLD" ) then
 		UpdateTalentButton();
 	elseif ( event == "UPDATE_BINDINGS" ) then
 		this.tooltipText =  MicroButtonTooltipText(TEXT(TALENTS_BUTTON), "TOGGLETALENTS");

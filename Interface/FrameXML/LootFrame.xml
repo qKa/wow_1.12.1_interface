@@ -1,6 +1,5 @@
-<!-- edited with XMLSPY v5 rel. 4 U (http://www.xmlspy.com) by Sam Lantinga (Blizzard Entertainment) -->
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="LootFrame.lua"/>
 	<LootButton name="LootButtonTemplate" inherits="ItemButtonTemplate" virtual="true">
 		<Layers>
@@ -34,17 +33,23 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<Scripts>
 			<OnLoad>
 				this:RegisterForClicks("LeftButtonUp", "RightButtonUp");
+				this.hasItem = 1;
 			</OnLoad>
 			<OnEnter>
 				local slot = ((LOOTFRAME_NUMBUTTONS - 1) * (LootFrame.page - 1)) + this:GetID();
 				if ( LootSlotIsItem(slot) ) then
 					GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
 					GameTooltip:SetLootItem(slot);
+					CursorUpdate();
 				end
-            		</OnEnter>
+            </OnEnter>
 			<OnLeave>
 				GameTooltip:Hide();
-            		</OnLeave>
+				ResetCursor();
+            </OnLeave>
+			<OnUpdate>
+				CursorOnUpdate();
+			</OnUpdate>
 			<OnClick>
 				LootFrameItem_OnClick(arg1);
 			</OnClick>
@@ -225,7 +230,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</OnHide>
 		</Scripts>
 	</Frame>
-	<Frame name="GroupLootDropDown" inherits="UIDropDownMenuTemplate" id="1">
+	<Frame name="GroupLootDropDown" inherits="UIDropDownMenuTemplate" id="1" hidden="true">
 		<Anchors>
 			<Anchor point="TOPLEFT"/>
 		</Anchors>
@@ -237,7 +242,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 	</Frame>
 	<Frame name="GroupLootFrameTemplate" toplevel="true" frameStrata="DIALOG" hidden="true" virtual="true">
 		<Size>
-			<AbsDimension x="218" y="84"/>
+			<AbsDimension x="243" y="84"/>
 		</Size>
 		<Layers>
 			<Layer level="ARTWORK">
@@ -272,15 +277,41 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					<Anchors>
 						<Anchor point="LEFT" relativeTo="$parentSlotTexture" relativePoint="RIGHT">
 							<Offset>
-								<AbsDimension x="-5" y="10"/>
+								<AbsDimension x="-5" y="5"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
 				</FontString>
 			</Layer>
+			<Layer level="OVERLAY">
+				<Texture name="$parentDecoration" file="Interface\DialogFrame\UI-DialogBox-Gold-Dragon" hidden="true">
+					<Size>
+						<AbsDimension x="120" y="120"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT">d
+							<Offset>
+								<AbsDimension x="-30" y="15"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</Texture>
+				<Texture name="$parentCorner" file="Interface\DialogFrame\UI-DialogBox-Corner">
+					<Size>
+						<AbsDimension x="32" y="32"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPRIGHT">
+							<Offset>
+								<AbsDimension x="-6" y="-7"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</Texture>
+			</Layer>
 		</Layers>
 		<Frames>
-			<Frame name="$parentIconFrame" enableMouse="true">
+			<Button name="$parentIconFrame" enableMouse="true">
 				<Size>
 					<AbsDimension x="34" y="34"/>
 				</Size>
@@ -304,15 +335,53 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Layer>
 				</Layers>
 				<Scripts>
+					<OnLoad>
+						this.hasItem = 1;
+					</OnLoad>
 					<OnEnter>
 						GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
 						GameTooltip:SetLootRollItem(this:GetParent().rollID);
+						CursorUpdate();
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+						ResetCursor();
+					</OnLeave>
+					<OnUpdate>
+						CursorOnUpdate();
+					</OnUpdate>
+					<OnClick>
+						if ( IsControlKeyDown() ) then
+							DressUpItemLink(GetLootRollItemLink(this:GetParent().rollID));
+						elseif ( IsShiftKeyDown() ) then
+							if ( ChatFrameEditBox:IsVisible() ) then
+								ChatFrameEditBox:Insert(GetLootRollItemLink(this:GetParent().rollID));
+							end
+						end
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="$parentPassButton" inherits="UIPanelCloseButton">
+				<Anchors>
+					<Anchor point="TOPRIGHT" relativeTo="$parentCorner" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="5" y="5"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						RollOnLoot(this:GetParent().rollID, 0);
+					</OnClick>
+					<OnEnter>
+						GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
+						GameTooltip:SetText(PASS);
 					</OnEnter>
 					<OnLeave>
 						GameTooltip:Hide();
 					</OnLeave>
 				</Scripts>
-			</Frame>
+			</Button>
 			<Button name="$parentRollButton">
 				<Size>
 					<AbsDimension x="32" y="32"/>
@@ -320,7 +389,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				<Anchors>
 					<Anchor point="TOPRIGHT">
 						<Offset>
-							<AbsDimension x="-15" y="-14"/>
+							<AbsDimension x="-37" y="-14"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
@@ -328,30 +397,44 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					<OnClick>
 						RollOnLoot(this:GetParent().rollID, 1);
 					</OnClick>
+					<OnEnter>
+						GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
+						GameTooltip:SetText(NEED);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
 				</Scripts>
 				<NormalTexture file="Interface\Buttons\UI-GroupLoot-Dice-Up"/>
 				<HighlightTexture file="Interface\Buttons\UI-GroupLoot-Dice-Highlight" alphaMode="ADD"/>
 				<PushedTexture file="Interface\Buttons\UI-GroupLoot-Dice-Down"/>
 			</Button>
-			<Button name="$parentCancelButton">
+			<Button name="$parentGreedButton">
 				<Size>
 					<AbsDimension x="32" y="32"/>
 				</Size>
 				<Anchors>
 					<Anchor point="TOP" relativeTo="$parentRollButton" relativePoint="BOTTOM">
 						<Offset>
-							<AbsDimension x="0" y="5"/>
+							<AbsDimension x="-2" y="2"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						RollOnLoot(this:GetParent().rollID, nil);
+						RollOnLoot(this:GetParent().rollID, 2);
 					</OnClick>
+					<OnEnter>
+						GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
+						GameTooltip:SetText(GREED);
+					</OnEnter>
+					<OnLeave>
+						GameTooltip:Hide();
+					</OnLeave>
 				</Scripts>
-				<NormalTexture file="Interface\Buttons\UI-GroupLoot-Pass-Up"/>
-				<HighlightTexture file="Interface\Buttons\UI-GroupLoot-Pass-Highlight" alphaMode="ADD"/>
-				<PushedTexture file="Interface\Buttons\UI-GroupLoot-Pass-Down"/>
+				<NormalTexture file="Interface\Buttons\UI-GroupLoot-Coin-Up"/>
+				<HighlightTexture file="Interface\Buttons\UI-GroupLoot-Coin-Highlight" alphaMode="ADD"/>
+				<PushedTexture file="Interface\Buttons\UI-GroupLoot-Coin-Down"/>
 			</Button>
 			<StatusBar name="$parentTimer" drawLayer="BACKGROUND" minValue="0" maxValue="60000" defaultValue="0">
 				<Size>
@@ -373,7 +456,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							<Anchors>
 								<Anchor point="TOP">
 									<Offset>
-										<AbsDimension x="-2" y="5"/>
+										<AbsDimension x="0" y="5"/>
 									</Offset>
 								</Anchor>
 							</Anchors>
@@ -425,7 +508,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<Anchors>
 			<Anchor point="BOTTOM" relativeTo="GroupLootFrame1" relativePoint="TOP">
 				<Offset>
-					<AbsDimension x="0" y="3"/>
+					<AbsDimension x="0" y="15"/>
 				</Offset>
 			</Anchor>
 		</Anchors>
@@ -434,7 +517,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<Anchors>
 			<Anchor point="BOTTOM" relativeTo="GroupLootFrame2" relativePoint="TOP">
 				<Offset>
-					<AbsDimension x="0" y="3"/>
+					<AbsDimension x="0" y="15"/>
 				</Offset>
 			</Anchor>
 		</Anchors>
@@ -443,9 +526,10 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<Anchors>
 			<Anchor point="BOTTOM" relativeTo="GroupLootFrame3" relativePoint="TOP">
 				<Offset>
-					<AbsDimension x="0" y="3"/>
+					<AbsDimension x="0" y="15"/>
 				</Offset>
 			</Anchor>
 		</Anchors>
 	</Frame>
+
 </Ui>

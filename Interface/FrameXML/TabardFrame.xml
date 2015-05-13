@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ 
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="TabardFrame.lua"/>
 	<Frame name="TabardFrameCustomizeTemplate" virtual="true">
 		<Size>
@@ -363,9 +363,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 								</Offset>
 							</Anchor>
 						</Anchors>
-						<NormalTexture file="Interface\Buttons\UI-RotationLeft-Button-Up"/>
-						<PushedTexture file="Interface\Buttons\UI-RotationLeft-Button-Down"/>
-						<HighlightTexture file="Interface\Buttons\ButtonHilight-Round" alphaMode="ADD"/>
 						<Scripts>
 							<OnLoad>
 								this:RegisterForClicks("LeftButtonDown", "LeftButtonUp");
@@ -374,6 +371,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 								TabardCharacterModelRotateLeftButton_OnClick();
 							</OnClick>
 						</Scripts>
+						<NormalTexture file="Interface\Buttons\UI-RotationLeft-Button-Up"/>
+						<PushedTexture file="Interface\Buttons\UI-RotationLeft-Button-Down"/>
+						<HighlightTexture file="Interface\Buttons\ButtonHilight-Round" alphaMode="ADD"/>
 					</Button>
 					<Button name="TabardCharacterModelRotateRightButton">
 						<Size>
@@ -386,9 +386,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 								</Offset>
 							</Anchor>
 						</Anchors>
-						<NormalTexture file="Interface\Buttons\UI-RotationRight-Button-Up"/>
-						<PushedTexture file="Interface\Buttons\UI-RotationRight-Button-Down"/>
-						<HighlightTexture file="Interface\Buttons\ButtonHilight-Round" alphaMode="ADD"/>
 						<Scripts>
 							<OnLoad>
 								this:RegisterForClicks("LeftButtonDown", "LeftButtonUp");
@@ -397,15 +394,15 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 								TabardCharacterModelRotateRightButton_OnClick();
 							</OnClick>
 						</Scripts>
+						<NormalTexture file="Interface\Buttons\UI-RotationRight-Button-Up"/>
+						<PushedTexture file="Interface\Buttons\UI-RotationRight-Button-Down"/>
+						<HighlightTexture file="Interface\Buttons\ButtonHilight-Round" alphaMode="ADD"/>
 					</Button>
 				</Frames>
 				<Scripts>
                     <OnLoad>
                         TabardCharacterModelFrame_OnLoad();
                     </OnLoad>
-                    <OnModelUpdate>
-                        this:UpdateModel();
-                    </OnModelUpdate>
 					<OnUpdate>
 						TabardCharacterModelFrame_OnUpdate(arg1);
 					</OnUpdate>

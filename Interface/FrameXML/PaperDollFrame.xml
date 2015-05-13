@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
     <Script file="PaperDollFrame.lua"/>
     <Button name="PaperDollItemSlotButtonTemplate" inherits="ItemButtonTemplate" virtual="true">
 		<Frames>
@@ -66,17 +66,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</FontString>
 					</Layer>
 				</Layers>
-				<Scripts>
-					<OnEnter>
-						if (this:GetParent().tooltip) then
-							GameTooltip:SetOwner(this,"ANCHOR_RIGHT");
-							GameTooltip:SetText(this:GetParent().tooltip, 1.0,1.0,1.0);
-						end
-					</OnEnter>
-					<OnLeave>
-						GameTooltip:Hide();
-					</OnLeave>
-				</Scripts>
 			</Frame>
 		</Frames>
     </Frame>
@@ -110,17 +99,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</FontString>
 					</Layer>
 				</Layers>
-				<Scripts>
-					<OnEnter>
-						if (this:GetParent().tooltip) then
-							GameTooltip:SetOwner(this,"ANCHOR_RIGHT");
-							GameTooltip:SetText(this:GetParent().tooltip, 1.0,1.0,1.0);
-						end
-					</OnEnter>
-					<OnLeave>
-						GameTooltip:Hide();
-					</OnLeave>
-				</Scripts>
+				
 			</Frame>
         </Frames>
     </Frame>
@@ -133,6 +112,8 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				if ( this.tooltip ) then
 					GameTooltip:SetOwner(this,"ANCHOR_RIGHT");
 					GameTooltip:SetText(this.tooltip, 1.0,1.0,1.0);
+					GameTooltip:AddLine(this.tooltipSubtext, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1);
+					GameTooltip:Show();
 				end
 			</OnEnter>
 			<OnLeave>
@@ -234,12 +215,13 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
                 <Scripts>
                     <OnLoad>
                         Model_OnLoad();
+						this:RegisterEvent("DISPLAY_SIZE_CHANGED");
                     </OnLoad>
-                    <OnModelUpdate>
-                        this:UpdateModel();
-                    </OnModelUpdate>
+					<OnEvent>
+						this:RefreshUnit();
+					</OnEvent>
                     <OnUpdate>
-						Model_OnUpdate(arg1, CharacterModelFrame);
+						Model_OnUpdate(arg1, this);
                     </OnUpdate>
 					<OnMouseUp>
 						CharacterModelFrame_OnMouseUp(arg1);
@@ -254,19 +236,19 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							<AbsDimension x="35" y="35"/>
 						</Size>
 						<Anchors>
-							<Anchor point="TOPLEFT" relativeTo="CharacterModelFrame" relativePoint="TOPLEFT"/>
+							<Anchor point="TOPLEFT" relativePoint="TOPLEFT"/>
 						</Anchors>
-						<NormalTexture file="Interface\Buttons\UI-RotationLeft-Button-Up"/>
-						<PushedTexture file="Interface\Buttons\UI-RotationLeft-Button-Down"/>
-						<HighlightTexture file="Interface\Buttons\ButtonHilight-Round" alphaMode="ADD"/>
 						<Scripts>
 							<OnLoad>
 								this:RegisterForClicks("LeftButtonDown", "LeftButtonUp");
 							</OnLoad>
 							<OnClick>
-								Model_RotateLeft(CharacterModelFrame);
+								Model_RotateLeft(this:GetParent());
 							</OnClick>
 						</Scripts>
+						<NormalTexture file="Interface\Buttons\UI-RotationLeft-Button-Up"/>
+						<PushedTexture file="Interface\Buttons\UI-RotationLeft-Button-Down"/>
+						<HighlightTexture file="Interface\Buttons\ButtonHilight-Round" alphaMode="ADD"/>
 					</Button>
 					<Button name="CharacterModelFrameRotateRightButton">
 						<Size>
@@ -275,17 +257,17 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						<Anchors>
 							<Anchor point="TOPLEFT" relativeTo="CharacterModelFrameRotateLeftButton" relativePoint="TOPRIGHT"/>
 						</Anchors>
-						<NormalTexture file="Interface\Buttons\UI-RotationRight-Button-Up"/>
-						<PushedTexture file="Interface\Buttons\UI-RotationRight-Button-Down"/>
-						<HighlightTexture file="Interface\Buttons\ButtonHilight-Round" alphaMode="ADD"/>
 						<Scripts>
 							<OnLoad>
 								this:RegisterForClicks("LeftButtonDown", "LeftButtonUp");
 							</OnLoad>
 							<OnClick>
-								Model_RotateRight(CharacterModelFrame);
+								Model_RotateRight(this:GetParent());
 							</OnClick>
 						</Scripts>
+						<NormalTexture file="Interface\Buttons\UI-RotationRight-Button-Up"/>
+						<PushedTexture file="Interface\Buttons\UI-RotationRight-Button-Down"/>
+						<HighlightTexture file="Interface\Buttons\ButtonHilight-Round" alphaMode="ADD"/>
 					</Button>
 				</Frames>
             </PlayerModel>
@@ -296,28 +278,54 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
                 <Anchors>
                     <Anchor point="TOPLEFT">
                         <Offset>
-                            <AbsDimension x="67" y="-300"/>
+                            <AbsDimension x="67" y="-291"/>
                         </Offset>
                     </Anchor>
                 </Anchors>
                 <Layers>
                     <Layer level="BACKGROUND">
-                        <Texture file="Interface\PaperDollInfoFrame\UI-Character-StatBackground">
+                         <Texture name="PlayerStatBackgroundTop" file="Interface\PaperDollInfoFrame\UI-Character-StatBackground">
                             <Size>
-                                <AbsDimension x="114" y="78"/>
+                                <AbsDimension x="115" y="16"/>
                             </Size>
-                            <Anchors>
+                           <Anchors>
                                 <Anchor point="TOPLEFT">
                                     <Offset>
                                         <AbsDimension x="0" y="0"/>
                                     </Offset>
                                 </Anchor>
                             </Anchors>
-                            <TexCoords left="0" right="0.89" top="0" bottom="0.61"/>
+                            <TexCoords left="0" right="0.8984375" top="0" bottom="0.125"/>
                         </Texture>
-                        <Texture file="Interface\PaperDollInfoFrame\UI-Character-StatBackground">
+						<Texture name="PlayerStatBackgroundMiddle" file="Interface\PaperDollInfoFrame\UI-Character-StatBackground">
                             <Size>
-                                <AbsDimension x="114" y="78"/>
+                                <AbsDimension x="115" y="53"/>
+                            </Size>
+                            <Anchors>
+                                <Anchor point="TOPLEFT" relativeTo="PlayerStatBackgroundTop" relativePoint="BOTTOMLEFT">
+                                    <Offset>
+                                        <AbsDimension x="0" y="0"/>
+                                    </Offset>
+                                </Anchor>
+                            </Anchors>
+                            <TexCoords left="0" right="0.8984375" top="0.125" bottom="0.1953125"/>
+                        </Texture>
+						<Texture name="PlayerStatBackgroundBottom" file="Interface\PaperDollInfoFrame\UI-Character-StatBackground">
+                            <Size>
+                                <AbsDimension x="115" y="16"/>
+                            </Size>
+                            <Anchors>
+                                <Anchor point="TOPLEFT" relativeTo="PlayerStatBackgroundMiddle" relativePoint="BOTTOMLEFT">
+                                    <Offset>
+                                        <AbsDimension x="0" y="0"/>
+                                    </Offset>
+                                </Anchor>
+                            </Anchors>
+                            <TexCoords left="0" right="0.8984375" top="0.484375" bottom="0.609375"/>
+                        </Texture>
+                        <Texture name="MeleeAttackBackgroundTop" file="Interface\PaperDollInfoFrame\UI-Character-StatBackground">
+                            <Size>
+                                <AbsDimension x="115" y="16"/>
                             </Size>
                             <Anchors>
                                 <Anchor point="TOPLEFT">
@@ -326,74 +334,87 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
                                     </Offset>
                                 </Anchor>
                             </Anchors>
-                            <TexCoords left="0" right="0.89" top="0" bottom="0.61"/>
+                            <TexCoords left="0" right="0.8984375" top="0" bottom="0.125"/>
+                        </Texture>
+						<Texture name="MeleeAttackBackgroundMiddle" file="Interface\PaperDollInfoFrame\UI-Character-StatBackground">
+                            <Size>
+                                <AbsDimension x="115" y="12"/>
+                            </Size>
+                            <Anchors>
+                                <Anchor point="TOPLEFT" relativeTo="MeleeAttackBackgroundTop" relativePoint="BOTTOMLEFT">
+                                    <Offset>
+                                        <AbsDimension x="0" y="0"/>
+                                    </Offset>
+                                </Anchor>
+                            </Anchors>
+                            <TexCoords left="0" right="0.8984375" top="0.125" bottom="0.1953125"/>
+                        </Texture>
+						<Texture name="MeleeAttackBackgroundBottom" file="Interface\PaperDollInfoFrame\UI-Character-StatBackground">
+                            <Size>
+                                <AbsDimension x="115" y="16"/>
+                            </Size>
+                            <Anchors>
+                                <Anchor point="TOPLEFT" relativeTo="MeleeAttackBackgroundMiddle" relativePoint="BOTTOMLEFT">
+                                    <Offset>
+                                        <AbsDimension x="0" y="0"/>
+                                    </Offset>
+                                </Anchor>
+                            </Anchors>
+                            <TexCoords left="0" right="0.8984375" top="0.484375" bottom="0.609375"/>
+                        </Texture>
+						<Texture name="RangedAttackBackgroundTop" file="Interface\PaperDollInfoFrame\UI-Character-StatBackground">
+                            <Size>
+                                <AbsDimension x="115" y="16"/>
+                            </Size>
+							<Anchors>
+                                <Anchor point="TOPLEFT" relativeTo="MeleeAttackBackgroundBottom" relativePoint="BOTTOMLEFT">
+                                    <Offset>
+                                        <AbsDimension x="0" y="2"/>
+                                    </Offset>
+                                </Anchor>
+                            </Anchors>
+                            <TexCoords left="0" right="0.8984375" top="0" bottom="0.125"/>
+                        </Texture>
+						<Texture name="RangedAttackBackgroundMiddle" file="Interface\PaperDollInfoFrame\UI-Character-StatBackground">
+                            <Size>
+                                <AbsDimension x="115" y="11"/>
+                            </Size>
+                            <Anchors>
+                                <Anchor point="TOPLEFT" relativeTo="RangedAttackBackgroundTop" relativePoint="BOTTOMLEFT">
+                                    <Offset>
+                                        <AbsDimension x="0" y="0"/>
+                                    </Offset>
+                                </Anchor>
+                            </Anchors>
+                            <TexCoords left="0" right="0.8984375" top="0.125" bottom="0.1953125"/>
+                        </Texture>
+						<Texture name="RangedAttackBackgroundBottom" file="Interface\PaperDollInfoFrame\UI-Character-StatBackground">
+                            <Size>
+                                <AbsDimension x="115" y="16"/>
+                            </Size>
+                            <Anchors>
+                                <Anchor point="TOPLEFT" relativeTo="RangedAttackBackgroundMiddle" relativePoint="BOTTOMLEFT">
+                                    <Offset>
+                                        <AbsDimension x="0" y="0"/>
+                                    </Offset>
+                                </Anchor>
+                            </Anchors>
+                            <TexCoords left="0" right="0.8984375" top="0.484375" bottom="0.609375"/>
                         </Texture>
                     </Layer>
                 </Layers>
                 <Frames>
-                    <Frame name="CharacterPointsLabelFrame1">
-                        <Size>
-                            <AbsDimension x="115" y="16"/>
-                        </Size>
-                        <Anchors>
-                            <Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT">
-                                <Offset>
-                                    <AbsDimension x="0" y="-5"/>
-                                </Offset>
-                            </Anchor>
-                        </Anchors>
-                        <Layers>
-                            <Layer level="BACKGROUND">
-                                <FontString inherits="GameFontNormalSmall" justifyH="RIGHT" text="CHARACTER_POINTS1_COLON">
-                                    <Anchors>
-                                        <Anchor point="TOPLEFT">
-                                            <Offset>
-                                                <AbsDimension x="3" y="0"/>
-                                            </Offset>
-                                        </Anchor>
-                                    </Anchors>
-                                </FontString>
-                                <FontString name="CharacterPointsText1" inherits="GameFontHighlightSmall" justifyH="RIGHT">
-                                    <Anchors>
-                                        <Anchor point="TOPRIGHT">
-                                            <Offset>
-                                                <AbsDimension x="-5" y="0"/>
-                                            </Offset>
-                                        </Anchor>
-                                    </Anchors>
-                                </FontString>
-                            </Layer>
-                        </Layers>
-						<Scripts>
-							<OnLoad>
-								this:SetFrameLevel(this:GetFrameLevel() + 2);
-							</OnLoad>
-							<OnEnter>
-								GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
-								GameTooltip:SetText(TALENT_POINTS_TOOLTIP);
-								GameTooltip:Show();
-							</OnEnter>
-							<OnLeave>
-								GameTooltip:Hide();
-							</OnLeave>
-						</Scripts>
-                    </Frame>
                     <Frame name="CharacterStatFrame1" inherits="AttributeFrameTemplate" id="1">
                         <Anchors>
                             <Anchor point="TOPLEFT">
                                 <Offset>
-                                    <AbsDimension x="6" y="-5"/>
+                                    <AbsDimension x="6" y="-3"/>
                                 </Offset>
                             </Anchor>
                         </Anchors>
 						<Scripts>
 							<OnEnter>
-								GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
-								if ( GetDamageBonusStat() == this:GetID() ) then
-									GameTooltip:AddLine(TEXT(DAMAGE_BONUS_TOOLTIP), "", 1.0, 1.0, 1.0);
-								end
-								GameTooltip:SetText(STRENGTH_TOOLTIP, 1.0, 1.0, 1.0);
-								GameTooltip:Show();
+								PaperDollStatTooltip("player", "STRENGTH");
 							</OnEnter>
 							<OnLeave>
 								GameTooltip:Hide();
@@ -404,15 +425,13 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
                         <Anchors>
                             <Anchor point="TOPLEFT" relativeTo="CharacterStatFrame1" relativePoint="BOTTOMLEFT">
                                 <Offset>
-                                    <AbsDimension x="0" y="-1"/>
+                                    <AbsDimension x="0" y="0"/>
                                 </Offset>
                             </Anchor>
                         </Anchors>
 						<Scripts>
 							<OnEnter>
-								GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
-								GameTooltip:SetText(AGILITY_TOOLTIP, 1.0, 1.0, 1.0);
-								GameTooltip:Show();
+								PaperDollStatTooltip("player", "AGILITY");
 							</OnEnter>
 							<OnLeave>
 								GameTooltip:Hide();
@@ -423,15 +442,13 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
                         <Anchors>
                             <Anchor point="TOPLEFT" relativeTo="CharacterStatFrame2" relativePoint="BOTTOMLEFT">
                                 <Offset>
-                                    <AbsDimension x="0" y="-1"/>
+                                    <AbsDimension x="0" y="0"/>
                                 </Offset>
                             </Anchor>
                         </Anchors>
 						<Scripts>
 							<OnEnter>
-								GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
-								GameTooltip:SetText(STAMINA_TOOLTIP, 1.0, 1.0, 1.0);
-								GameTooltip:Show();
+								PaperDollStatTooltip("player", "STAMINA");
 							</OnEnter>
 							<OnLeave>
 								GameTooltip:Hide();
@@ -442,15 +459,13 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
                         <Anchors>
                             <Anchor point="TOPLEFT" relativeTo="CharacterStatFrame3" relativePoint="BOTTOMLEFT">
                                 <Offset>
-                                    <AbsDimension x="0" y="-1"/>
+                                    <AbsDimension x="0" y="0"/>
                                 </Offset>
                             </Anchor>
                         </Anchors>
 						<Scripts>
 							<OnEnter>
-								GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
-								GameTooltip:SetText(INTELLECT_TOOLTIP, 1.0, 1.0, 1.0);
-								GameTooltip:Show();
+								PaperDollStatTooltip("player", "INTELLECT");
 							</OnEnter>
 							<OnLeave>
 								GameTooltip:Hide();
@@ -461,14 +476,32 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
                         <Anchors>
                             <Anchor point="TOPLEFT" relativeTo="CharacterStatFrame4" relativePoint="BOTTOMLEFT">
                                 <Offset>
-                                    <AbsDimension x="0" y="-1"/>
+                                    <AbsDimension x="0" y="0"/>
+                                </Offset>
+                            </Anchor>
+                        </Anchors>
+						<Scripts>
+							<OnEnter>
+								PaperDollStatTooltip("player", "SPIRIT");
+							</OnEnter>
+							<OnLeave>
+								GameTooltip:Hide();
+							</OnLeave>
+						</Scripts>
+                    </Frame>
+					<Frame name="CharacterArmorFrame" inherits="StatFrameTemplate">
+                        <Anchors>
+                            <Anchor point="TOPLEFT" relativeTo="CharacterStatFrame5" relativePoint="BOTTOMLEFT">
+                                <Offset>
+                                    <AbsDimension x="0" y="0"/>
                                 </Offset>
                             </Anchor>
                         </Anchors>
 						<Scripts>
 							<OnEnter>
 								GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
-								GameTooltip:SetText(SPIRIT_TOOLTIP, 1.0, 1.0, 1.0);
+								GameTooltip:SetText(this.tooltip);
+								GameTooltip:AddLine(this.tooltipSubtext, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1);
 								GameTooltip:Show();
 							</OnEnter>
 							<OnLeave>
@@ -480,7 +513,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
                         <Anchors>
                             <Anchor point="TOPLEFT" relativeTo="CharacterAttributesFrame" relativePoint="TOPLEFT">
                                 <Offset>
-                                    <AbsDimension x="122" y="-5"/>
+                                    <AbsDimension x="122" y="-2"/>
                                 </Offset>
                             </Anchor>
                         </Anchors>
@@ -488,6 +521,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							<OnEnter>
 								GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
 								GameTooltip:SetText(ATTACK_TOOLTIP, 1.0, 1.0, 1.0);
+								GameTooltip:AddLine(ATTACK_TOOLTIP_SUBTEXT, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1);
 								GameTooltip:Show();
 							</OnEnter>
 							<OnLeave>
@@ -496,17 +530,21 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Scripts>
                     </Frame>
                     <Frame name="CharacterAttackPowerFrame" inherits="StatFrameTemplate">
-                        <Anchors>
+						<Anchors>
                             <Anchor point="TOPLEFT" relativeTo="CharacterAttackFrame" relativePoint="BOTTOMLEFT">
                                 <Offset>
-                                    <AbsDimension x="0" y="-1"/>
+                                    <AbsDimension x="5" y="1"/>
                                 </Offset>
                             </Anchor>
                         </Anchors>
 						<Scripts>
+							<OnLoad>
+								this:SetWidth(99);
+							</OnLoad>
 							<OnEnter>
 								GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
-								GameTooltip:SetText(ATTACK_POWER_TOOLTIP, 1.0, 1.0, 1.0);
+								GameTooltip:SetText(this.tooltip);
+								GameTooltip:AddLine(this.tooltipSubtext, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1);
 								GameTooltip:Show();
 							</OnEnter>
 							<OnLeave>
@@ -518,33 +556,35 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
                         <Anchors>
                             <Anchor point="TOPLEFT" relativeTo="CharacterAttackPowerFrame" relativePoint="BOTTOMLEFT">
                                 <Offset>
-                                    <AbsDimension x="0" y="-1"/>
+                                    <AbsDimension x="0" y="1"/>
                                 </Offset>
                             </Anchor>
                         </Anchors>
 						<Scripts>
+							<OnLoad>
+								this:SetWidth(99);
+							</OnLoad>
 							<OnEnter>
-								GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
-								GameTooltip:SetText(DAMAGE_TOOLTIP, 1.0, 1.0, 1.0);
-								GameTooltip:Show();
+								CharacterDamageFrame_OnEnter();
 							</OnEnter>
 							<OnLeave>
 								GameTooltip:Hide();
 							</OnLeave>
 						</Scripts>
                     </Frame>
-                    <Frame name="CharacterDefenseFrame" inherits="StatFrameTemplate">
+					<Frame name="CharacterRangedAttackFrame" inherits="StatFrameTemplate">
                         <Anchors>
                             <Anchor point="TOPLEFT" relativeTo="CharacterDamageFrame" relativePoint="BOTTOMLEFT">
                                 <Offset>
-                                    <AbsDimension x="0" y="-1"/>
+                                    <AbsDimension x="-5" y="-6"/>
                                 </Offset>
                             </Anchor>
                         </Anchors>
 						<Scripts>
 							<OnEnter>
 								GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
-								GameTooltip:SetText(DEFENSE_TOOLTIP, 1.0, 1.0, 1.0);
+								GameTooltip:SetText(RANGED_ATTACK_TOOLTIP, 1.0, 1.0, 1.0);
+								GameTooltip:AddLine(ATTACK_TOOLTIP_SUBTEXT, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1);
 								GameTooltip:Show();
 							</OnEnter>
 							<OnLeave>
@@ -552,19 +592,45 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							</OnLeave>
 						</Scripts>
                     </Frame>
-                    <Frame name="CharacterArmorFrame" inherits="StatFrameTemplate">
-                        <Anchors>
-                            <Anchor point="TOPLEFT" relativeTo="CharacterDefenseFrame" relativePoint="BOTTOMLEFT">
+					 <Frame name="CharacterRangedAttackPowerFrame" inherits="StatFrameTemplate">
+						<Anchors>
+                            <Anchor point="TOPLEFT" relativeTo="CharacterRangedAttackFrame" relativePoint="BOTTOMLEFT">
                                 <Offset>
-                                    <AbsDimension x="0" y="-1"/>
+                                    <AbsDimension x="5" y="1"/>
                                 </Offset>
                             </Anchor>
                         </Anchors>
 						<Scripts>
+							<OnLoad>
+								this:SetWidth(99);
+							</OnLoad>
 							<OnEnter>
-								GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
-								GameTooltip:SetText(ARMOR_TOOLTIP, 1.0, 1.0, 1.0);
-								GameTooltip:Show();
+								if ( this.tooltip ) then
+									GameTooltip:SetOwner(this, "ANCHOR_RIGHT");
+									GameTooltip:SetText(this.tooltip);
+									GameTooltip:AddLine(this.tooltipSubtext, NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1);
+									GameTooltip:Show();
+								end
+							</OnEnter>
+							<OnLeave>
+								GameTooltip:Hide();
+							</OnLeave>
+						</Scripts>
+                    </Frame>
+					<Frame name="CharacterRangedDamageFrame" inherits="StatFrameTemplate">
+                        <Anchors>
+                            <Anchor point="TOPLEFT" relativeTo="CharacterRangedAttackPowerFrame" relativePoint="BOTTOMLEFT">
+                                <Offset>
+                                    <AbsDimension x="0" y="1"/>
+                                </Offset>
+                            </Anchor>
+                        </Anchors>
+						<Scripts>
+							<OnLoad>
+								this:SetWidth(99);
+							</OnLoad>
+							<OnEnter>
+								CharacterRangedDamageFrame_OnEnter();
 							</OnEnter>
 							<OnLeave>
 								GameTooltip:Hide();
@@ -896,7 +962,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							<Anchors>
 								<Anchor point="BOTTOMRIGHT">
 									<Offset>
-										<AbsDimension x="-5" y="2"/>
+										<AbsDimension x="-1" y="2"/>
 									</Offset>
 								</Anchor>
 							</Anchors>

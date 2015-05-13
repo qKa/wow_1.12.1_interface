@@ -9,6 +9,8 @@ COPPER_PER_SILVER = 100;
 SILVER_PER_GOLD = 100;
 COPPER_PER_GOLD = COPPER_PER_SILVER * SILVER_PER_GOLD;
 
+COIN_BUTTON_WIDTH = 32;
+
 MoneyTypeInfo = { };
 MoneyTypeInfo["PLAYER"] = {
 	UpdateFunc = function()
@@ -33,6 +35,15 @@ MoneyTypeInfo["STATIC"] = {
 	end,
 
 	collapse = 1,
+};
+MoneyTypeInfo["AUCTION"] = {
+	UpdateFunc = function()
+		return this.staticMoney;
+	end,
+	showSmallerCoins = "Backpack",
+	fixedWidth = 1,
+	collapse = 1,
+	truncateSmallCoins = nil,
 };
 MoneyTypeInfo["PLAYER_TRADE"] = {
 	UpdateFunc = function()
@@ -90,14 +101,6 @@ MoneyTypeInfo["SEND_MAIL_COD"] = {
 	collapse = 1,
 	canPickup = 1,
 };
-MoneyTypeInfo["AUCTION"] = {
-	UpdateFunc = function()
-		return this.staticMoney;
-	end,
-
-	collapse = 1,
-	truncateSmallCoins = 1,
-};
 
 function MoneyFrame_OnLoad()
 	this:RegisterEvent("PLAYER_MONEY");
@@ -146,13 +149,13 @@ function MoneyFrame_SetType(type)
 	this.moneyType = type;
 	local frameName = this:GetName();
 	if ( info.canPickup ) then
-		getglobal(frameName.."GoldButton"):Enable();
-		getglobal(frameName.."SilverButton"):Enable();
-		getglobal(frameName.."CopperButton"):Enable();
+		getglobal(frameName.."GoldButton"):EnableMouse(true);
+		getglobal(frameName.."SilverButton"):EnableMouse(true);
+		getglobal(frameName.."CopperButton"):EnableMouse(true);
 	else
-		getglobal(frameName.."GoldButton"):Disable();
-		getglobal(frameName.."SilverButton"):Disable();
-		getglobal(frameName.."CopperButton"):Disable();
+		getglobal(frameName.."GoldButton"):EnableMouse(false);
+		getglobal(frameName.."SilverButton"):EnableMouse(false);
+		getglobal(frameName.."CopperButton"):EnableMouse(false);
 	end
 
 	MoneyFrame_UpdateMoney();
@@ -228,6 +231,11 @@ function MoneyFrame_Update(frameName, money)
 	end
 
 	if ( silver > 0 or showLowerDenominations ) then
+		-- Exception if showLowerDenominations and fixedWidth
+		if ( showLowerDenominations and info.fixedWidth ) then
+			silverButton:SetWidth(COIN_BUTTON_WIDTH);
+		end
+		
 		width = width + silverButton:GetWidth();
 		goldButton:SetPoint("RIGHT", frameName.."SilverButton", "LEFT", spacing, 0);
 		if ( goldButton:IsVisible() ) then
@@ -243,6 +251,11 @@ function MoneyFrame_Update(frameName, money)
 
 	-- Used if we're not showing lower denominations
 	if ( (copper > 0 or showLowerDenominations or info.showSmallerCoins == "Backpack") and not truncateCopper) then
+		-- Exception if showLowerDenominations and fixedWidth
+		if ( showLowerDenominations and info.fixedWidth ) then
+			copperButton:SetWidth(COIN_BUTTON_WIDTH);
+		end
+		
 		width = width + copperButton:GetWidth();
 		silverButton:SetPoint("RIGHT", frameName.."CopperButton", "LEFT", spacing, 0);
 		if ( silverButton:IsVisible() ) then

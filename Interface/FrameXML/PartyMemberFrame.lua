@@ -1,5 +1,4 @@
 MAX_PARTY_MEMBERS = 4;
-PARTY_FRAME_SHOWN = 1;
 MAX_PARTY_DEBUFFS = 4;
 MAX_PARTY_TOOLTIP_BUFFS = 16;
 MAX_PARTY_TOOLTIP_DEBUFFS = 8;
@@ -8,7 +7,6 @@ function HidePartyFrame()
 	for i=1, MAX_PARTY_MEMBERS, 1 do
 		getglobal("PartyMemberFrame"..i):Hide();
 	end
-	PARTY_FRAME_SHOWN = 0;
 end
 
 function ShowPartyFrame()
@@ -17,7 +15,6 @@ function ShowPartyFrame()
 			getglobal("PartyMemberFrame"..i):Show();
 		end
 	end
-	PARTY_FRAME_SHOWN = 1;
 end
 
 function PartyMemberFrame_OnLoad()
@@ -31,32 +28,57 @@ function PartyMemberFrame_OnLoad()
 	this:RegisterEvent("PARTY_MEMBER_ENABLE");
 	this:RegisterEvent("PARTY_MEMBER_DISABLE");
 	this:RegisterEvent("PARTY_LOOT_METHOD_CHANGED");
-	this:RegisterEvent("UNIT_PVP_UPDATE");
+	this:RegisterEvent("UNIT_FACTION");
 	this:RegisterEvent("UNIT_AURA");
+	this:RegisterEvent("UNIT_PET");
+	this:RegisterEvent("VARIABLES_LOADED");
 end
 
 function PartyMemberFrame_UpdateMember()
+	if ( HIDE_PARTY_INTERFACE == "1" and GetNumRaidMembers() > 0 ) then
+		return;
+	end
 	local id = this:GetID();
 	if ( GetPartyMember(id) ) then
 		UnitFrame_UpdateManaType();
 		UnitFrame_Update();
-		if ( PARTY_FRAME_SHOWN == 1 ) then
-			this:Show();
-		end
+		this:Show();
 		
+		local masterIcon = getglobal(this:GetName().."MasterIcon");
 		local lootMethod;
 		local lootMaster;
 		lootMethod, lootMaster = GetLootMethod();
 		if ( id == lootMaster ) then
-			getglobal(this:GetName().."MasterIcon"):Show();
+			masterIcon:Show();
 		else
-			getglobal(this:GetName().."MasterIcon"):Hide();
+			masterIcon:Hide();
 		end
 	else
 		this:Hide();
 	end
 	PartyMemberFrame_UpdatePvPStatus();
-	PartyMemberFrame_RefreshBuffs();
+	RefreshBuffs(this, 0, "party"..id);
+	PartyMemberFrame_UpdatePet();
+	UpdatePartyMemberBackground();
+end
+
+function PartyMemberFrame_UpdatePet(id)
+	if ( not id ) then
+		id = this:GetID();
+	end
+	
+	local frameName = "PartyMemberFrame"..id;
+	local petFrame = getglobal("PartyMemberFrame"..id.."PetFrame");
+	
+	if ( UnitIsConnected("party"..id) and UnitExists("partypet"..id) and SHOW_PARTY_PETS == "1" ) then
+		petFrame:Show();
+		petFrame:SetPoint("TOPLEFT", frameName, "TOPLEFT", 23, -43);
+	else
+		petFrame:Hide();
+		petFrame:SetPoint("TOPLEFT", frameName, "TOPLEFT", 23, -27);
+	end
+	PartyMemberFrame_RefreshPetBuffs(id);
+	UpdatePartyMemberBackground();
 end
 
 function PartyMemberFrame_UpdateMemberHealth(elapsed)
@@ -84,7 +106,7 @@ end
 function PartyMemberFrame_UpdateLeader()
 	local id = this:GetID();
 	local icon = getglobal("PartyMemberFrame"..id.."LeaderIcon");
-	if( (GetPartyLeaderIndex() == id) and (PARTY_FRAME_SHOWN == 1) ) then
+	if( GetPartyLeaderIndex() == id ) then
 		icon:Show();
 	else
 		icon:Hide();
@@ -96,7 +118,10 @@ function PartyMemberFrame_UpdatePvPStatus()
 	local unit = "party"..id;
 	local icon = getglobal("PartyMemberFrame"..id.."PVPIcon");
 	local factionGroup = UnitFactionGroup(unit);
-	if ( factionGroup and UnitIsPVP(unit) ) then
+	if ( UnitIsPVPFreeForAll(unit) ) then
+		icon:SetTexture("Interface\\TargetingFrame\\UI-PVP-FFA");
+		icon:Show();	
+	elseif ( factionGroup and UnitIsPVP(unit) ) then
 		icon:SetTexture("Interface\\GroupFrame\\UI-Group-PVP-"..factionGroup);
 		icon:Show();
 	else
@@ -117,13 +142,13 @@ function PartyMemberFrame_OnEvent(event)
 		return;
 	end
 
-	if ( event == "PARTY_MEMBER_ENABLE" or event == "PARTY_MEMBER_DISABLE" ) then
-		if ( arg1 == this:GetID() ) then
-			UnitFrame_Update();
-			PartyMemberFrame_RefreshBuffs();
-		end
-		return;
-	end
+	--if ( event == "PARTY_MEMBER_ENABLE" or event == "PARTY_MEMBER_DISABLE" ) then
+	--	if ( arg1 == this:GetID() ) then
+	--		UnitFrame_Update();
+	--		PartyMemberFrame_RefreshBuffs();
+	--	end
+	--	return;
+	--end
 
 	if ( event == "PARTY_LOOT_METHOD_CHANGED" ) then
 		local lootMethod;
@@ -137,7 +162,7 @@ function PartyMemberFrame_OnEvent(event)
 		return;
 	end
 
-	if ( event == "UNIT_PVP_UPDATE" ) then
+	if ( event == "UNIT_FACTION" ) then
 		local unit = "party"..this:GetID();
 		if ( arg1 == unit ) then
 			PartyMemberFrame_UpdatePvPStatus();
@@ -148,12 +173,45 @@ function PartyMemberFrame_OnEvent(event)
 	if ( event =="UNIT_AURA" ) then
 		local unit = "party"..this:GetID();
 		if ( arg1 == unit ) then
-			PartyMemberFrame_RefreshBuffs();
+			RefreshBuffs(this, 0, unit);
 			if ( PartyMemberBuffTooltip:IsVisible() ) then
 				PartyMemberBuffTooltip_Update();
 			end
+		else
+			unit = "partypet"..this:GetID();
+			if ( arg1 == unit ) then
+				PartyMemberFrame_RefreshPetBuffs();
+			end
 		end
 		return;
+	end
+
+	if ( event =="UNIT_PET" ) then
+		local unit = "party"..this:GetID();
+		if ( arg1 == unit ) then
+			PartyMemberFrame_UpdatePet();
+		end
+		return;
+	end
+
+	if ( event == "VARIABLES_LOADED" ) then
+		PartyMemberFrame_UpdatePet();
+	end
+end
+
+function PartyMemberFrame_OnUpdate(elapsed)
+	PartyMemberFrame_UpdateMemberHealth(arg1);
+	local partyStatus = getglobal(this:GetName().."Status");
+	if ( this.hasDispellable ) then
+		partyStatus:Show();
+		partyStatus:SetAlpha(BUFF_ALPHA_VALUE);
+		if ( this.debuffCountdown and this.debuffCountdown > 0 ) then
+			this.debuffCountdown = this.debuffCountdown - elapsed;
+		else
+			partyStatus:Hide();
+		end
+	else
+		partyStatus:Hide();
 	end
 end
 
@@ -175,27 +233,34 @@ function PartyMemberFrame_OnClick(partyFrame)
 			TargetUnit(unit);
 		end
 	else
-		UnitPopup_ShowMenu(partyFrame, "PARTY", unit);
-		UnitPopup:ClearAllPoints();
-		UnitPopup:SetPoint("TOPLEFT", partyFrame:GetName(), "BOTTOMLEFT", 30, 24);
+		ToggleDropDownMenu(1, nil, getglobal("PartyMemberFrame"..partyFrame:GetID().."DropDown"), partyFrame:GetName(), 47, 15);
 	end
 end
 
-function PartyMemberFrame_RefreshBuffs()
-	local debuff, debuffButton;
-	for i=1, MAX_PARTY_DEBUFFS do
-		debuff = UnitDebuff("party"..this:GetID(), i);
-		if ( debuff ) then
-			getglobal(this:GetName().."Debuff"..i.."Icon"):SetTexture(debuff);
-			getglobal(this:GetName().."Debuff"..i):Show();
+function PartyMemberPetFrame_OnClick()
+	if ( SpellIsTargeting() and arg1 == "RightButton" ) then
+		SpellStopTargeting();
+		return;
+	end
+	if ( arg1 == "LeftButton" ) then
+		local unit = "partypet"..this:GetParent():GetID();
+		if ( SpellIsTargeting() ) then
+			SpellTargetUnit(unit);
 		else
-			getglobal(this:GetName().."Debuff"..i):Hide();
+			TargetUnit(unit);
 		end
 	end
 end
 
+function PartyMemberFrame_RefreshPetBuffs(id)
+	if ( not id ) then
+		id = this:GetID();
+	end
+	RefreshBuffs(getglobal("PartyMemberFrame"..id.."PetFrame"), 0, "partypet"..id)
+end
+
 function PartyMemberBuffTooltip_Update(isPet)
-	local buff, buffButton;
+	local buff;
 	local numBuffs = 0;
 	local numDebuffs = 0;
 	local index = 1;
@@ -207,7 +272,7 @@ function PartyMemberBuffTooltip_Update(isPet)
 		end
 		if ( buff ) then
 			getglobal("PartyMemberBuffTooltipBuff"..index.."Icon"):SetTexture(buff);
-			getglobal("PartyMemberBuffTooltipBuff"..index.."Overlay"):Hide();
+			getglobal("PartyMemberBuffTooltipBuff"..index.."Border"):Hide();
 			getglobal("PartyMemberBuffTooltipBuff"..index):Show();
 			index = index + 1;
 			numBuffs = numBuffs + 1;
@@ -226,19 +291,29 @@ function PartyMemberBuffTooltip_Update(isPet)
 	end
 
 	index = 1;
+
+	local debuffButton, debuffStack, debuffType, color, countdown;
 	for i=1, MAX_PARTY_TOOLTIP_DEBUFFS do
+		local debuffBorder = getglobal("PartyMemberBuffTooltipDebuff"..index.."Border")
+		local partyDebuff = getglobal("PartyMemberBuffTooltipDebuff"..index.."Icon");
+		buff, debuffStack, debuffType = UnitDebuff("party"..this:GetID(), i);
 		if ( isPet ) then
-			buff = UnitDebuff("pet", i);
+			buff, debuffStack, debuffType = UnitDebuff("pet", i);
 		else
-			buff = UnitDebuff("party"..this:GetID(), i);
+			buff, debuffStack, debuffType = UnitDebuff("party"..this:GetID(), i);
 		end
 		
 		if ( buff ) then
-			getglobal("PartyMemberBuffTooltipDebuff"..index.."Icon"):SetTexture(buff);
-			getglobal("PartyMemberBuffTooltipDebuff"..index.."Overlay"):Show();
+			partyDebuff:SetTexture(buff);
+			if ( debuffType ) then
+				color = DebuffTypeColor[debuffType];
+			else
+				color = DebuffTypeColor["none"];
+			end
+			debuffBorder:SetVertexColor(color.r, color.g, color.b);
 			getglobal("PartyMemberBuffTooltipDebuff"..index):Show();
-			index = index + 1;
 			numDebuffs = numDebuffs + 1;
+			index = index + 1;
 		end
 	end
 	for i=index, MAX_PARTY_TOOLTIP_DEBUFFS do
@@ -261,6 +336,19 @@ function PartyMemberHealthCheck()
 	local prefix = this:GetParent():GetName();
 	local unitMinHP, unitMaxHP, unitCurrHP;
 	unitHPMin, unitHPMax = this:GetMinMaxValues();
+	-- Handle disconnected state
+	if ( not UnitIsConnected("party"..this:GetParent():GetID()) ) then
+		this:SetValue(unitHPMax);
+		this:SetStatusBarColor(0.5, 0.5, 0.5);
+		SetDesaturation(getglobal(this:GetParent():GetName().."Portrait"), 1);
+		getglobal(this:GetParent():GetName().."Disconnect"):Show();
+		getglobal(this:GetParent():GetName().."PetFrame"):Hide();
+		return;
+	else
+		SetDesaturation(getglobal(this:GetParent():GetName().."Portrait"), nil);
+		getglobal(this:GetParent():GetName().."Disconnect"):Hide();
+	end
+	
 	unitCurrHP = this:GetValue();
 	if ( unitHPMax > 0 ) then
 		this:GetParent().unitHPPercent = unitCurrHP / unitHPMax;
@@ -276,4 +364,55 @@ function PartyMemberHealthCheck()
 	else
 		getglobal(prefix.."Portrait"):SetVertexColor(1.0, 1.0, 1.0, 1.0);
 	end
+end
+
+function PartyFrameDropDown_OnLoad()
+	UIDropDownMenu_Initialize(this, PartyFrameDropDown_Initialize, "MENU");
+end
+
+function PartyFrameDropDown_Initialize()
+	local dropdown;
+	if ( UIDROPDOWNMENU_OPEN_MENU ) then
+		dropdown = getglobal(UIDROPDOWNMENU_OPEN_MENU);
+	else
+		dropdown = this;
+	end
+	UnitPopup_ShowMenu(dropdown, "PARTY", "party"..dropdown:GetParent():GetID());
+end
+
+function UpdatePartyMemberBackground()
+	if ( not PartyMemberBackground ) then
+		return;
+	end
+	if ( SHOW_PARTY_BACKGROUND == "1" and GetNumPartyMembers() > 0 and HIDE_PARTY_INTERFACE ~= "1" ) then
+		if ( getglobal("PartyMemberFrame"..GetNumPartyMembers().."PetFrame"):IsShown() ) then
+			PartyMemberBackground:SetPoint("BOTTOMLEFT", "PartyMemberFrame"..GetNumPartyMembers(), "BOTTOMLEFT", -5, -21);
+		else
+			PartyMemberBackground:SetPoint("BOTTOMLEFT", "PartyMemberFrame"..GetNumPartyMembers(), "BOTTOMLEFT", -5, -5);
+		end
+		PartyMemberBackground:Show();
+	else
+		PartyMemberBackground:Hide();
+	end
+end
+
+function PartyMemberBackground_ToggleOpacity()
+	if ( OpacityFrame:IsVisible() ) then
+		OpacityFrame:Hide();
+		return;
+	end
+	OpacityFrame:ClearAllPoints();
+	OpacityFrame:SetPoint("TOPLEFT", "PartyMemberBackground", "TOPRIGHT", 0, 7);
+	OpacityFrame.opacityFunc = PartyMemberBackground_SetOpacity;
+	OpacityFrame.saveOpacityFunc = PartyMemberBackground_SaveOpacity;
+	OpacityFrame:Show();
+end
+
+function PartyMemberBackground_SetOpacity()
+	local alpha = 1.0 - OpacityFrameSlider:GetValue();
+	PartyMemberBackground:SetAlpha(alpha);
+end
+
+function PartyMemberBackground_SaveOpacity()
+	PARTYBACKGROUND_OPACITY = OpacityFrameSlider:GetValue();
 end

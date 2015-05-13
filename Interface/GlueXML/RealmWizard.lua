@@ -5,29 +5,35 @@ end
 
 function RealmWizard_OnShow()
 	RealmWizardGameTypeButton1:Click(1);
-	RealmWizardSuggest:Disable();
+	if ( not RealmWizard.selectedCategory ) then
+		RealmWizardSuggest:Disable();
+	end
 	RealmWizard_UpdateCategories(GetRealmCategories());
 end
 
 function RealmWizard_UpdateCategories(...)
 	if ( arg.n > MAX_REALM_CATEGORY_TABS ) then
-		_ERRORMESSAGE("Not enough category tabs!  Tell Derek");
+		message("Not enough category tabs!  Tell Derek");
 	end
-	local button;
+	local button, buttonText;
+	local numCategoriesShown = 0;
 	for i=1, MAX_REALM_CATEGORY_TABS do
 		button = getglobal("RealmWizardLocationButton"..i);
+		buttonText = getglobal("RealmWizardLocationButton"..i.."Text");
 		if ( i <= arg.n ) then
-			button:SetText(arg[i]);
+			buttonText:SetText(arg[i]);
 			if ( i == RealmWizard.selectedCategory ) then
-				button:LockHighlight();
+				button:SetChecked(1);
 			else
-				button:UnlockHighlight();
+				button:SetChecked(nil);
 			end
 			button:Show();
+			numCategoriesShown = numCategoriesShown + 1;
 		else
 			button:Hide();
 		end
 	end
+	RealmWizardLocation:SetHeight(numCategoriesShown * 28 + RealmWizardLocationLabelDescription:GetHeight() + 50);
 end
 
 function RealmWizardLocationButton_OnClick(id)
@@ -39,4 +45,19 @@ end
 -- Wrapper function so it can be included as a dialog function
 function RealmWizard_SetRealm()
 	ChangeRealm(RealmWizard.suggestedCategory, RealmWizard.suggestedID);
+end
+
+function RealmWizard_Exit()
+	DisconnectFromServer();
+	SetGlueScreen("login");
+end
+
+function RealmWizard_OnKeyDown()
+	if ( arg1 == "ESCAPE" ) then
+		RealmWizard_Exit();
+	elseif ( arg1 == "ENTER" ) then
+		RealmWizardSuggest:Click();
+	elseif ( arg1 == "PRINTSCREEN" ) then
+		Screenshot();
+	end
 end

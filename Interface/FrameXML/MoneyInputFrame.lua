@@ -5,6 +5,12 @@ function MoneyInputFrame_ResetMoney(moneyFrame)
 	getglobal(moneyFrame:GetName().."Copper"):SetText("");
 end
 
+function MoneyInputFrame_ClearFocus(moneyFrame)
+	getglobal(moneyFrame:GetName().."Gold"):ClearFocus();
+	getglobal(moneyFrame:GetName().."Silver"):ClearFocus();
+	getglobal(moneyFrame:GetName().."Copper"):ClearFocus();
+end
+
 function MoneyInputFrame_GetCopper(moneyFrame)
 	local totalCopper = 0;
 	local copper = getglobal(moneyFrame:GetName().."Copper"):GetText();
@@ -69,8 +75,8 @@ end
 function MoneyInputFrame_SetMode(frame, mode)
 	local frameName = frame:GetName();
 	if ( mode == "compact" ) then
-		getglobal(frameName.."Copper"):SetPoint("LEFT", frameName.."Silver", "RIGHT", 13, 0);
-		getglobal(frameName.."Silver"):SetPoint("LEFT", frameName.."Gold", "RIGHT", 13, 0);
+		getglobal(frameName.."Copper"):SetPoint("LEFT", frameName.."Silver", "RIGHT", 11, 0);
+		getglobal(frameName.."Silver"):SetPoint("LEFT", frameName.."Gold", "RIGHT", 22, 0);
 		getglobal(frameName.."Gold"):SetWidth(56);
 	end
 end

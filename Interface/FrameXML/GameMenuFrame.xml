@@ -1,18 +1,9 @@
-<!-- edited with XMLSPY v5 rel. 2 U (http://www.xmlspy.com) by Sam Lantinga (Blizzard Entertainment) -->
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="UIParent.lua"/>
-	<Button name="GameMenuButtonTemplate" inherits="UIPanelButtonTemplate" virtual="true">
-		<Size>
-			<AbsDimension x="144" y="21"/>
-		</Size>
-		<NormalText inherits="GameFontHighlight"/>
-		<DisabledText inherits="GameFontDisable"/>
-		<HighlightText inherits="GameFontHighlight"/>
-	</Button>
 	<Frame name="GameMenuFrame" toplevel="true" frameStrata="DIALOG" movable="true" enableMouse="true" hidden="true" parent="UIParent">
 		<Size>
-			<AbsDimension x="195" y="226"/>
+			<AbsDimension x="195" y="246"/>
 		</Size>
 		<Anchors>
 			<Anchor point="CENTER"/>
@@ -110,13 +101,30 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				<Scripts>
 					<OnClick>
 						PlaySound("igMainMenuOption");
+						KeyBindingFrame_LoadUI();
 						ShowUIPanel(KeyBindingFrame);
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="GameMenuButtonMacros" inherits="GameMenuButtonTemplate" text="MACROS">
+				<Anchors>
+					<Anchor point="TOP" relativeTo="GameMenuButtonKeybindings" relativePoint="BOTTOM">
+						<Offset>
+							<AbsDimension x="0" y="-1"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						PlaySound("igMainMenuOption");
+						HideUIPanel(GameMenuFrame);
+						ShowMacroFrame();
 					</OnClick>
 				</Scripts>
 			</Button>
 			<Button name="GameMenuButtonLogout" inherits="GameMenuButtonTemplate" text="LOGOUT">
 				<Anchors>
-					<Anchor point="TOP" relativeTo="GameMenuButtonKeybindings" relativePoint="BOTTOM">
+					<Anchor point="TOP" relativeTo="GameMenuButtonMacros" relativePoint="BOTTOM">
 						<Offset>
 							<AbsDimension x="0" y="-1"/>
 						</Offset>
@@ -137,7 +145,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="GameMenuButtonQuit" inherits="GameMenuButtonTemplate" text="QUIT">
+			<Button name="GameMenuButtonQuit" inherits="GameMenuButtonTemplate" text="EXIT_GAME">
 				<Anchors>
 					<Anchor point="TOP" relativeTo="GameMenuButtonLogout" relativePoint="BOTTOM">
 						<Offset>
@@ -160,7 +168,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="GameMenuButtonContinue" inherits="GameMenuButtonTemplate" text="CONTINUE">
+			<Button name="GameMenuButtonContinue" inherits="GameMenuButtonTemplate" text="RETURN_TO_GAME">
 				<Anchors>
 					<Anchor point="TOP" relativeTo="GameMenuButtonQuit" relativePoint="BOTTOM">
 						<Offset>
@@ -179,9 +187,11 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<Scripts>
 			<OnShow>
 				UpdateMicroButtons();
+				Disable_BagButtons();
 			</OnShow>
 			<OnHide>
 				UpdateMicroButtons();
+				Enable_BagButtons();
 			</OnHide>
 		</Scripts>
 	</Frame>

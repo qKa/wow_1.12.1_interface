@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="MainMenuBarMicroButtons.lua"/>
 	<Button name="MainMenuBarMicroButton" virtual="true">
 		<Size>
@@ -10,11 +10,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		</HitRectInsets>
 		<Scripts>
 			<OnEnter>
-				GameTooltip:SetOwner(this);
-				if (not this.tooltipText) then
-					this.tooltipText = "";
-				end
-				GameTooltip:SetText(this.tooltipText, 1.0, 1.0, 1.0);
+				GameTooltip_AddNewbieTip(this.tooltipText, 1.0, 1.0, 1.0, this.newbieText);
 			</OnEnter>
 			<OnLeave>
 				GameTooltip:Hide();
@@ -25,7 +21,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<Anchors>
 			<Anchor point="BOTTOMLEFT">
 				<Offset>
-					<AbsDimension x="546" y="2"/>
+					<AbsDimension x="552" y="2"/>
 				</Offset>
 			</Anchor>
 		</Anchors>
@@ -69,7 +65,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<Anchors>
 			<Anchor point="BOTTOMLEFT" relativeTo="CharacterMicroButton" relativePoint="BOTTOMRIGHT">
 				<Offset>
-					<AbsDimension x="-2" y="0"/>
+					<AbsDimension x="-3" y="0"/>
 				</Offset>
 			</Anchor>
 		</Anchors>
@@ -86,8 +82,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				else
 					this.tooltipText = MicroButtonTooltipText(TEXT(ABILITYBOOK_BUTTON), "TOGGLEABILITYBOOK");
 				end
-				GameTooltip:SetOwner(this);
-				GameTooltip:SetText(this.tooltipText, 1.0, 1.0, 1.0);
+				GameTooltip_AddNewbieTip(this.tooltipText, 1.0, 1.0, 1.0, NEWBIE_TOOLTIP_SPELLBOOK);
 			</OnEnter>
 		</Scripts>
 	</Button>
@@ -95,7 +90,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<Anchors>
 			<Anchor point="BOTTOMLEFT" relativeTo="SpellbookMicroButton" relativePoint="BOTTOMRIGHT">
 				<Offset>
-					<AbsDimension x="-2" y="0"/>
+					<AbsDimension x="-3" y="0"/>
 				</Offset>
 			</Anchor>
 		</Anchors>
@@ -103,9 +98,11 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<OnLoad>
 				LoadMicroButtonTextures("Talents");
 				this.tooltipText = MicroButtonTooltipText(TEXT(TALENTS_BUTTON), "TOGGLETALENTS");
+				this.newbieText = NEWBIE_TOOLTIP_TALENTS;
 				this:RegisterEvent("PLAYER_LEVEL_UP");
 				this:RegisterEvent("UPDATE_BINDINGS");
 				this:RegisterEvent("UNIT_LEVEL");
+				this:RegisterEvent("PLAYER_ENTERING_WORLD");
 			</OnLoad>
 			<OnClick>
 				ToggleTalentFrame();
@@ -119,7 +116,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<Anchors>
 			<Anchor point="BOTTOMLEFT" relativeTo="TalentMicroButton" relativePoint="BOTTOMRIGHT">
 				<Offset>
-					<AbsDimension x="-2" y="0"/>
+					<AbsDimension x="-3" y="0"/>
 				</Offset>
 			</Anchor>
 		</Anchors>
@@ -127,6 +124,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<OnLoad>
 				LoadMicroButtonTextures("Quest");
 				this.tooltipText = MicroButtonTooltipText(TEXT(QUESTLOG_BUTTON), "TOGGLEQUESTLOG");
+				this.newbieText = NEWBIE_TOOLTIP_QUESTLOG;
 			</OnLoad>
 			<OnEvent>
 				this.tooltipText = MicroButtonTooltipText(TEXT(QUESTLOG_BUTTON), "TOGGLEQUESTLOG");
@@ -140,7 +138,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<Anchors>
 			<Anchor point="BOTTOMLEFT" relativeTo="QuestLogMicroButton" relativePoint="BOTTOMRIGHT">
 				<Offset>
-					<AbsDimension x="-2" y="0"/>
+					<AbsDimension x="-3" y="0"/>
 				</Offset>
 			</Anchor>
 		</Anchors>
@@ -148,6 +146,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<OnLoad>
 				LoadMicroButtonTextures("Socials");
 				this.tooltipText = MicroButtonTooltipText(TEXT(SOCIAL_BUTTON), "TOGGLESOCIAL");
+				this.newbieText = NEWBIE_TOOLTIP_SOCIAL;
 			</OnLoad>
 			<OnEvent>
 				this.tooltipText = MicroButtonTooltipText(TEXT(SOCIAL_BUTTON), "TOGGLESOCIAL");
@@ -161,7 +160,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<Anchors>
 			<Anchor point="BOTTOMLEFT" relativeTo="SocialsMicroButton" relativePoint="BOTTOMRIGHT">
 				<Offset>
-					<AbsDimension x="-2" y="0"/>
+					<AbsDimension x="-3" y="0"/>
 				</Offset>
 			</Anchor>
 		</Anchors>
@@ -172,6 +171,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</OnLoad>
 			<OnEvent>
 				this.tooltipText = MicroButtonTooltipText(TEXT(WORLDMAP_BUTTON), "TOGGLEWORLDMAP");
+				this.newbieText = NEWBIE_TOOLTIP_WORLDMAP;
 			</OnEvent>
 			<OnClick>
 				ToggleWorldMap();
@@ -182,7 +182,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<Anchors>
 			<Anchor point="BOTTOMLEFT" relativeTo="WorldMapMicroButton" relativePoint="BOTTOMRIGHT">
 				<Offset>
-					<AbsDimension x="-2" y="0"/>
+					<AbsDimension x="-3" y="0"/>
 				</Offset>
 			</Anchor>
 		</Anchors>
@@ -190,6 +190,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<OnLoad>
 				LoadMicroButtonTextures("MainMenu");
 				this.tooltipText = MicroButtonTooltipText(TEXT(MAINMENU_BUTTON), "TOGGLEGAMEMENU");
+				this.newbieText = NEWBIE_TOOLTIP_MAINMENU;
 			</OnLoad>
 			<OnEvent>
 				this.tooltipText = MicroButtonTooltipText(TEXT(MAINMENU_BUTTON), "TOGGLEGAMEMENU");
@@ -203,7 +204,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<Anchors>
 			<Anchor point="BOTTOMLEFT" relativeTo="MainMenuMicroButton" relativePoint="BOTTOMRIGHT">
 				<Offset>
-					<AbsDimension x="-2" y="0"/>
+					<AbsDimension x="-3" y="0"/>
 				</Offset>
 			</Anchor>
 		</Anchors>
@@ -211,6 +212,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<OnLoad>
 				LoadMicroButtonTextures("Help");
 				this.tooltipText = TEXT(HELP_BUTTON);
+				this.newbieText = NEWBIE_TOOLTIP_HELP;
 			</OnLoad>
 			<OnClick>
 				ToggleHelpFrame();

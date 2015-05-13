@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="PetFrame.lua"/>
 	<Button name="PetFrame" frameStrata="LOW" toplevel="true" parent="PlayerFrame">
 		<Size>
@@ -32,6 +32,23 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</Layer>
 		</Layers>
 		<Frames>
+			<Frame name="PetFrameDropDown" inherits="UIDropDownMenuTemplate" id="1" hidden="true">
+				<Size>
+					<AbsDimension x="10" y="10"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOP">
+						<Offset>
+							<AbsDimension x="-20" y="-20"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						PetFrameDropDown_OnLoad();
+					</OnLoad>
+				</Scripts>
+			</Frame>
 			<Frame setAllPoints="true">
 				<Frames>
 					<Frame setAllPoints="true">
@@ -80,7 +97,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 									<Anchors>
 										<Anchor point="CENTER" relativePoint="TOPLEFT">
 											<Offset>
-												<AbsDimension x="82" y="-35"/>
+												<AbsDimension x="82" y="-38"/>
 											</Offset>
 										</Anchor>
 									</Anchors>
@@ -117,6 +134,10 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Anchor>
 				</Anchors>
 				<Scripts>
+					<OnLoad>
+						TextStatusBar_Initialize();
+						this.textLockable = 1;
+					</OnLoad>
 					<OnEvent>
 						UnitFrameHealthBar_Update(this, arg1);
 					</OnEvent>
@@ -138,6 +159,10 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</Anchor>
 				</Anchors>
 				<Scripts>
+					<OnLoad>
+						TextStatusBar_Initialize();
+						this.textLockable = 1;
+					</OnLoad>
 					<OnEvent>
 						UnitFrameManaBar_Update(this, arg1);
 					</OnEvent>
@@ -145,7 +170,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				<BarTexture file="Interface\TargetingFrame\UI-StatusBar"/>
 				<BarColor r="0" g="0" b="1.0"/>
 			</StatusBar>
-			<Button name="PetDebuff1" inherits="PartyBuffButtonTemplate" id="1">
+			<Button name="$parentDebuff1" inherits="PartyBuffButtonTemplate" id="1">
 				<Anchors>
 					<Anchor point="TOPLEFT">
 						<Offset>
@@ -160,9 +185,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</OnEnter>
 				</Scripts>
 			</Button>
-			<Button name="PetDebuff2" inherits="PartyBuffButtonTemplate" id="2">
+			<Button name="$parentDebuff2" inherits="PartyBuffButtonTemplate" id="2">
 				<Anchors>
-					<Anchor point="LEFT" relativeTo="PetDebuff1" relativePoint="RIGHT">
+					<Anchor point="LEFT" relativeTo="$parentDebuff1" relativePoint="RIGHT">
 						<Offset>
 							<AbsDimension x="2" y="0"/>
 						</Offset>
@@ -175,9 +200,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</OnEnter>
 				</Scripts>
 			</Button>
-			<Button name="PetDebuff3" inherits="PartyBuffButtonTemplate" id="3">
+			<Button name="$parentDebuff3" inherits="PartyBuffButtonTemplate" id="3">
 				<Anchors>
-					<Anchor point="LEFT" relativeTo="PetDebuff2" relativePoint="RIGHT">
+					<Anchor point="LEFT" relativeTo="$parentDebuff2" relativePoint="RIGHT">
 						<Offset>
 							<AbsDimension x="2" y="0"/>
 						</Offset>
@@ -190,9 +215,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 					</OnEnter>
 				</Scripts>
 			</Button>
-			<Button name="PetDebuff4" inherits="PartyBuffButtonTemplate" id="4">
+			<Button name="$parentDebuff4" inherits="PartyBuffButtonTemplate" id="4">
 				<Anchors>
-					<Anchor point="LEFT" relativeTo="PetDebuff3" relativePoint="RIGHT">
+					<Anchor point="LEFT" relativeTo="$parentDebuff3" relativePoint="RIGHT">
 						<Offset>
 							<AbsDimension x="2" y="0"/>
 						</Offset>
@@ -267,7 +292,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</OnUpdate>
 			<OnEnter>
 				UnitFrame_OnEnter();
-				PartyMemberBuffTooltip:SetPoint("TOPLEFT", this:GetName(), "TOPLEFT", 60, -25);
+				PartyMemberBuffTooltip:SetPoint("TOPLEFT", this, "TOPLEFT", 60, -35);
 				PartyMemberBuffTooltip_Update("pet");
 			</OnEnter>
 			<OnLeave>

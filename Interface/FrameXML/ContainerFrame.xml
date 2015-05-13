@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="ContainerFrame.lua"/>
 	<Button name="ContainerFrameItemButtonTemplate" inherits="ItemButtonTemplate" hidden="true" virtual="true">
 		<Anchors>
@@ -14,6 +14,11 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		</Frames>
 		<Scripts>
 			<OnClick>
+				--KeyRing special case code
+				if ( this:GetParent():GetID() == KEYRING_CONTAINER ) then
+					KeyRingItemButton_OnClick(arg1);
+					return;
+				end
 				ContainerFrameItemButton_OnClick(arg1);
 			</OnClick>
 			<OnLoad>
@@ -33,9 +38,19 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				end
 			</OnHide>
 			<OnDragStart>
+				--KeyRing special case code
+				if ( this:GetParent():GetID() == KEYRING_CONTAINER ) then
+					KeyRingItemButton_OnClick("LeftButton", 1);
+					return;
+				end
 				ContainerFrameItemButton_OnClick("LeftButton", 1);
 			</OnDragStart>
 			<OnReceiveDrag>
+				--KeyRing special case code
+				if ( this:GetParent():GetID() == KEYRING_CONTAINER ) then
+					KeyRingItemButton_OnClick("LeftButton", 1);
+					return;
+				end
 				ContainerFrameItemButton_OnClick("LeftButton", 1);
 			</OnReceiveDrag>
 			<OnUpdate>
@@ -43,7 +58,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</OnUpdate>
 		</Scripts>
 	</Button>
-	<Frame name="ContainerFrameTemplate" frameStrata="LOW" toplevel="true" movable="true" enableMouse="true" hidden="true" virtual="true">
+	<Frame name="ContainerFrameTemplate" frameStrata="MEDIUM" toplevel="true" movable="true" enableMouse="true" hidden="true" virtual="true">
 		<Size>
 			<AbsDimension x="256" y="256"/>
 		</Size>
@@ -63,9 +78,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
                 </Texture>
             </Layer>
 			<Layer level="ARTWORK">
-				<Texture name="$parentBackgroundTexture" file="Interface\ContainerFrame\UI-BackpackBackground">
+				<Texture name="$parentBackgroundTop" file="Interface\ContainerFrame\UI-Bag-Components">
 					<Size>
-						<AbsDimension x="256" y="256"/>
+						<AbsDimension x="256" y="512"/>
 					</Size>
 					<Anchors>
 						<Anchor point="TOPRIGHT" relativeTo="$parent">
@@ -74,6 +89,33 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							</Offset>
 						</Anchor>
 					</Anchors>
+				</Texture>
+				<Texture name="$parentBackgroundMiddle1" file="Interface\ContainerFrame\UI-Bag-Components">
+					<Size>
+						<AbsDimension x="256" y="512"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOP" relativeTo="$parentBackgroundTop" relativePoint="BOTTOM"/>
+					</Anchors>
+					<TexCoords left="0" right="1" top="0.3515625" bottom="0.8515625"/>
+				</Texture>
+				<Texture name="$parentBackgroundMiddle2" file="Interface\ContainerFrame\UI-Bag-Components" hidden="true">
+					<Size>
+						<AbsDimension x="256" y="256"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOP" relativeTo="$parentBackgroundMiddle1" relativePoint="BOTTOM"/>
+					</Anchors>
+					<TexCoords left="0" right="1" top="0.353515625" bottom="0.8515625"/>
+				</Texture>
+				<Texture name="$parentBackgroundBottom" file="Interface\ContainerFrame\UI-Bag-Components">
+					<Size>
+						<AbsDimension x="256" y="10"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOP" relativeTo="$parentBackgroundMiddle1" relativePoint="BOTTOM"/>
+					</Anchors>
+					<TexCoords left="0" right="1" top="0.330078125" bottom="0.349609375"/>
 				</Texture>
 				<FontString name="$parentName" inherits="GameFontHighlight">
 					<Size>
@@ -119,6 +161,23 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<Button name="$parentItem18" inherits="ContainerFrameItemButtonTemplate"/>
 			<Button name="$parentItem19" inherits="ContainerFrameItemButtonTemplate"/>
 			<Button name="$parentItem20" inherits="ContainerFrameItemButtonTemplate"/>
+			<Button name="$parentItem21" inherits="ContainerFrameItemButtonTemplate"/>
+			<Button name="$parentItem22" inherits="ContainerFrameItemButtonTemplate"/>
+			<Button name="$parentItem23" inherits="ContainerFrameItemButtonTemplate"/>
+			<Button name="$parentItem24" inherits="ContainerFrameItemButtonTemplate"/>
+			<Button name="$parentItem25" inherits="ContainerFrameItemButtonTemplate"/>
+			<Button name="$parentItem26" inherits="ContainerFrameItemButtonTemplate"/>
+			<Button name="$parentItem27" inherits="ContainerFrameItemButtonTemplate"/>
+			<Button name="$parentItem28" inherits="ContainerFrameItemButtonTemplate"/>
+			<Button name="$parentItem29" inherits="ContainerFrameItemButtonTemplate"/>
+			<Button name="$parentItem30" inherits="ContainerFrameItemButtonTemplate"/>
+			<Button name="$parentItem31" inherits="ContainerFrameItemButtonTemplate"/>
+			<Button name="$parentItem32" inherits="ContainerFrameItemButtonTemplate"/>
+			<Button name="$parentItem33" inherits="ContainerFrameItemButtonTemplate"/>
+			<Button name="$parentItem34" inherits="ContainerFrameItemButtonTemplate"/>
+			<Button name="$parentItem35" inherits="ContainerFrameItemButtonTemplate"/>
+			<Button name="$parentItem36" inherits="ContainerFrameItemButtonTemplate"/>
+
 			<Button name="$parentPortraitButton">
 				<Size>
 					<AbsDimension x="40" y="40"/>
@@ -138,6 +197,11 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							if (GetBindingKey("TOGGLEBACKPACK")) then
 								GameTooltip:AppendText(" "..NORMAL_FONT_COLOR_CODE.."("..GetBindingKey("TOGGLEBACKPACK")..")"..FONT_COLOR_CODE_CLOSE)
 							end
+						elseif ( this:GetID() == KEYRING_CONTAINER ) then
+							GameTooltip:SetText(TEXT(KEYRING), 1.0, 1.0, 1.0);
+							if (GetBindingKey("TOGGLEKEYRING")) then
+								GameTooltip:AppendText(" "..NORMAL_FONT_COLOR_CODE.."("..GetBindingKey("TOGGLEKEYRING")..")"..FONT_COLOR_CODE_CLOSE)
+							end
 						elseif ( GameTooltip:SetInventoryItem("player", ContainerIDToInventoryID(this:GetID())) ) then
 							local binding = GetBindingKey("TOGGLEBAG"..(4 - this:GetID() + 1));
 							if ( binding ) then
@@ -154,7 +218,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				<Anchors>
 					<Anchor point="TOPRIGHT" relativeTo="$parent" relativePoint="TOPRIGHT">
 						<Offset>
-							<AbsDimension x="0" y="-2"/>
+							<AbsDimension x="0" y="-1"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
@@ -192,9 +256,4 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 	<Frame name="ContainerFrame10" inherits="ContainerFrameTemplate" parent="UIParent" id="100" hidden="true"/>
 	<Frame name="ContainerFrame11" inherits="ContainerFrameTemplate" parent="UIParent" id="100" hidden="true"/>
 	<Frame name="ContainerFrame12" inherits="ContainerFrameTemplate" parent="UIParent" id="100" hidden="true"/>
-	<Frame name="ContainerFrame13" inherits="ContainerFrameTemplate" parent="UIParent" id="100" hidden="true"/>
-	<Frame name="ContainerFrame14" inherits="ContainerFrameTemplate" parent="UIParent" id="100" hidden="true"/>
-	<Frame name="ContainerFrame15" inherits="ContainerFrameTemplate" parent="UIParent" id="100" hidden="true"/>
-	<Frame name="ContainerFrame16" inherits="ContainerFrameTemplate" parent="UIParent" id="100" hidden="true"/>
-	<Frame name="ContainerFrame17" inherits="ContainerFrameTemplate" parent="UIParent" id="100" hidden="true"/>
 </Ui>

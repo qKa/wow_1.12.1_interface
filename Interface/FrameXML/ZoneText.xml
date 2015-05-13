@@ -1,6 +1,6 @@
-<!-- edited with XMLSPY v5 rel. 2 U (http://www.xmlspy.com) by Sam Lantinga (Blizzard Entertainment) -->
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
+	<Script file="ZoneText.lua"/>
 	<Script>
 		ZoneFadeInDuration = 0.5;
 		ZoneHoldDuration = 1.0;
@@ -61,7 +61,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<Layer level="ARTWORK">
 				<FontString name="ZoneTextString" inherits="ZoneTextFont">
 					<Size>
-						<AbsDimension x="384" y="0"/>
+						<AbsDimension x="512" y="0"/>
 					</Size>
 					<Anchors>
 						<Anchor point="CENTER"/>
@@ -69,7 +69,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</FontString>
 				<FontString name="PVPInfoTextString" inherits="SubZoneTextFont">
 					<Size>
-						<AbsDimension x="384" y="0"/>
+						<AbsDimension x="512" y="0"/>
 					</Size>
 					<Anchors>
 						<Anchor point="TOP" relativeTo="ZoneTextString" relativePoint="BOTTOM"/>
@@ -123,7 +123,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<Layer level="ARTWORK">
 				<FontString name="SubZoneTextString" inherits="SubZoneTextFont">
 					<Size>
-						<AbsDimension x="384" y="0"/>
+						<AbsDimension x="512" y="0"/>
 					</Size>
 					<Anchors>
 						<Anchor point="TOP" relativeTo="ZoneTextString" relativePoint="BOTTOM"/>
@@ -131,7 +131,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				</FontString>
 				<FontString name="PVPArenaTextString" inherits="SubZoneTextFont">
 					<Size>
-						<AbsDimension x="384" y="0"/>
+						<AbsDimension x="512" y="0"/>
 					</Size>
 					<Anchors>
 						<Anchor point="TOP" relativeTo="SubZoneTextString" relativePoint="BOTTOM"/>
@@ -163,6 +163,35 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</OnEvent>
 			<OnUpdate>
 				FadingFrame_OnUpdate();
+			</OnUpdate>
+		</Scripts>
+	</Frame>
+	<Frame name="AutoFollowStatus" parent="UIParent" setAllPoints="true" frameStrata="BACKGROUND" hidden="true">
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString name="AutoFollowStatusText" inherits="GameFontNormal">
+					<Anchors>
+						<Anchor point="CENTER" relativeTo="WorldFrame">
+							<Offset>
+								<AbsDimension x="0" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<FontHeight>
+						<AbsValue val="20"/>
+					</FontHeight>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Scripts>
+			<OnLoad>
+				AutoFollowStatus_OnLoad();
+			</OnLoad>
+			<OnEvent>
+				AutoFollowStatus_OnEvent(event);
+			</OnEvent>
+			<OnUpdate>
+				AutoFollowStatus_OnUpdate(arg1);
 			</OnUpdate>
 		</Scripts>
 	</Frame>

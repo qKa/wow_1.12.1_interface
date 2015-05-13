@@ -3,6 +3,7 @@ COMBOFRAME_FADE_OUT = 0.5;
 COMBOFRAME_HIGHLIGHT_FADE_IN = 0.4;
 COMBOFRAME_SHINE_FADE_IN = 0.3;
 COMBOFRAME_SHINE_FADE_OUT = 0.4;
+COMBO_FRAME_LAST_NUM_POINTS = 0;
 
 function ComboPointsFrame_OnEvent()
 	local comboPoints = GetComboPoints();
@@ -17,7 +18,7 @@ function ComboPointsFrame_OnEvent()
 			comboPointHighlight = getglobal("ComboPoint"..i.."Highlight");
 			comboPointShine = getglobal("ComboPoint"..i.."Shine");
 			if ( i <= comboPoints ) then
-				if ( comboPointHighlight:GetAlpha() == 0 or comboPoints == MAX_COMBO_POINTS) then
+				if ( i > COMBO_FRAME_LAST_NUM_POINTS ) then
 					-- Fade in the highlight and set a function that triggers when it is done fading
 					fadeInfo = {};
 					fadeInfo.mode = "IN";
@@ -36,6 +37,7 @@ function ComboPointsFrame_OnEvent()
 		ComboPoint1Shine:SetAlpha(0);
 		ComboFrame:Hide();
 	end
+	COMBO_FRAME_LAST_NUM_POINTS = comboPoints;
 end
 
 function ComboPointShineFadeIn(frame)

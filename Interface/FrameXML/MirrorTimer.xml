@@ -1,7 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="MirrorTimer.lua"/>
-	<Frame name="MirrorTimerTemplate" toplevel="true" parent="UIParent" movable="true" enableMouse="true" hidden="true" virtual="true">
+	<Frame name="MirrorTimerTemplate" toplevel="true" parent="UIParent" hidden="true" virtual="true">
 		<Size>
 			<AbsDimension x="206" y="26"/>
 		</Size>
@@ -31,7 +31,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 						</Anchor>
 					</Anchors>
 				</FontString>
-				<Texture file="Interface\CastingBar\UI-CastingBar-Border">
+				<Texture name="$parentBorder" file="Interface\CastingBar\UI-CastingBar-Border">
 					<Size>
 						<AbsDimension x="256" y="64"/>
 					</Size>
@@ -73,7 +73,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				MirrorTimerFrame_OnEvent();
 			</OnEvent>
 			<OnUpdate>
-				MirrorTimerFrame_OnUpdate(arg1);
+				MirrorTimerFrame_OnUpdate(this, arg1);
 			</OnUpdate>
 		</Scripts>
 	</Frame>
@@ -81,7 +81,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 		<Anchors>
 			<Anchor point="TOP">
 				<Offset>
-					<AbsDimension x="0" y="-60"/>
+					<AbsDimension x="0" y="-96"/>
 				</Offset>
 			</Anchor>
 		</Anchors>

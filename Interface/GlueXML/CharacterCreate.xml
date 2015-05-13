@@ -1,19 +1,23 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/
-C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+..\FrameXML\UI.xsd">
 	<Script file="CharacterCreate.lua"/>
 	<CheckButton name="CharacterCreateIconButtonTemplate" virtual="true">
 		<Size>
 			<AbsDimension x="48" y="48"/>
 		</Size>
-		<HighlightText name="$parentHighlightText" inherits="GlueFontNormalSmall">
-			<Anchors>
-				<Anchor point="BOTTOM">
-					<Offset>
-						<AbsDimension x="0" y="1"/>
-					</Offset>
-				</Anchor>
-			</Anchors>
-		</HighlightText>
+		<Layers>
+			<Layer level="HIGHLIGHT">
+				<FontString name="$parentHighlightText" inherits="GlueFontNormalSmall">
+					<Anchors>
+						<Anchor point="BOTTOM">
+							<Offset>
+								<AbsDimension x="0" y="1"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
 		<HighlightTexture alphaMode="ADD" file="Interface\Buttons\ButtonHilight-Square"/>
 		<!--
 		<CheckedTexture alphaMode="ADD" file="Interface\Buttons\CheckButtonHilight"/>
@@ -99,13 +103,13 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 	</CheckButton>
 	<Frame name="CharacterCustomizationFrameTemplate" virtual="true">
 		<Size>
-			<AbsDimension x="168" y="32"/>
+			<AbsDimension x="198" y="32"/>
 		</Size>
 		<Layers>
 			<Layer level="BACKGROUND">
-				<Texture name="$parentLabelFrame" file="Interface\Glues\CharacterCreate\CharacterCreate-LabelFrame">
+				<Texture name="$parentLeft" file="Interface\Glues\CharacterCreate\CharacterCreate-LabelFrame">
 					<Size>
-						<AbsDimension x="128" y="64"/>
+						<AbsDimension x="25" y="64"/>
 					</Size>
 					<Anchors>
 						<Anchor point="LEFT">
@@ -114,16 +118,40 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							</Offset>
 						</Anchor>
 					</Anchors>
+					<TexCoords left="0" right="0.1953125" top="0" bottom="1"/>
+				</Texture>
+				<Texture name="$parentRight" file="Interface\Glues\CharacterCreate\CharacterCreate-LabelFrame">
+					<Size>
+						<AbsDimension x="25" y="64"/>
+					</Size>
+					<Anchors>
+						<Anchor point="RIGHT">
+							<Offset>
+								<AbsDimension x="-44" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0.8046875" right="1" top="0" bottom="1"/>
+				</Texture>
+				<Texture name="$parentMiddle" file="Interface\Glues\CharacterCreate\CharacterCreate-LabelFrame">
+					<Size>
+						<AbsDimension x="5" y="64"/>
+					</Size>
+					<Anchors>
+						<Anchor point="LEFT" relativeTo="$parentLeft" relativePoint="RIGHT"/>
+						<Anchor point="RIGHT" relativeTo="$parentRight" relativePoint="LEFT"/>
+					</Anchors>
+					<TexCoords left="0.1953125" right="0.8046875" top="0" bottom="1"/>
 				</Texture>
 				<FontString name="$parentText" inherits="GlueFontHighlightSmall">
 					<Anchors>
-						<Anchor point="CENTER" relativeTo="$parentLabelFrame">
+						<Anchor point="CENTER" relativeTo="$parentMiddle">
 							<Offset>
 								<AbsDimension x="0" y="3"/>
 							</Offset>
 						</Anchor>
 					</Anchors>
-				</FontString>	
+				</FontString>
 			</Layer>
 		</Layers>
 		<Frames>
@@ -165,7 +193,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			</Button>
 		</Frames>
 	</Frame>
-	<Model name="CharacterCreate" setAllPoints="true" file="Interface\Glues\Models\UI_NightElf\UI_NightElf.mdx" hidden="true" parent="GlueParent" enableKeyboard="true">
+	<ModelFFX name="CharacterCreate" setAllPoints="true" file="Interface\Glues\Models\UI_NightElf\UI_NightElf.mdx" hidden="true" parent="GlueParent" enableKeyboard="true">
 		<Frames>
 			<Frame name="CharacterCreateFrame" setAllPoints="true" enableMouse="true">
 				<Frames>
@@ -213,7 +241,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							</Frame>
 							<ScrollFrame name="CharacterCreateFactionScrollFrame" inherits="GlueScrollFrameTemplate">
 								<Size>
-									<AbsDimension x="191" y="140"/>
+									<AbsDimension x="190" y="140"/>
 								</Size>
 								<Anchors>
 									<Anchor point="TOPLEFT">
@@ -229,9 +257,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 												<AbsDimension x="32" y="128"/>
 											</Size>
 											<Anchors>
-												<Anchor point="TOP" relativeTo="$parentScrollBarScrollUpButton">
+												<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
 													<Offset>
-														<AbsDimension x="-2" y="5"/>
+														<AbsDimension x="-3" y="4"/>
 													</Offset>
 												</Anchor>
 											</Anchors>
@@ -241,9 +269,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 												<AbsDimension x="30" y="123"/>
 											</Size>
 											<Anchors>
-												<Anchor point="BOTTOM" relativeTo="$parentScrollBarScrollDownButton">
+												<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT">
 													<Offset>
-														<AbsDimension x="-2" y="-1"/>
+														<AbsDimension x="-3" y="-2"/>
 													</Offset>
 												</Anchor>
 											</Anchors>
@@ -251,41 +279,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 										</Texture>
 									</Layer>
 								</Layers>
-								<ScrollChild>
-									<Frame name="CharacterCreateFactionScrollChild">
-										<Size>
-											<AbsDimension x="210" y="10"/>
-										</Size>
-										<Layers>
-											<Layer level="BACKGROUND">
-												<FontString name="CharacterCreateFactionLabel" inherits="GlueFontNormalLarge" justifyH="LEFT" text="RACE">
-													<Size>
-														<AbsDimension x="190" y="0"/>
-													</Size>
-													<Anchors>
-														<Anchor point="TOPLEFT">
-															<Offset>
-																<AbsDimension x="32" y="3"/>
-															</Offset>
-														</Anchor>
-													</Anchors>
-												</FontString>
-												<FontString name="CharacterCreateFactionText" inherits="GlueFontCharacterCreate" justifyH="LEFT">
-													<Size>
-														<AbsDimension x="189" y="0"/>
-													</Size>
-													<Anchors>
-														<Anchor point="TOPLEFT" relativeTo="CharacterCreateFactionLabel" relativePoint="BOTTOMLEFT">
-															<Offset>
-																<AbsDimension x="-32" y="-2"/>
-															</Offset>
-														</Anchor>
-													</Anchors>
-												</FontString>
-											</Layer>
-										</Layers>
-									</Frame>
-								</ScrollChild>
 								<Scripts>
 									<OnLoad>
 										getglobal(this:GetName().."ScrollBarScrollDownButton"):Disable();
@@ -304,6 +297,53 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 										end
 									</OnScrollRangeChanged>
 								</Scripts>
+								<ScrollChild>
+									<Frame name="CharacterCreateFactionScrollChild">
+										<Size>
+											<AbsDimension x="190" y="10"/>
+										</Size>
+										<Layers>
+											<Layer level="BACKGROUND">
+												<FontString name="CharacterCreateFactionLabel" inherits="GlueFontNormalLarge" justifyH="LEFT" text="RACE">
+													<Size>
+														<AbsDimension x="158" y="0"/>
+													</Size>
+													<Anchors>
+														<Anchor point="TOPLEFT">
+															<Offset>
+																<AbsDimension x="32" y="0"/>
+															</Offset>
+														</Anchor>
+													</Anchors>
+												</FontString>
+												<FontString name="CharacterCreateFactionText" inherits="GlueFontCharacterCreate" justifyH="LEFT">
+													<Size>
+														<AbsDimension x="190" y="0"/>
+													</Size>
+													<Anchors>
+														<Anchor point="TOPLEFT" relativeTo="CharacterCreateFactionLabel" relativePoint="BOTTOMLEFT">
+															<Offset>
+																<AbsDimension x="-32" y="-2"/>
+															</Offset>
+														</Anchor>
+													</Anchors>
+												</FontString>
+												<Texture>
+													<Size>
+														<AbsDimension x="5" y="5"/>
+													</Size>
+													<Anchors>
+														<Anchor point="TOP" relativeTo="CharacterCreateFactionText" relativePoint="BOTTOM">
+															<Offset>
+																<AbsDimension x="0" y="0"/>
+															</Offset>
+														</Anchor>
+													</Anchors>
+												</Texture>
+											</Layer>
+										</Layers>
+									</Frame>
+								</ScrollChild>
 							</ScrollFrame>
 						</Frames>
 						<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Glues\Common\TextPanel-Border" tile="true">
@@ -362,7 +402,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							</Frame>
 							<ScrollFrame name="CharacterCreateRaceScrollFrame" inherits="GlueScrollFrameTemplate">
 								<Size>
-									<AbsDimension x="191" y="240"/>
+									<AbsDimension x="190" y="240"/>
 								</Size>
 								<Anchors>
 									<Anchor point="TOPLEFT">
@@ -378,9 +418,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 												<AbsDimension x="32" y="128"/>
 											</Size>
 											<Anchors>
-												<Anchor point="TOP" relativeTo="$parentScrollBarScrollUpButton">
+												<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
 													<Offset>
-														<AbsDimension x="-2" y="5"/>
+														<AbsDimension x="-3" y="4"/>
 													</Offset>
 												</Anchor>
 											</Anchors>
@@ -390,9 +430,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 												<AbsDimension x="30" y="123"/>
 											</Size>
 											<Anchors>
-												<Anchor point="BOTTOM" relativeTo="$parentScrollBarScrollDownButton">
+												<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT">
 													<Offset>
-														<AbsDimension x="-2" y="-1"/>
+														<AbsDimension x="-3" y="-2"/>
 													</Offset>
 												</Anchor>
 											</Anchors>
@@ -400,41 +440,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 										</Texture>
 									</Layer>
 								</Layers>
-								<ScrollChild>
-									<Frame name="CharacterCreateRaceScrollChild">
-										<Size>
-											<AbsDimension x="210" y="10"/>
-										</Size>
-										<Layers>
-											<Layer level="BACKGROUND">
-												<FontString name="CharacterCreateRaceLabel" inherits="GlueFontNormalLarge" justifyH="LEFT" text="RACE">
-													<Size>
-														<AbsDimension x="190" y="0"/>
-													</Size>
-													<Anchors>
-														<Anchor point="TOPLEFT">
-															<Offset>
-																<AbsDimension x="32" y="3"/>
-															</Offset>
-														</Anchor>
-													</Anchors>
-												</FontString>
-												<FontString name="CharacterCreateRaceText" inherits="GlueFontCharacterCreate" justifyH="LEFT">
-													<Size>
-														<AbsDimension x="189" y="0"/>
-													</Size>
-													<Anchors>
-														<Anchor point="TOPLEFT" relativeTo="CharacterCreateRaceLabel" relativePoint="BOTTOMLEFT">
-															<Offset>
-																<AbsDimension x="-32" y="-2"/>
-															</Offset>
-														</Anchor>
-													</Anchors>
-												</FontString>
-											</Layer>
-										</Layers>
-									</Frame>
-								</ScrollChild>
 								<Scripts>
 									<OnLoad>
 										getglobal(this:GetName().."ScrollBarScrollDownButton"):Disable();
@@ -453,6 +458,53 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 										end
 									</OnScrollRangeChanged>
 								</Scripts>
+								<ScrollChild>
+									<Frame name="CharacterCreateRaceScrollChild">
+										<Size>
+											<AbsDimension x="190" y="10"/>
+										</Size>
+										<Layers>
+											<Layer level="BACKGROUND">
+												<FontString name="CharacterCreateRaceLabel" inherits="GlueFontNormalLarge" justifyH="LEFT" text="RACE">
+													<Size>
+														<AbsDimension x="158" y="0"/>
+													</Size>
+													<Anchors>
+														<Anchor point="TOPLEFT">
+															<Offset>
+																<AbsDimension x="32" y="0"/>
+															</Offset>
+														</Anchor>
+													</Anchors>
+												</FontString>
+												<FontString name="CharacterCreateRaceText" inherits="GlueFontCharacterCreate" justifyH="LEFT">
+													<Size>
+														<AbsDimension x="190" y="0"/>
+													</Size>
+													<Anchors>
+														<Anchor point="TOPLEFT" relativeTo="CharacterCreateRaceLabel" relativePoint="BOTTOMLEFT">
+															<Offset>
+																<AbsDimension x="-32" y="-2"/>
+															</Offset>
+														</Anchor>
+													</Anchors>
+												</FontString>
+												<FontString name="CharacterCreateRaceAbilityText" inherits="GlueFontNormalSmall" justifyH="LEFT">
+													<Size>
+														<AbsDimension x="190" y="0"/>
+													</Size>
+													<Anchors>
+														<Anchor point="TOPLEFT" relativeTo="CharacterCreateRaceText" relativePoint="BOTTOMLEFT">
+															<Offset>
+																<AbsDimension x="0" y="-2"/>
+															</Offset>
+														</Anchor>
+													</Anchors>
+												</FontString>
+											</Layer>
+										</Layers>
+									</Frame>
+								</ScrollChild>
 							</ScrollFrame>
 						</Frames>
 						<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Glues\Common\TextPanel-Border" tile="true">
@@ -511,7 +563,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							</Frame>
 							<ScrollFrame name="CharacterCreateClassScrollFrame" inherits="GlueScrollFrameTemplate">
 								<Size>
-									<AbsDimension x="191" y="190"/>
+									<AbsDimension x="190" y="190"/>
 								</Size>
 								<Anchors>
 									<Anchor point="TOPLEFT">
@@ -527,9 +579,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 												<AbsDimension x="32" y="128"/>
 											</Size>
 											<Anchors>
-												<Anchor point="TOP" relativeTo="$parentScrollBarScrollUpButton">
+												<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
 													<Offset>
-														<AbsDimension x="-2" y="5"/>
+														<AbsDimension x="-3" y="4"/>
 													</Offset>
 												</Anchor>
 											</Anchors>
@@ -539,9 +591,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 												<AbsDimension x="30" y="123"/>
 											</Size>
 											<Anchors>
-												<Anchor point="BOTTOM" relativeTo="$parentScrollBarScrollDownButton">
+												<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT">
 													<Offset>
-														<AbsDimension x="-2" y="-1"/>
+														<AbsDimension x="-3" y="-2"/>
 													</Offset>
 												</Anchor>
 											</Anchors>
@@ -549,41 +601,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 										</Texture>
 									</Layer>
 								</Layers>
-								<ScrollChild>
-									<Frame name="CharacterCreateClassScrollChild">
-										<Size>
-											<AbsDimension x="210" y="10"/>
-										</Size>
-										<Layers>
-											<Layer level="BACKGROUND">
-												<FontString name="CharacterCreateClassLabel" inherits="GlueFontNormalLarge" justifyH="LEFT" text="RACE">
-													<Size>
-														<AbsDimension x="190" y="0"/>
-													</Size>
-													<Anchors>
-														<Anchor point="TOPLEFT">
-															<Offset>
-																<AbsDimension x="32" y="3"/>
-															</Offset>
-														</Anchor>
-													</Anchors>
-												</FontString>
-												<FontString name="CharacterCreateClassText" inherits="GlueFontCharacterCreate" justifyH="LEFT">
-													<Size>
-														<AbsDimension x="189" y="0"/>
-													</Size>
-													<Anchors>
-														<Anchor point="TOPLEFT" relativeTo="CharacterCreateClassLabel" relativePoint="BOTTOMLEFT">
-															<Offset>
-																<AbsDimension x="-32" y="-2"/>
-															</Offset>
-														</Anchor>
-													</Anchors>
-												</FontString>
-											</Layer>
-										</Layers>
-									</Frame>
-								</ScrollChild>
 								<Scripts>
 									<OnLoad>
 										getglobal(this:GetName().."ScrollBarScrollDownButton"):Disable();
@@ -602,6 +619,41 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 										end
 									</OnScrollRangeChanged>
 								</Scripts>
+								<ScrollChild>
+									<Frame name="CharacterCreateClassScrollChild">
+										<Size>
+											<AbsDimension x="190" y="10"/>
+										</Size>
+										<Layers>
+											<Layer level="BACKGROUND">
+												<FontString name="CharacterCreateClassLabel" inherits="GlueFontNormalLarge" justifyH="LEFT" text="RACE">
+													<Size>
+														<AbsDimension x="158" y="0"/>
+													</Size>
+													<Anchors>
+														<Anchor point="TOPLEFT">
+															<Offset>
+																<AbsDimension x="32" y="0"/>
+															</Offset>
+														</Anchor>
+													</Anchors>
+												</FontString>
+												<FontString name="CharacterCreateClassText" inherits="GlueFontCharacterCreate" justifyH="LEFT">
+													<Size>
+														<AbsDimension x="190" y="0"/>
+													</Size>
+													<Anchors>
+														<Anchor point="TOPLEFT" relativeTo="CharacterCreateClassLabel" relativePoint="BOTTOMLEFT">
+															<Offset>
+																<AbsDimension x="-32" y="-2"/>
+															</Offset>
+														</Anchor>
+													</Anchors>
+												</FontString>
+											</Layer>
+										</Layers>
+									</Frame>
+								</ScrollChild>
 							</ScrollFrame>
 						</Frames>
 						<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Glues\Common\TextPanel-Border" tile="true">
@@ -616,7 +668,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							</EdgeSize>
 						</Backdrop>
 					</Frame>
-					
 					<Frame name="CharacterCreateConfigurationFrame">
 						<Size>
 							<AbsDimension x="206" y="600"/>
@@ -834,8 +885,11 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 										PlaySound("gsCharacterCreationClass");
 									</OnClick>
 									<OnEnter>
+										if (GetSelectedSex() == 1) then
+											return;
+										end
 										GlueTooltip_SetOwner(nil, nil, -3, -5);
-										GlueTooltip_SetText(MALE);
+										GlueTooltip_SetText(MALE, nil, 1.0, 1.0, 1.0);
 									</OnEnter>
 								</Scripts>
 							</CheckButton>
@@ -856,8 +910,11 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 										PlaySound("gsCharacterCreationClass");
 									</OnClick>
 									<OnEnter>
+										if (GetSelectedSex() == 2) then
+											return;
+										end
 										GlueTooltip_SetOwner(nil, nil, -3, -5);
-										GlueTooltip_SetText(FEMALE);
+										GlueTooltip_SetText(FEMALE, nil, 1.0, 1.0, 1.0);
 									</OnEnter>
 								</Scripts>
 							</CheckButton>
@@ -980,7 +1037,7 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							</Frame>
 							<Button name="CharCreateRandomizeButton" inherits="GlueButtonSmallTemplate" text="RANDOMIZE">
 								<Size>
-									<AbsDimension x="116" y="30"/>
+									<AbsDimension x="146" y="30"/>
 								</Size>
 								<Anchors>
 									<Anchor point="TOP" relativeTo="CharacterCustomizationButtonFrame5" relativePoint="BOTTOM">
@@ -990,6 +1047,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 									</Anchor>
 								</Anchors>
 								<Scripts>
+									<OnLoad>
+										this:SetWidth(this:GetTextWidth() + 50);
+									</OnLoad>
 									<OnClick>
 										CharacterCreate_Randomize();
 									</OnClick>
@@ -1048,9 +1108,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							<AbsInset left="15"/>
 						</TextInsets>
 					</EditBox>
-					<Button name="CharacterCreateRandomName" inherits="GlueButtonSmallTemplate" text="RANDOMIZE">
+					<Button name="CharacterCreateRandomName" inherits="GlueButtonSmallTemplate" text="RANDOMIZE" hidden="true">
 						<Size>
-							<AbsDimension x="120" y="30"/>
+							<AbsDimension x="146" y="30"/>
 						</Size>
 						<Anchors>
 							<Anchor point="TOP" relativeTo="CharacterCreateNameEdit" relativePoint="BOTTOM">
@@ -1060,6 +1120,9 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 							</Anchor>
 						</Anchors>
 						<Scripts>
+							<OnLoad>
+								this:SetWidth(this:GetTextWidth() + 50);
+							</OnLoad>
 							<OnClick>
 								CharacterCreateNameEdit:SetText(GetRandomName());
 								PlaySound("gsCharacterCreationLook");
@@ -1193,9 +1256,6 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 			<OnShow>
 				CharacterCreate_OnShow();
 			</OnShow>
-			<OnClick>
-				CharacterCreate_OnClick();
-			</OnClick>
 			<OnChar>
 				CharacterCreate_OnChar();
 			</OnChar>
@@ -1206,5 +1266,5 @@ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
 				CharacterCreate_UpdateModel();
 			</OnUpdateModel>
 		</Scripts>
-	</Model>
+	</ModelFFX>
 </Ui>

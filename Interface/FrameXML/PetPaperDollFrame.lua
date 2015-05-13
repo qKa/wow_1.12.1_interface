@@ -3,8 +3,9 @@ NUM_PET_STATS = 5;
 
 function PetPaperDollFrame_OnLoad()
 	this:RegisterEvent("PET_UI_UPDATE");
+	this:RegisterEvent("PET_BAR_UPDATE");
 	this:RegisterEvent("PET_UI_CLOSE");
-	this:RegisterEvent("PLAYER_PET_CHANGED");
+	this:RegisterEvent("UNIT_PET");
 	this:RegisterEvent("UNIT_PET_EXPERIENCE");
 	this:RegisterEvent("UNIT_MODEL_CHANGED");
 	this:RegisterEvent("UNIT_LEVEL");
@@ -24,15 +25,21 @@ function PetPaperDollFrame_OnLoad()
 	PetDefenseFrameLabel:SetText(TEXT(DEFENSE_COLON));
 	PetArmorFrameLabel:SetText(TEXT(ARMOR_COLON));
 	SetTextStatusBarTextPrefix(PetPaperDollFrameExpBar, TEXT(XP));
+	PetTab_Update();
 end
 
 function PetPaperDollFrame_OnEvent()
-	if ( event == "PET_UI_UPDATE" or event == "PLAYER_PET_CHANGED" ) then
+	if ( event == "PET_UI_UPDATE" or event == "PET_BAR_UPDATE" or (event == "UNIT_PET" and arg1 == "player") ) then
+		if ( PetPaperDollFrame:IsVisible() and not HasPetUI() ) then
+			ToggleCharacter("PetPaperDollFrame");
+		end
 		PetTab_Update();
 		PetPaperDollFrame_Update();
 	elseif ( event == "PET_UI_CLOSE" ) then
+		if ( PetPaperDollFrame:IsVisible() ) then
+			ToggleCharacter("PetPaperDollFrame");
+		end
 		PetTab_Update();
-		HideUIPanel(this:GetParent());
 	elseif ( event == "UNIT_PET_EXPERIENCE" ) then
 		PetExpBar_Update();
 	elseif ( arg1 == "pet" ) then
@@ -53,7 +60,8 @@ function PetPaperDollFrame_OnHide()
 end
 
 function PetPaperDollFrame_Update()
-	if ( not HasPetUI() ) then
+	local hasPetUI, canGainXP = HasPetUI();
+	if ( not hasPetUI ) then
 		return;
 	end
 	PetModelFrame:SetUnit("pet");
@@ -61,8 +69,6 @@ function PetPaperDollFrame_Update()
 		PetLevelText:SetText(format(TEXT(UNIT_LEVEL_TEMPLATE),UnitLevel("pet")).." "..UnitCreatureFamily("pet"));
 	end
 	PetLoyaltyText:SetText(GetPetLoyalty());
-	local totalPoints, spent = GetPetTrainingPoints();
-	PetTrainingPointText:SetText(totalPoints - spent);
 	PetExpBar_Update();
 	PetPaperDollFrame_SetResistances();
 	PetPaperDollFrame_SetStats();
@@ -73,6 +79,18 @@ function PetPaperDollFrame_Update()
 	PaperDollFrame_SetArmor("pet", "Pet");
 	PaperDollFrame_SetAttackBothHands("pet", "Pet");
 	PaperDollFrame_SetDefense("pet", "Pet");
+
+	if ( canGainXP ) then
+		PetPaperDollPetInfo:Show();
+		local totalPoints, spent = GetPetTrainingPoints();
+		PetTrainingPointText:SetText(totalPoints - spent);
+		PetTrainingPointText:Show();
+		PetTrainingPointLabel:Show();
+	else
+		PetPaperDollPetInfo:Hide();
+		PetTrainingPointText:Hide();
+		PetTrainingPointLabel:Hide();
+	end
 end
 
 function PetPaperDollFrame_SetResistances()
@@ -129,16 +147,25 @@ function PetPaperDollFrame_SetStats()
 		local negBuff;
 		label:SetText(TEXT(getglobal("SPELL_STAT"..(i-1).."_NAME"))..":");
 		stat, effectiveStat, posBuff, negBuff = UnitStat("pet", i);
+		-- Set the tooltip text
+		local tooltipText = HIGHLIGHT_FONT_COLOR_CODE..getglobal("SPELL_STAT"..(i-1).."_NAME").." ";
+
 		if ( ( posBuff == 0 ) and ( negBuff == 0 ) ) then
 			text:SetText(effectiveStat);
-			frame.tooltip = nil;
+			frame.tooltip = tooltipText..effectiveStat..FONT_COLOR_CODE_CLOSE;
 		else 
-			local tooltipText = stat - posBuff - negBuff;
+			tooltipText = tooltipText..effectiveStat;
+			if ( posBuff > 0 or negBuff < 0 ) then
+				tooltipText = tooltipText.." ("..(stat - posBuff - negBuff)..FONT_COLOR_CODE_CLOSE;
+			end
 			if ( posBuff > 0 ) then
-				tooltipText = tooltipText..GREEN_FONT_COLOR_CODE.." +"..posBuff..FONT_COLOR_CODE_CLOSE;
+				tooltipText = tooltipText..FONT_COLOR_CODE_CLOSE..GREEN_FONT_COLOR_CODE.."+"..posBuff..FONT_COLOR_CODE_CLOSE;
 			end
 			if ( negBuff < 0 ) then
 				tooltipText = tooltipText..RED_FONT_COLOR_CODE.." "..negBuff..FONT_COLOR_CODE_CLOSE;
+			end
+			if ( posBuff > 0 or negBuff < 0 ) then
+				tooltipText = tooltipText..HIGHLIGHT_FONT_COLOR_CODE..")"..FONT_COLOR_CODE_CLOSE;
 			end
 			frame.tooltip = tooltipText;
 
@@ -164,12 +191,8 @@ function PetTab_Update()
 	if ( not HasPetUI() ) then
 		CharacterFrameTab2:Hide();
 		CharacterFrameTab3:SetPoint("LEFT", "CharacterFrameTab2", "LEFT", 0, 0);
-		if ( PetPaperDollFrame:IsVisible() ) then
-			HideUIPanel(CharacterFrame);
-		end
-		return;
 	else
 		CharacterFrameTab2:Show();
-		CharacterFrameTab3:SetPoint("LEFT", "CharacterFrameTab2", "RIGHT", -15, 0);
+		CharacterFrameTab3:SetPoint("LEFT", "CharacterFrameTab2", "RIGHT", -16, 0);
 	end
 end
