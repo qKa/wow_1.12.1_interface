@@ -482,7 +482,7 @@
 							</ScrollFrame>
 						</Frames>
 					</Frame>
-					<Frame name="VirtualKeypadFrame" hidden="true">
+					<Frame name="VirtualKeypadFrame" hidden="true" frameStrata="DIALOG" enableMouse="true">
 						<Size>
 							<AbsDimension x="155" y="175"/>
 						</Size>

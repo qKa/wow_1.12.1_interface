@@ -222,6 +222,13 @@ function VirtualKeypadFrame_OnEvent(event)
 			getglobal("VirtualKeypadButton"..i):SetText(getglobal("arg"..i));
 		end							
 	end
+	-- Randomize location to prevent hacking (yeah right)
+	local xPadding = 5;
+	local yPadding = 10;
+	local xPos = random(xPadding, GlueParent:GetWidth()-VirtualKeypadFrame:GetWidth()-xPadding);
+	local yPos = random(yPadding, GlueParent:GetHeight()-VirtualKeypadFrame:GetHeight()-yPadding);
+	VirtualKeypadFrame:SetPoint("TOPLEFT", GlueParent, "TOPLEFT", xPos, -yPos);
+	
 	VirtualKeypadFrame:Show();
 	VirtualKeypad_UpdateButtons();
 end
